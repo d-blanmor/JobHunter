@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import Modal from '../components/Modal';
+import { listLocations, saveLocation, deleteLocation } from '../api/locations';
 
 interface LocationItem {
   Id: number;
@@ -23,11 +25,7 @@ export default function LocationsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/v1/repository/locations?active_only=true');
-      if (!response.ok) {
-        throw new Error(`Failed to load locations: ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await listLocations();
       setLocations(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -83,23 +81,7 @@ export default function LocationsPage() {
 
     try {
       setLoading(true);
-      const responses = await Promise.all(
-        [updatedLocation, updatedTarget].map((item) =>
-          fetch('http://127.0.0.1:8000/api/v1/repository/locations', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(item),
-          }),
-        ),
-      );
-
-      const failedResponse = responses.find((response) => !response.ok);
-      if (failedResponse) {
-        throw new Error(`Failed to reorder location: ${failedResponse.status}`);
-      }
-
+      await Promise.all([saveLocation(updatedLocation), saveLocation(updatedTarget)]);
       await loadLocations();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -111,12 +93,7 @@ export default function LocationsPage() {
   const handleDeleteLocation = async (location: LocationItem) => {
     try {
       setLoading(true);
-      const response = await fetch(`http://127.0.0.1:8000/api/v1/repository/locations/${location.Id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to delete location: ${response.status}`);
-      }
+      await deleteLocation(location.Id);
       await loadLocations();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -151,16 +128,7 @@ export default function LocationsPage() {
 
     try {
       setLoading(true);
-      const response = await fetch('http://127.0.0.1:8000/api/v1/repository/locations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to save location: ${response.status}`);
-      }
+      await saveLocation(payload);
       closeModal();
       await loadLocations();
     } catch (err) {

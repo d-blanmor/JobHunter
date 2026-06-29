@@ -279,6 +279,99 @@ def list_job_specs(*, session: Session = Depends(get_session), active_only: bool
     return session.exec(statement).all()
 
 
+@app.get("/api/v1/repository/applications/by-job-spec/{job_spec_id}", response_model=list[Application])
+def get_applications_by_job_spec_id(job_spec_id: int, session: Session = Depends(get_session)) -> list[Application]:
+    job = session.get(JobSpec, job_spec_id)
+    if not job or job.ApplicationId is None:
+        return []
+    application = session.get(Application, job.ApplicationId)
+    if application and application.IsActive:
+        return [application]
+    return []
+
+
+@app.get("/api/v1/repository/interviews/by-application/{application_id}", response_model=list[Interview])
+def get_interviews_by_application_id(application_id: int, session: Session = Depends(get_session)) -> list[Interview]:
+    statement = select(Interview).where(Interview.ApplicationId == application_id)
+    statement = statement.where(Interview.IsActive == True)
+    statement = statement.order_by(Interview.Scheduled)
+    return session.exec(statement).all()
+
+
+@app.get("/api/v1/repository/interviews/by-job-spec/{job_spec_id}", response_model=list[Interview])
+def get_interviews_by_job_spec_id(job_spec_id: int, session: Session = Depends(get_session)) -> list[Interview]:
+    job = session.get(JobSpec, job_spec_id)
+    if not job or job.ApplicationId is None:
+        return []
+    statement = select(Interview).where(Interview.ApplicationId == job.ApplicationId)
+    statement = statement.where(Interview.IsActive == True)
+    statement = statement.order_by(Interview.Scheduled)
+    return session.exec(statement).all()
+
+
+@app.get("/api/v1/repository/job-specs/received", response_model=list[JobSpecRead])
+def get_received_specs(*, session: Session = Depends(get_session)) -> list[JobSpecRead]:
+    statement = select(JobSpec).where(JobSpec.IsActive == True).where(JobSpec.ApplicationId == None)
+    return session.exec(statement).all()
+
+
+@app.get("/api/v1/repository/job-specs/applied", response_model=list[JobSpecRead])
+def get_applied_specs(*, session: Session = Depends(get_session)) -> list[JobSpecRead]:
+    statement = select(JobSpec).where(JobSpec.IsActive == True).where(JobSpec.ApplicationId != None)
+    specs = session.exec(statement).all()
+    result: list[JobSpecRead] = []
+    for spec in specs:
+        app = session.get(Application, spec.ApplicationId)
+        if not app or not app.IsActive:
+            continue
+        if app.Discarded is not None:
+            continue
+        # count active interviews
+        i_stmt = select(Interview).where(Interview.ApplicationId == app.Id).where(Interview.IsActive == True)
+        interviews = session.exec(i_stmt).all()
+        if len(interviews) == 0:
+            result.append(spec)
+    return result
+
+
+@app.get("/api/v1/repository/job-specs/interview", response_model=list[JobSpecRead])
+def get_interview_specs(*, session: Session = Depends(get_session)) -> list[JobSpecRead]:
+    statement = select(JobSpec).where(JobSpec.IsActive == True).where(JobSpec.ApplicationId != None)
+    specs = session.exec(statement).all()
+    result: list[JobSpecRead] = []
+    for spec in specs:
+        app = session.get(Application, spec.ApplicationId)
+        if not app or not app.IsActive:
+            continue
+        if app.Discarded is not None:
+            continue
+        i_stmt = select(Interview).where(Interview.ApplicationId == app.Id).where(Interview.IsActive == True)
+        interviews = session.exec(i_stmt).all()
+        if len(interviews) > 0:
+            result.append(spec)
+    return result
+
+
+@app.get("/api/v1/repository/job-specs/offers", response_model=list[JobSpecRead])
+def get_offered_specs(*, session: Session = Depends(get_session)) -> list[JobSpecRead]:
+    # Placeholder: no offers yet
+    return []
+
+
+@app.get("/api/v1/repository/job-specs/discarded", response_model=list[JobSpecRead])
+def get_discarded_specs(*, session: Session = Depends(get_session)) -> list[JobSpecRead]:
+    statement = select(JobSpec).where(JobSpec.IsActive == True).where(JobSpec.ApplicationId != None)
+    specs = session.exec(statement).all()
+    result: list[JobSpecRead] = []
+    for spec in specs:
+        app = session.get(Application, spec.ApplicationId)
+        if not app or not app.IsActive:
+            continue
+        if app.Discarded is not None:
+            result.append(spec)
+    return result
+
+
 @app.get("/api/v1/repository/job-specs/{job_spec_id}", response_model=JobSpecRead)
 def get_job_spec_v1(job_spec_id: int, session: Session = Depends(get_session)) -> JobSpecRead:
     return _get_entity_or_404(session, JobSpec, job_spec_id)

@@ -186,6 +186,32 @@ Job specs
 - POST /api/v1/repository/job-specs
 - DELETE /api/v1/repository/job-specs/{job_spec_id}
 
+Additional helper endpoints (summary and lookups)
+
+- GET /api/v1/repository/applications/by-job-spec/{job_spec_id}
+  - Returns the application linked to the given JobSpec (if any and active).
+
+- GET /api/v1/repository/interviews/by-application/{application_id}
+  - Returns active interviews linked to the provided Application, ordered by `Scheduled`.
+
+- GET /api/v1/repository/interviews/by-job-spec/{job_spec_id}
+  - Returns active interviews for the Application linked to the provided JobSpec, ordered by `Scheduled`.
+
+- GET /api/v1/repository/job-specs/received
+  - Returns JobSpecs where `IsActive = true` and `ApplicationId IS NULL`.
+
+- GET /api/v1/repository/job-specs/applied
+  - Returns JobSpecs where `IsActive = true`, `ApplicationId IS NOT NULL`, the linked Application has `Discarded IS NULL`, and there are no active Interviews linked to that Application.
+
+- GET /api/v1/repository/job-specs/interview
+  - Returns JobSpecs where `IsActive = true`, `ApplicationId IS NOT NULL`, the linked Application has `Discarded IS NULL`, and there is at least one active Interview linked to that Application.
+
+- GET /api/v1/repository/job-specs/offers
+  - Placeholder for offered specs (returns empty list for now).
+
+- GET /api/v1/repository/job-specs/discarded
+  - Returns JobSpecs where `IsActive = true`, `ApplicationId IS NOT NULL`, and the linked Application has `Discarded IS NOT NULL`.
+
 Query behavior
 - GET list endpoints accept an active_only query parameter.
 - By default, active_only=true returns only records where IsActive=true.
@@ -305,6 +331,10 @@ The current backend is intentionally simple and extensible. It is suitable for:
 - automation or import pipelines.
 
 This README is intended to serve as a stable contract for future client development.
+
+cd server
+.venv\Scripts\python -m pip install -r requirements.txt
+.venv\Scripts\pytest -q
 
 ---
 

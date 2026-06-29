@@ -108,6 +108,45 @@ select {
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
+.status-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.status-box {
+  min-width: 160px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.status-title {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.status-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-top: 6px;
+}
+
+.status-arrow {
+  font-size: 1.4rem;
+  color: #9ca3af;
+}
+
+.status-box-discarded {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #7f1d1d;
+  display: inline-block;
+  width: 120px;
+}
+
 .card {
   padding: 18px;
   border: 1px solid #e5e7eb;

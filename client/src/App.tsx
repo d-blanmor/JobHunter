@@ -2,6 +2,7 @@ import { Route, Routes, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import SettingsPage from './pages/SettingsPage';
 import LocationsPage from './pages/LocationsPage';
+import JobSpecCreate from './pages/JobSpecCreate';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/locations" element={<LocationsPage />} />
+          <Route path="/job-specs/new" element={<JobSpecCreate />} />
         </Routes>
       </main>
     </div>

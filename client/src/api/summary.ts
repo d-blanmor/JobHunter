@@ -37,3 +37,27 @@ export async function getJobSpecCounts(): Promise<Counts> {
     discarded: Array.isArray(d) ? d.length : 0,
   };
 }
+
+export async function listReceivedJobSpecs() {
+  const res = await fetch(`${API_BASE}/repository/job-specs/received`);
+  if (!res.ok) throw new Error('Failed to load received specs');
+  return res.json();
+}
+
+export async function listAppliedJobSpecs() {
+  const res = await fetch(`${API_BASE}/repository/job-specs/applied`);
+  if (!res.ok) throw new Error('Failed to load applied specs');
+  return res.json();
+}
+
+export async function listInterviewJobSpecs() {
+  const res = await fetch(`${API_BASE}/repository/job-specs/interview`);
+  if (!res.ok) throw new Error('Failed to load interview specs');
+  return res.json();
+}
+
+export async function listDiscardedJobSpecs() {
+  const res = await fetch(`${API_BASE}/repository/job-specs/discarded`);
+  if (!res.ok) throw new Error('Failed to load discarded specs');
+  return res.json();
+}

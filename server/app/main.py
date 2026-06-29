@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 
 from app.database import get_session, init_db
@@ -30,6 +31,13 @@ from app.schemas import (
 
 app = FastAPI(title="JobHunter API", version="0.1.0")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def on_startup() -> None:

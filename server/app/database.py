@@ -1,12 +1,17 @@
+from app.config import conf_dbtype, conf_db
+
 from collections.abc import Generator
 
 from sqlmodel import Session, SQLModel, create_engine, select
 
 from app.models import LuLocation, LuRoleType, LuWorkModel, LuBenefit
 
-DATABASE_URL = "sqlite:///./jobhunter.db"
-engine = create_engine(DATABASE_URL, echo=False)
+if(conf_dbtype() == "sqlite"):
+    DATABASE_URL = f"sqlite:///{conf_db()}"
+else:
+    DATABASE_URL = f"sqlite:///{conf_db()}"
 
+engine = create_engine(DATABASE_URL, echo=False)
 
 def init_db() -> None:
     SQLModel.metadata.create_all(engine)
@@ -41,7 +46,6 @@ def init_db() -> None:
             session.add(benefit)
             session.flush()
             session.commit()
-
 
 def get_session() -> Generator[Session, None, None]:
     with Session(engine) as session:

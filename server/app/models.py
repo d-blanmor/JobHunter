@@ -1,8 +1,19 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, SQLModel, Relationship
 
+
+class LnkJobSpecBenefit(SQLModel, table=True):
+    __tablename__ = "lnk_jobspec_benefits"
+    JobSpecId: int = Field(foreign_key="job_specs.Id", primary_key=True)
+    BenefitId: int = Field(foreign_key="lu_benefits.Id", primary_key=True)
+    Notes: Optional[str] = None
+    Order: int = 0
+    IsActive: bool = True
+
+    JobSpec: "JobSpec" = Relationship(back_populates="benefit_links")
+    Benefit: "LuBenefit" = Relationship(back_populates="jobspec_links")
 
 class LuLocation(SQLModel, table=True):
     __tablename__ = "lu_locations"
@@ -12,14 +23,12 @@ class LuLocation(SQLModel, table=True):
     IsActive: bool = True
     Order: int = 0
 
-
 class LuRoleType(SQLModel, table=True):
     __tablename__ = "lu_role_types"
     Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
     Name: str
     IsActive: bool = True
     Order: int = 0
-
 
 class LuWorkModel(SQLModel, table=True):
     __tablename__ = "lu_work_models"
@@ -28,7 +37,6 @@ class LuWorkModel(SQLModel, table=True):
     IsActive: bool = True
     Order: int = 0
 
-
 class LuBenefit(SQLModel, table=True):
     __tablename__ = "lu_benefits"
     Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
@@ -36,6 +44,7 @@ class LuBenefit(SQLModel, table=True):
     IsActive: bool = True
     Order: int = 0
 
+    jobspec_links: list[LnkJobSpecBenefit] = Relationship(back_populates="Benefit")
 
 class Source(SQLModel, table=True):
     __tablename__ = "sources"
@@ -45,14 +54,12 @@ class Source(SQLModel, table=True):
     Details: Optional[str] = None
     IsActive: bool = True
 
-
 class PlaceOfWork(SQLModel, table=True):
     __tablename__ = "places_of_work"
     Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
     LocationId: int = Field(foreign_key="lu_locations.Id")
     Address: Optional[str] = None
     IsActive: bool = True
-
 
 class Contact(SQLModel, table=True):
     __tablename__ = "contacts"
@@ -63,7 +70,6 @@ class Contact(SQLModel, table=True):
     Details: Optional[str] = None
     IsActive: bool = True
 
-
 class Application(SQLModel, table=True):
     __tablename__ = "applications"
     Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
@@ -72,7 +78,6 @@ class Application(SQLModel, table=True):
     Discarded: Optional[datetime] = None
     Notes: Optional[str] = None
     IsActive: bool = True
-
 
 class JobSpec(SQLModel, table=True):
     __tablename__ = "job_specs"
@@ -92,6 +97,7 @@ class JobSpec(SQLModel, table=True):
     ApplicationId: Optional[int] = Field(default=None, foreign_key="applications.Id")
     IsActive: bool = True
 
+    benefit_links: list[LnkJobSpecBenefit] = Relationship(back_populates="JobSpec")
 
 class Interview(SQLModel, table=True):
     __tablename__ = "interviews"
@@ -104,11 +110,7 @@ class Interview(SQLModel, table=True):
     Feedback: Optional[str] = None
     IsActive: bool = True
 
-
-class LnkJobSpecBenefit(SQLModel, table=True):
-    __tablename__ = "lnk_job_spec_benefits"
-    JobSpecId: int = Field(foreign_key="job_specs.Id", primary_key=True)
-    BenefitId: int = Field(foreign_key="lu_benefits.Id", primary_key=True)
-    Notes: Optional[str] = None
-    Order: int = 0
-    IsActive: bool = True
+#class HeroTeamView(SQLModel):
+#    name: str
+#    secret_name: str
+#    age: Optional[int] = None

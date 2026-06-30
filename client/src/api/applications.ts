@@ -1,7 +1,7 @@
 import { API_BASE } from '../config';
 
 export async function updateApplication(payload: any) {
-  const res = await fetch(`${API_BASE}/repository/applications`, {
+  const res = await fetch(`${API_BASE}/applications`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -11,7 +11,7 @@ export async function updateApplication(payload: any) {
 }
 
 export async function getApplicationsByJobSpec(jobSpecId: number) {
-  const res = await fetch(`${API_BASE}/repository/applications/by-job-spec/${jobSpecId}`);
+  const res = await fetch(`${API_BASE}/applications/by-job-spec/${jobSpecId}`);
   if (!res.ok) throw new Error('Failed to load applications by job spec');
   return res.json();
 }

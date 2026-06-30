@@ -10,11 +10,11 @@ type Counts = {
 
 export async function getJobSpecCounts(): Promise<Counts> {
   const [rRes, aRes, iRes, oRes, dRes] = await Promise.all([
-    fetch(`${API_BASE}/repository/job-specs/received`),
-    fetch(`${API_BASE}/repository/job-specs/applied`),
-    fetch(`${API_BASE}/repository/job-specs/interview`),
-    fetch(`${API_BASE}/repository/job-specs/offers`),
-    fetch(`${API_BASE}/repository/job-specs/discarded`),
+    fetch(`${API_BASE}/logic/stage/received`),
+    fetch(`${API_BASE}/logic/stage/applied`),
+    fetch(`${API_BASE}/logic/stage/interview`),
+    fetch(`${API_BASE}/logic/stage/offer`),
+    fetch(`${API_BASE}/logic/stage/discarded`),
   ]);
 
   if (!rRes.ok) throw new Error('Failed to load received specs');
@@ -39,25 +39,25 @@ export async function getJobSpecCounts(): Promise<Counts> {
 }
 
 export async function listReceivedJobSpecs() {
-  const res = await fetch(`${API_BASE}/repository/job-specs/received`);
+  const res = await fetch(`${API_BASE}/logic/stage/received`);
   if (!res.ok) throw new Error('Failed to load received specs');
   return res.json();
 }
 
 export async function listAppliedJobSpecs() {
-  const res = await fetch(`${API_BASE}/repository/job-specs/applied`);
+  const res = await fetch(`${API_BASE}/logic/stage/applied`);
   if (!res.ok) throw new Error('Failed to load applied specs');
   return res.json();
 }
 
 export async function listInterviewJobSpecs() {
-  const res = await fetch(`${API_BASE}/repository/job-specs/interview`);
+  const res = await fetch(`${API_BASE}/logic/stage/interview`);
   if (!res.ok) throw new Error('Failed to load interview specs');
   return res.json();
 }
 
 export async function listDiscardedJobSpecs() {
-  const res = await fetch(`${API_BASE}/repository/job-specs/discarded`);
+  const res = await fetch(`${API_BASE}/logic/stage/discarded`);
   if (!res.ok) throw new Error('Failed to load discarded specs');
   return res.json();
 }

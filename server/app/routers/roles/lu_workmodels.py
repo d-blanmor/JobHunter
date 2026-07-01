@@ -11,8 +11,7 @@ from app.dependencies import _get_entity_or_404, _upsert_entity, _soft_delete_en
 
 router = APIRouter()
 
-@router.get(conf_pathname()+"/v1/roles/lookup/work-models"
-"lookup/work-models", response_model=list[StandardLookupBase])
+@router.get(conf_pathname()+"/v1/roles/lookup/work-models", response_model=list[StandardLookupBase])
 def list_work_models(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[StandardLookupBase]:
     statement = select(rolesLuWorkModel)
     if active_only:

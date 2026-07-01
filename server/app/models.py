@@ -4,113 +4,225 @@ from typing import Optional
 from sqlmodel import Field, SQLModel, Relationship
 
 
-class LnkJobSpecBenefit(SQLModel, table=True):
-    __tablename__ = "lnk_jobspec_benefits"
-    JobSpecId: int = Field(foreign_key="job_specs.Id", primary_key=True)
-    BenefitId: int = Field(foreign_key="lu_benefits.Id", primary_key=True)
+class tag (SQLModel, table=True):
+    __tablename__ = "tags"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
+    Name: str
+    Scope: Optional[str] = None
+    IsActive: bool = True
+    Order: int = 0
+
+    JobSpecs: list["rolesLnkJobSpecTags"] = Relationship(back_populates="Tag")
+
+class rolesLnkJobSpecBenefit(SQLModel, table=True):
+    __tablename__ = "roles_lnk_jobspec_benefits"
+    JobSpecId: int = Field(
+        primary_key=True,
+        foreign_key="roles_job_specs.Id", 
+    )
+    LuBenefitId: int = Field(
+        primary_key=True,
+        foreign_key="roles_lu_benefits.Id", 
+    )
     Notes: Optional[str] = None
     Order: int = 0
-    IsActive: bool = True
 
-    JobSpec: "JobSpec" = Relationship(back_populates="benefit_links")
-    Benefit: "LuBenefit" = Relationship(back_populates="jobspec_links")
+    JobSpec: Optional["rolesJobSpec"] = Relationship(back_populates="Benefits")
+    Benefit: Optional["rolesLuBenefit"] = Relationship(back_populates="jobspec_links")
 
-class LuLocation(SQLModel, table=True):
-    __tablename__ = "lu_locations"
-    Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
+class rolesLnkJobSpecTags(SQLModel, table=True):
+    __tablename__ = "roles_lnk_jobspec_tags"
+    JobSpecId: int = Field(
+        primary_key=True,
+        foreign_key="roles_job_specs.Id", 
+    )
+    TagId: int = Field(
+        primary_key=True,
+        foreign_key="tags.Id", 
+    )
+    Order: int = 0
+
+    JobSpec: Optional["rolesJobSpec"] = Relationship(back_populates="Tags")
+    Tag: Optional["tag"] = Relationship(back_populates="JobSpecs")
+
+class rolesLuLocation(SQLModel, table=True):
+    __tablename__ = "roles_lu_locations"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
     Country: str
     City: Optional[str] = None
     IsActive: bool = True
     Order: int = 0
 
-class LuRoleType(SQLModel, table=True):
-    __tablename__ = "lu_role_types"
-    Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
+    PlacesOfWork: list["rolesPlaceOfWork"] = Relationship(back_populates="Location")
+
+class rolesLuRoleType(SQLModel, table=True):
+    __tablename__ = "roles_lu_role_types"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
+    Name: str
+    IsActive: bool = True
+    Order: int = 0
+    
+    JobSpecs: list["rolesJobSpec"] = Relationship(back_populates="RoleType")
+
+class rolesLuWorkModel(SQLModel, table=True):
+    __tablename__ = "roles_lu_work_models"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
     Name: str
     IsActive: bool = True
     Order: int = 0
 
-class LuWorkModel(SQLModel, table=True):
-    __tablename__ = "lu_work_models"
-    Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
+    JobSpecs: list["rolesJobSpec"] = Relationship(back_populates="WorkModel")
+
+class rolesLuBenefit(SQLModel, table=True):
+    __tablename__ = "roles_lu_benefits"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
     Name: str
     IsActive: bool = True
     Order: int = 0
 
-class LuBenefit(SQLModel, table=True):
-    __tablename__ = "lu_benefits"
-    Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
-    Name: str
-    IsActive: bool = True
-    Order: int = 0
+    jobspec_links: list["rolesLnkJobSpecBenefit"] = Relationship(back_populates="Benefit")
 
-    jobspec_links: list[LnkJobSpecBenefit] = Relationship(back_populates="Benefit")
-
-class Source(SQLModel, table=True):
-    __tablename__ = "sources"
-    Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
+class rolesSource(SQLModel, table=True):
+    __tablename__ = "roles_sources"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
     Name: str
     PortalURL: Optional[str] = None
     Details: Optional[str] = None
     IsActive: bool = True
+    JobSpecs: list["rolesJobSpec"] = Relationship(back_populates="Source")
 
-class PlaceOfWork(SQLModel, table=True):
-    __tablename__ = "places_of_work"
-    Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
-    LocationId: int = Field(foreign_key="lu_locations.Id")
+class rolesPlaceOfWork(SQLModel, table=True):
+    __tablename__ = "roles_places_of_work"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
+    LocationId: int = Field(foreign_key="roles_lu_locations.Id")
     Address: Optional[str] = None
     IsActive: bool = True
 
-class Contact(SQLModel, table=True):
-    __tablename__ = "contacts"
-    Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
+    Location: Optional["rolesLuLocation"] = Relationship(back_populates="PlacesOfWork")
+    JobSpecs: list["rolesJobSpec"] = Relationship(back_populates="PlaceOfWork")
+
+class rolesContact(SQLModel, table=True):
+    __tablename__ = "roles_contacts"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
     Name: str
     Email: Optional[str] = None
     Phone: Optional[str] = None
     Details: Optional[str] = None
     IsActive: bool = True
 
-class Application(SQLModel, table=True):
-    __tablename__ = "applications"
-    Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
+    JobSpecs: list["rolesJobSpec"] = Relationship(back_populates="Contact")
+    Interviews: list["rolesInterview"] = Relationship(back_populates="Contact")
+
+class rolesApplication(SQLModel, table=True):
+    __tablename__ = "roles_applications"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
     Applied: datetime
     Confirmed: Optional[datetime] = None
     Discarded: Optional[datetime] = None
     Notes: Optional[str] = None
     IsActive: bool = True
 
-class JobSpec(SQLModel, table=True):
-    __tablename__ = "job_specs"
-    Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
-    Position: str
+    JobSpecs: list["rolesJobSpec"] = Relationship(back_populates="Application")
+    Interviews: list["rolesInterview"] = Relationship(back_populates="Application")
+
+class rolesJobSpec(SQLModel, table=True):
+    __tablename__ = "roles_job_specs"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
+    Position: str = Field(index=True)
     Company: Optional[str] = None
-    SourceId: Optional[int] = Field(default=None, foreign_key="sources.Id")
+    SourceId: Optional[int] = Field(
+        default=None, 
+        foreign_key="roles_sources.Id", 
+        index=True
+    )
     Link: Optional[str] = None
     Description: Optional[str] = None
-    PlaceOfWorkId: Optional[int] = Field(default=None, foreign_key="places_of_work.Id")
-    WorkModelId: Optional[int] = Field(default=None, foreign_key="lu_work_models.Id")
-    RoleTypeId: Optional[int] = Field(default=None, foreign_key="lu_role_types.Id")
+    PlaceOfWorkId: Optional[int] = Field(
+        default=None, 
+        foreign_key="roles_places_of_work.Id", 
+        index=True
+    )
+    WorkModelId: Optional[int] = Field(
+        default=None, 
+        foreign_key="roles_lu_work_models.Id", 
+        index=True
+    )
+    RoleTypeId: Optional[int] = Field(
+        default=None, 
+        foreign_key="roles_lu_role_types.Id", 
+        index=True
+    )
     SalaryExpectation: Optional[str] = None
-    ContactId: Optional[int] = Field(default=None, foreign_key="contacts.Id")
+    ContactId: Optional[int] = Field(
+        default=None, 
+        foreign_key="roles_contacts.Id", 
+        index=True
+    )
     Published: Optional[datetime] = None
     Created: datetime = Field(default_factory=datetime.utcnow)
-    ApplicationId: Optional[int] = Field(default=None, foreign_key="applications.Id")
+    ApplicationId: Optional[int] = Field(
+        default=None, 
+        foreign_key="roles_applications.Id", 
+        index=True
+    )
     IsActive: bool = True
 
-    benefit_links: list[LnkJobSpecBenefit] = Relationship(back_populates="JobSpec")
+    Source: Optional["rolesSource"] = Relationship(back_populates="JobSpecs")
+    PlaceOfWork: Optional["rolesPlaceOfWork"] = Relationship(back_populates="JobSpecs")
+    WorkModel: Optional["rolesLuWorkModel"] = Relationship(back_populates="JobSpecs")
+    RoleType: Optional["rolesLuRoleType"] = Relationship(back_populates="JobSpecs")
+    Contact: Optional["rolesContact"] = Relationship(back_populates="JobSpecs")
+    Application: Optional["rolesApplication"] = Relationship(back_populates="JobSpecs")
 
-class Interview(SQLModel, table=True):
-    __tablename__ = "interviews"
-    Id: int = Field(primary_key=True, sa_column_kwargs={"autoincrement": True})
-    ApplicationId: int = Field(foreign_key="applications.Id")
+    Benefits: list["rolesLnkJobSpecBenefit"] = Relationship(back_populates="JobSpec")
+    Tags: list["rolesLnkJobSpecTags"] = Relationship(back_populates="JobSpec")
+
+class rolesInterview(SQLModel, table=True):
+    __tablename__ = "roles_interviews"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
+    ApplicationId: int = Field(foreign_key="roles_applications.Id")
     Scheduled: Optional[datetime] = None
-    ContactId: Optional[int] = Field(default=None, foreign_key="contacts.Id")
+    ContactId: Optional[int] = Field(
+        default=None, 
+        foreign_key="roles_contacts.Id"
+    )
     Notes: Optional[str] = None
     Outcome: Optional[str] = None
     Feedback: Optional[str] = None
     IsActive: bool = True
 
-#class HeroTeamView(SQLModel):
-#    name: str
-#    secret_name: str
-#    age: Optional[int] = None
+    Application: Optional["rolesApplication"] = Relationship(back_populates="Interviews")
+    Contact: Optional["rolesContact"] = Relationship(back_populates="Interviews")

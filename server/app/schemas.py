@@ -4,79 +4,56 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class LookupBase(BaseModel):
+class TagBase(BaseModel):
+    Id: Optional[int] = None
     Name: str
+    Scope: Optional[str] = None
     IsActive: bool = True
     Order: int = 0
 
-class LookupRead(LookupBase):
+class LookupBase(BaseModel):
     Id: Optional[int] = None
+    IsActive: bool = True
+    Order: int = 0
 
-class LookupCreate(LookupBase):
-    pass
+class StandardLookupBase(LookupBase):
+    Name: str
 
-class LuLocationBase(BaseModel):
-    Country: Optional[str] = None
+class LuLocationBase(LookupBase):
+    Country: str
     City: Optional[str] = None
-    IsActive: bool = True
-    Order: int = 0
-
-class LuLocationRead(LuLocationBase):
-    Id: Optional[int] = None
-
-class LuLocationCreate(LuLocationBase):
-    pass
 
 class SourceBase(BaseModel):
+    Id: Optional[int] = None
     Name: str
     PortalURL: Optional[str] = None
     Details: Optional[str] = None
     IsActive: bool = True
 
-class SourceCreate(SourceBase):
-    pass
-
-class SourceRead(SourceBase):
-    Id: Optional[int] = None
-
 class PlaceOfWorkBase(BaseModel):
+    Id: Optional[int] = None
     LocationId: int
     Address: Optional[str] = None
     IsActive: bool = True
 
-class PlaceOfWorkCreate(PlaceOfWorkBase):
-    pass
-
-class PlaceOfWorkRead(PlaceOfWorkBase):
-    Id: Optional[int] = None
-
 class ContactBase(BaseModel):
+    Id: Optional[int] = None
     Name: str
     Email: Optional[str] = None
     Phone: Optional[str] = None
     Details: Optional[str] = None
     IsActive: bool = True
 
-class ContactCreate(ContactBase):
-    pass
-
-class ContactRead(ContactBase):
-    Id: Optional[int] = None
-
 class ApplicationBase(BaseModel):
+    Id: Optional[int] = None
     Applied: datetime
     Confirmed: Optional[datetime] = None
     Discarded: Optional[datetime] = None
     Notes: Optional[str] = None
     IsActive: bool = True
 
-class ApplicationCreate(ApplicationBase):
-    pass
-
-class ApplicationRead(ApplicationBase):
-    Id: Optional[int] = None
-
 class JobSpecBase(BaseModel):
+    Id: Optional[int] = None
     Position: str
     Company: Optional[str] = None
     SourceId: Optional[int] = None
@@ -88,17 +65,12 @@ class JobSpecBase(BaseModel):
     SalaryExpectation: Optional[str] = None
     ContactId: Optional[int] = None
     Published: Optional[datetime] = None
+    Created: datetime
     ApplicationId: Optional[int] = None
     IsActive: bool = True
 
-class JobSpecCreate(JobSpecBase):
-    pass
-
-class JobSpecRead(JobSpecBase):
-    Id: Optional[int] = None
-    Created: datetime
-
 class InterviewBase(BaseModel):
+    Id: Optional[int] = None
     ApplicationId: int
     Scheduled: Optional[datetime] = None
     ContactId: Optional[int] = None
@@ -107,21 +79,13 @@ class InterviewBase(BaseModel):
     Feedback: Optional[str] = None
     IsActive: bool = True
 
-class InterviewCreate(InterviewBase):
-    pass
-
-class InterviewRead(InterviewBase):
-    Id: Optional[int] = None
-
 class LnkJobSpecBenefitBase(BaseModel):
     JobSpecId: int
     LuBenefitId: int
     Notes: Optional[str] = None
     Order: int = 0
-    IsActive: bool = True
 
-class LnkJobSpecBenefitCreate(LnkJobSpecBenefitBase):
-    pass
-
-class LnkJobSpecBenefitRead(LnkJobSpecBenefitBase):
-    pass
+class LnkJobSpecTagBase(BaseModel):
+    JobSpecId: int
+    TagId: int
+    Order: int = 0

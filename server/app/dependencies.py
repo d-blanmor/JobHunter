@@ -1,7 +1,7 @@
 from typing import Annotated, Any
 from fastapi import Header, HTTPException
 from pydantic import BaseModel
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 def _get_entity_or_404(session: Session, model: type[Any], entity_id: int) -> Any:
     entity = session.get(model, entity_id)
@@ -52,18 +52,27 @@ def _soft_delete_entity(session: Session, model: type[Any], entity_id: int) -> A
     session.refresh(entity)
     return entity
 
+def __get_link_key_columns(model: type[Any]) -> list[str]:
+    """
+    Return the names of the primary key columns for a link table model."""
+    return [col.key for col in model.__mapper__.primary_key]
+
 def _get_link_or_404(session: Session, model: type[Any], pk1: int | None = None, pk2: int | None = None) -> Any:
     """
     Return a link row identified by one or both foreign keys.
     If only one id is given, the first matching row is returned;
     if none exist → 404.
     """
-    pk_cols = [col.key for col in model.__mapper__.primary_key]
+    #pk_cols = [col.key for col in model.__mapper__.primary_key]
+    pk_cols = __get_link_key_columns(model)
+    pkey = getattr(model, pk_cols[0]).description
+    skey = getattr(model, pk_cols[1]).description
+    
     statement = select(model)
     if pk1 is not None:
-        statement = statement.where(model.pk_cols[0] == pk1)
+        statement = statement.where(pkey == pk1)
     if pk2 is not None:
-        statement = statement.where(model.pk_cols[1] == pk2)
+        statement = statement.where(skey == pk2)
 
     if pk1 is not None and pk2 is not None:
         entity = session.get(model, (pk1, pk2))
@@ -85,21 +94,21 @@ def _upsert_link(session: Session, model: type[Any], payload: BaseModel | dict[s
         if isinstance(payload, BaseModel)
         else payload
     )
-    pk_cols = [col.key for col in model.__mapper__.primary_key]
+    #pk_cols = [col.key for col in model.__mapper__.primary_key]
+    pk_cols = __get_link_key_columns(model)
+    pkey = getattr(model, pk_cols[0]).description
+    skey = getattr(model, pk_cols[1]).description
+    pval = data.get(pkey)
+    sval = data.get(skey)
 
-    #js_id = data.get(model.pk_cols[0])
-    #lb_id = data.get(model.pk_cols[1])
-    js_id = getattr(model, pk_cols[0])
-    lb_id = getattr(model, pk_cols[1])
-
-    if js_id is None or lb_id is None:
+    if pval is None or sval is None:
         raise HTTPException(
             status_code=400,
             detail="Both primary keys are required",
         )
 
     # Try to fetch existing link
-    entity = session.get(model, (js_id, lb_id))
+    entity = session.get(model, (pval, sval))
     if entity is not None:
         # Update existing record
         for key, value in data.items():
@@ -107,32 +116,39 @@ def _upsert_link(session: Session, model: type[Any], payload: BaseModel | dict[s
     else:
         # Create new record
         entity = model(**data)
-    
     session.add(entity)
     session.commit()
     session.refresh(entity)
     return entity
 
-
-
-def _soft_delete_link(session: Session, model: type[Any], pk1: int | None = None, pk2: int | None = None) -> list[Any]:
+def _delete_link(session: Session, model: type[Any], pk1: int | None = None, pk2: int | None = None) -> Any:
     """
-    Soft‑delete one or more link rows.
+    Delete one or more link rows.
     * If both ids are supplied → delete that single row.
     * If only one id is supplied → delete every row matching that id.
-    Returns the list of affected instances.
+    Returns the affected instance(s).
     """
     if pk1 is None and pk2 is None:
         raise HTTPException(
             status_code=400,
             detail="At least one identifier must be provided",
         )
-    pk_cols = [col.key for col in model.__mapper__.primary_key]
+
+    if pk1 is not None and pk2 is not None:
+        row = _get_link_or_404(session, model, pk1, pk2)
+        session.delete(row)
+        session.commit()
+        return row
+
+    pk_cols = __get_link_key_columns(model)
+    pkey = getattr(model, pk_cols[0]).description
+    skey = getattr(model, pk_cols[1]).description
+
     statement = select(model)
     if pk1 is not None:
-        statement = statement.where(model.pk_cols[0] == pk1)
+        statement = statement.where(pkey == pk1)
     if pk2 is not None:
-        statement = statement.where(model.pk_cols[1] == pk2)
+        statement = statement.where(skey == pk2)
 
     rows = session.exec(statement).all()
     if not rows:
@@ -142,12 +158,8 @@ def _soft_delete_link(session: Session, model: type[Any], pk1: int | None = None
         )
 
     for row in rows:
-        row.IsActive = False
-        session.add(row)
-    session.commit()
+        session.delete(row)
 
-    # refresh to reflect the new IsActive flag
-    for row in rows:
-        session.refresh(row)
+    session.commit()
 
     return rows

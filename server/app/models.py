@@ -11,7 +11,7 @@ class tag (SQLModel, table=True):
         sa_column_kwargs={"autoincrement": True}
     )
     Name: str
-    Scope: Optional[str] = None
+    Context: Optional[str] = None
     IsActive: bool = True
     Order: int = 0
 

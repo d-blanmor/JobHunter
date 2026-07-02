@@ -7,7 +7,7 @@ from pydantic import BaseModel
 class TagBase(BaseModel):
     Id: Optional[int] = None
     Name: str
-    Scope: Optional[str] = None
+    Context: Optional[str] = None
     IsActive: bool = True
     Order: int = 0
 

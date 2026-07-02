@@ -96,12 +96,12 @@ new_JobSpec = {
     "ContactId": None,
     "Published": None,
     "Created": datetime.utcnow().isoformat(),
-    "ApplicationId": None,
     "IsActive": True,
 }
 
 new_Application = {
     "Id": None,
+    "JobSpecId": None,
     "Applied": datetime.utcnow().isoformat(),
     "Confirmed": None,
     "Discarded": None,
@@ -112,7 +112,7 @@ new_Application = {
 new_Interview = {
     "Id": None,
     "ApplicationId": None,
-    "Scheduled": timedelta(days=+random.randint(1, 30), seconds=68400),
+    "Scheduled": datetime.utcnow().isoformat(),
     "ContactId": None,
     "Notes": random_text("Int"),
     "Outcome": None,
@@ -143,8 +143,6 @@ def test_RoleType_create_update() -> None:
     assert response.json()["Name"] != new_RoleType["Name"]
 
 
-
-
 def test_jobspec_create_update() -> None:
     API_COMMAND = "/roles/job-specs"
     response = client.post(f"{API_PREFIX}{API_COMMAND}", json=new_JobSpec)
@@ -155,4 +153,3 @@ def test_jobspec_create_update() -> None:
     response = client.post(f"{API_PREFIX}{API_COMMAND}", json=item)
     assert response.status_code == 200, response.text
     assert response.json()["Position"] != new_JobSpec["Position"]
-

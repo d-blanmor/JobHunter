@@ -12,32 +12,28 @@ from app.dependencies import _get_link_or_404, _upsert_link, _delete_link
 router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/roles/lnk/jobspec-benefits", response_model=list[LnkJobSpecBenefitBase])
-def list_jobspecs_benefits(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[LnkJobSpecBenefitBase]:
-    statement = select(rolesLnkJobSpecBenefit)
-    if active_only:
-        statement = statement.where(rolesLnkJobSpecBenefit.IsActive == True)
-    return session.exec(statement).all()
+def list_jobspecs_benefits(*, session: Session = Depends(get_session)) -> list[LnkJobSpecBenefitBase]:
+    #statement = select(rolesLnkJobSpecBenefit)
+    #if active_only:
+    #    statement = statement.where(rolesLnkJobSpecBenefit.IsActive == True)
+    #return session.exec(statement).all()
+    return _get_link_or_404(session, rolesLnkJobSpecBenefit, None, None)
 
 @router.get(conf_pathname()+"/v1/roles/lnk/jobspec-benefits/{jobspec_id}/{benefit_id}", response_model=LnkJobSpecBenefitBase)
 def get_jobspec_benefit(jobspec_id: int, benefit_id: int, session: Session = Depends(get_session)) -> LnkJobSpecBenefitBase:
-    link = session.get(rolesLnkJobSpecBenefit, (jobspec_id, benefit_id))
-    if not link:
-        raise HTTPException(status_code=404, detail="Job spec benefit link not found")
-    return link
+    #link = session.get(rolesLnkJobSpecBenefit, (jobspec_id, benefit_id))
+    #if not link:
+    #    raise HTTPException(status_code=404, detail="Job spec benefit link not found")
+    #return link
+    return _get_link_or_404(session, rolesLnkJobSpecBenefit, jobspec_id, benefit_id)
 
-@router.get(conf_pathname()+"/v1/roles/lnk/jobspec-benefits/by-job-spec-id/{jobspec_id}", response_model=list[LnkJobSpecBenefitBase])
-def get_jobspec_benefits(jobspec_id: int, benefit_id: int, session: Session = Depends(get_session)) -> LnkJobSpecBenefitBase:
-    link = session.get(rolesLnkJobSpecBenefit, (jobspec_id, None))
-    if not link:
-        raise HTTPException(status_code=404, detail="Job spec benefit link not found")
-    return link
+@router.get(conf_pathname()+"/v1/roles/lnk/jobspec-benefits-byjobspec/{jobspec_id}", response_model=list[LnkJobSpecBenefitBase])
+def get_jobspec_benefits(jobspec_id: int, session: Session = Depends(get_session)) -> LnkJobSpecBenefitBase:
+    return _get_link_or_404(session, rolesLnkJobSpecBenefit, jobspec_id, None)
 
-@router.get(conf_pathname()+"/v1/roles/lnk/jobspec-benefits/by-benefit-id/{benefit_id}", response_model=list[LnkJobSpecBenefitBase])
+@router.get(conf_pathname()+"/v1/roles/lnk/jobspec-benefits-bybenefit/{benefit_id}", response_model=list[LnkJobSpecBenefitBase])
 def get_jobspecs_benefit(benefit_id: int, session: Session = Depends(get_session)) -> LnkJobSpecBenefitBase:
-    link = session.get(rolesLnkJobSpecBenefit, (None, benefit_id))
-    if not link:
-        raise HTTPException(status_code=404, detail="Job spec benefit link not found")
-    return link
+    return _get_link_or_404(session, rolesLnkJobSpecBenefit, None, benefit_id)
 
 @router.post(conf_pathname()+"/v1/roles/lnk/jobspec-benefits", response_model=LnkJobSpecBenefitBase)
 def create_or_update_jobspec_benefit(payload: LnkJobSpecBenefitBase, session: Session = Depends(get_session)) -> LnkJobSpecBenefitBase:

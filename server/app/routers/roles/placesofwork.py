@@ -13,10 +13,7 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/roles/places-of-work", response_model=list[PlaceOfWorkBase])
 def list_places_of_work(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[PlaceOfWorkBase]:
-    statement = select(rolesPlaceOfWork)
-    if active_only:
-        statement = statement.where(rolesPlaceOfWork.IsActive == True)
-    return session.exec(statement).all()
+    return _get_entity_or_404(session, rolesPlaceOfWork, None, active_only)
 
 @router.get(conf_pathname()+"/v1/roles/places-of-work/{place_of_work_id}", response_model=PlaceOfWorkBase)
 def get_place_of_work(place_of_work_id: int, session: Session = Depends(get_session)) -> PlaceOfWorkBase:

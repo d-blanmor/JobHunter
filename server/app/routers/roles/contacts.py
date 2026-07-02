@@ -13,10 +13,7 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/roles/contacts", response_model=list[ContactBase])
 def list_contacts(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[ContactBase]:
-    statement = select(rolesContact)
-    if active_only:
-        statement = statement.where(rolesContact.IsActive == True)
-    return session.exec(statement).all()
+    return _get_entity_or_404(session, rolesContact, None, active_only)
 
 @router.get(conf_pathname()+"/v1/roles/contacts/{contact_id}", response_model=ContactBase)
 def get_contact(contact_id: int, session: Session = Depends(get_session)) -> ContactBase:

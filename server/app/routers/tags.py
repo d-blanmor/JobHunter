@@ -2,7 +2,7 @@ from typing import Any
 from app.config import conf_pathname
 
 from fastapi import APIRouter, Depends, Query
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from ..dependencies import _get_tag_or_404, _upsert_tag, _soft_delete_tag
 from app.database import get_session

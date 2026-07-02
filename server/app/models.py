@@ -143,13 +143,18 @@ class rolesApplication(SQLModel, table=True):
         primary_key=True, 
         sa_column_kwargs={"autoincrement": True}
     )
+    JobSpecId: int = Field(
+        default=None, 
+        foreign_key="roles_job_specs.Id", 
+        index=True
+    )
     Applied: datetime
     Confirmed: Optional[datetime] = None
     Discarded: Optional[datetime] = None
     Notes: Optional[str] = None
     IsActive: bool = True
 
-    JobSpecs: list["rolesJobSpec"] = Relationship(back_populates="Application")
+    JobSpec: "rolesJobSpec" = Relationship(back_populates="Applications")
     Interviews: list["rolesInterview"] = Relationship(back_populates="Application")
 
 class rolesJobSpec(SQLModel, table=True):
@@ -190,11 +195,6 @@ class rolesJobSpec(SQLModel, table=True):
     )
     Published: Optional[datetime] = None
     Created: datetime = Field(default_factory=datetime.utcnow)
-    ApplicationId: Optional[int] = Field(
-        default=None, 
-        foreign_key="roles_applications.Id", 
-        index=True
-    )
     IsActive: bool = True
 
     Source: Optional["rolesSource"] = Relationship(back_populates="JobSpecs")
@@ -202,7 +202,7 @@ class rolesJobSpec(SQLModel, table=True):
     WorkModel: Optional["rolesLuWorkModel"] = Relationship(back_populates="JobSpecs")
     RoleType: Optional["rolesLuRoleType"] = Relationship(back_populates="JobSpecs")
     Contact: Optional["rolesContact"] = Relationship(back_populates="JobSpecs")
-    Application: Optional["rolesApplication"] = Relationship(back_populates="JobSpecs")
+    Applications: list["rolesApplication"] = Relationship(back_populates="JobSpec")
 
     Benefits: list["rolesLnkJobSpecBenefit"] = Relationship(back_populates="JobSpec")
     Tags: list["rolesLnkJobSpecTags"] = Relationship(back_populates="JobSpec")

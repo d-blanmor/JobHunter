@@ -13,10 +13,7 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/roles/applications", response_model=list[ApplicationBase])
 def list_applications(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[ApplicationBase]:
-    statement = select(rolesApplication)
-    if active_only:
-        statement = statement.where(rolesApplication.IsActive == True)
-    return session.exec(statement).all()
+    return _get_entity_or_404(session, rolesApplication, None, active_only)
 
 @router.get(conf_pathname()+"/v1/roles/applications/{application_id}", response_model=ApplicationBase)
 def get_application(application_id: int, session: Session = Depends(get_session)) -> ApplicationBase:

@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 
+from .routers.workflows import stages
+
 from .routers import (
     initiate,
     tags,
@@ -17,7 +19,6 @@ from .routers.roles import (
     lnk_jobspec_tags, 
     placesofwork, 
     sources,
-    workflow_stages,
 )
 
 app = FastAPI(title="JobHunter API", version="0.1.0")
@@ -36,4 +37,4 @@ app.include_router(jobspecs.router)
 app.include_router(interviews.router)
 app.include_router(lnk_jobspec_benefits.router)
 app.include_router(lnk_jobspec_tags.router)
-app.include_router(workflow_stages.router)
+app.include_router(stages.router)

@@ -46,6 +46,7 @@ class ContactBase(BaseModel):
 
 class ApplicationBase(BaseModel):
     Id: Optional[int] = None
+    JobSpecId: int
     Applied: datetime
     Confirmed: Optional[datetime] = None
     Discarded: Optional[datetime] = None
@@ -66,7 +67,6 @@ class JobSpecBase(BaseModel):
     ContactId: Optional[int] = None
     Published: Optional[datetime] = None
     Created: datetime
-    ApplicationId: Optional[int] = None
     IsActive: bool = True
 
 class InterviewBase(BaseModel):

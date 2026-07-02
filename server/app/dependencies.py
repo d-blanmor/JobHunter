@@ -62,11 +62,18 @@ def _soft_delete_tag(session: Session, model: type[Any], tag_id: int) -> Any:
     session.refresh(tag)
     return tag
 
-def _get_entity_or_404(session: Session, model: type[Any], entity_id: int) -> Any:
-    entity = session.get(model, entity_id)
-    if not entity:
+def _get_entity_or_404(session: Session, model: type[Any], entity_id: int | None = None, IsActive: bool | None = None) -> Any:
+    statement = select(model)
+    if entity_id is not None:
+        entities = session.get(model, (entity_id))
+    else:
+        if IsActive:
+            statement = statement.where(model.IsActive == True)
+        statement = statement.order_by(model.Id.desc())
+        entities = session.exec(statement).all()
+    if not entities:
         raise HTTPException(status_code=404, detail=f"{model.__name__} not found")
-    return entity
+    return entities
 
 def _upsert_entity(session: Session, model: type[Any], payload: dict[str, Any]) -> Any:
     """
@@ -122,25 +129,22 @@ def _get_link_or_404(session: Session, model: type[Any], pk1: int | None = None,
     If only one id is given, the first matching row is returned;
     if none exist → 404.
     """
-    #pk_cols = [col.key for col in model.__mapper__.primary_key]
     pk_cols = __get_link_key_columns(model)
-    pkey = getattr(model, pk_cols[0]).description
-    skey = getattr(model, pk_cols[1]).description
-    
-    statement = select(model)
-    if pk1 is not None:
-        statement = statement.where(pkey == pk1)
-    if pk2 is not None:
-        statement = statement.where(skey == pk2)
+    pkey = getattr(model, pk_cols[0])
+    skey = getattr(model, pk_cols[1])
 
     if pk1 is not None and pk2 is not None:
-        entity = session.get(model, (pk1, pk2))
+        links = session.get(model, (pk1, pk2))
     else:
-        entity = session.exec(statement).first()
-
-    if not entity:
+        statement = select(model)
+        if pk1 is not None:
+            statement = statement.where(pkey == pk1)
+        if pk2 is not None:
+            statement = statement.where(skey == pk2)
+        links = session.exec(statement).all()
+    if not links:
         raise HTTPException(status_code=404, detail=f"{model.__name__} link not found")
-    return entity
+    return links
 
 def _upsert_link(session: Session, model: type[Any], payload: BaseModel | dict[str, Any]) -> Any:
     """
@@ -153,12 +157,9 @@ def _upsert_link(session: Session, model: type[Any], payload: BaseModel | dict[s
         if isinstance(payload, BaseModel)
         else payload
     )
-    #pk_cols = [col.key for col in model.__mapper__.primary_key]
     pk_cols = __get_link_key_columns(model)
-    pkey = getattr(model, pk_cols[0]).description
-    skey = getattr(model, pk_cols[1]).description
-    pval = data.get(pkey)
-    sval = data.get(skey)
+    pval = data.get(pk_cols[0])
+    sval = data.get(pk_cols[1])
 
     if pval is None or sval is None:
         raise HTTPException(
@@ -200,8 +201,8 @@ def _delete_link(session: Session, model: type[Any], pk1: int | None = None, pk2
         return row
 
     pk_cols = __get_link_key_columns(model)
-    pkey = getattr(model, pk_cols[0]).description
-    skey = getattr(model, pk_cols[1]).description
+    pkey = getattr(model, pk_cols[0])
+    skey = getattr(model, pk_cols[1])
 
     statement = select(model)
     if pk1 is not None:
@@ -222,3 +223,82 @@ def _delete_link(session: Session, model: type[Any], pk1: int | None = None, pk2
     session.commit()
 
     return rows
+
+#####################
+#  Workflow logic
+from app.schemas import JobSpecBase
+from app.models import rolesJobSpec, rolesApplication, rolesInterview
+
+def _workflow_get_received(session: Session) -> list[JobSpecBase]:
+    statement = select(rolesJobSpec).distinct()
+    statement = statement.join(
+                    rolesApplication, 
+                    rolesApplication.JobSpecId == rolesJobSpec.Id, 
+                    isouter=True
+                )
+    statement = statement.where(rolesApplication.Id == None)  # JobSpec has not been applied
+    statement = statement.order_by(rolesJobSpec.Created.desc())
+    return session.exec(statement).all()
+
+def _workflow_get_applied(session: Session) -> list[JobSpecBase]:
+    statement = select(rolesJobSpec).distinct()
+    statement = statement.join(
+                    rolesApplication, 
+                    rolesApplication.JobSpecId == rolesJobSpec.Id, 
+                    isouter=True
+                )
+    statement = statement.join(
+                    rolesInterview, 
+                    rolesInterview.ApplicationId == rolesApplication.Id, 
+                    isouter=True
+                )
+    statement = statement.where(rolesJobSpec.IsActive == True)  # JobSpec has a non discarded applications
+    statement = statement.where(rolesApplication.IsActive == True)  # JobSpec has a non discarded applications
+    statement = statement.where(rolesApplication.Id != None)
+    statement = statement.where(rolesInterview.Id == None)  # Application has no interviews
+    statement = statement.where(rolesApplication.Discarded == None)
+    statement = statement.order_by(rolesJobSpec.Created.desc())
+    return session.exec(statement).all()
+
+def _workflow_get_interview(session: Session) -> list[JobSpecBase]:
+    statement = select(rolesJobSpec).distinct()
+    statement = statement.join(
+                    rolesApplication, 
+                    rolesApplication.JobSpecId == rolesJobSpec.Id, 
+                    isouter=True
+                )
+    statement = statement.join(
+                    rolesInterview, 
+                    rolesInterview.ApplicationId == rolesApplication.Id, 
+                    isouter=True
+                )
+    statement = statement.where(rolesJobSpec.IsActive == True)      # JobSpec not deleted
+    statement = statement.where(rolesApplication.IsActive == True)  # Application not deleted
+    statement = statement.where(rolesInterview.IsActive == True)    # Interview not deleted
+    statement = statement.where(rolesApplication.Id != None) # Jobspec has an Application
+    statement = statement.where(rolesInterview.Id != None)          # There is at least one Interview
+    statement = statement.where(rolesApplication.Discarded == None) # The application is not discarded
+    statement = statement.order_by(rolesJobSpec.Created.desc())
+    return session.exec(statement).all()
+
+def _workflow_get_offer(session: Session) -> list[JobSpecBase]:
+    return []
+
+def _workflow_get_discarded(session: Session) -> list[JobSpecBase]:
+    statement = select(rolesJobSpec).distinct()
+    statement = statement.join(
+                    rolesApplication, 
+                    rolesApplication.JobSpecId == rolesJobSpec.Id, 
+                    isouter=True
+                )
+    statement = statement.join(
+                    rolesInterview, 
+                    rolesInterview.ApplicationId == rolesApplication.Id, 
+                    isouter=True
+                )
+    statement = statement.where(rolesJobSpec.IsActive == True)      # JobSpec not deleted
+    statement = statement.where(rolesApplication.IsActive == True)  # Application not deleted
+    statement = statement.where(rolesApplication.Id != None) # Jobspec has an Application
+    statement = statement.where(rolesApplication.Discarded != None) # The application is discarded
+    statement = statement.order_by(rolesJobSpec.Created.desc())
+    return session.exec(statement).all()

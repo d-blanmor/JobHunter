@@ -13,10 +13,7 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/roles/interviews", response_model=list[InterviewBase])
 def list_interviews(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[InterviewBase]:
-    statement = select(rolesInterview)
-    if active_only:
-        statement = statement.where(rolesInterview.IsActive == True)
-    return session.exec(statement).all()
+    return _get_entity_or_404(session, rolesInterview, None, active_only)
 
 @router.get(conf_pathname()+"/v1/roles/interviews/{interview_id}", response_model=InterviewBase)
 def get_interview(interview_id: int, session: Session = Depends(get_session)) -> InterviewBase:

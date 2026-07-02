@@ -79,7 +79,21 @@ class InterviewBase(BaseModel):
     Feedback: Optional[str] = None
     IsActive: bool = True
 
+class OfferBase(BaseModel):
+    Id: Optional[int] = None
+    ApplicationId: int
+    Offered: Optional[datetime] = None
+    Salary: Optional[str] = None
+    Notes: Optional[str] = None
+    IsActive: bool = True
+
 class LnkJobSpecBenefitBase(BaseModel):
+    JobSpecId: int
+    LuBenefitId: int
+    Notes: Optional[str] = None
+    Order: int = 0
+
+class LnkOfferBenefitBase(BaseModel):
     JobSpecId: int
     LuBenefitId: int
     Notes: Optional[str] = None
@@ -89,3 +103,4 @@ class LnkJobSpecTagBase(BaseModel):
     JobSpecId: int
     TagId: int
     Order: int = 0
+

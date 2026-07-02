@@ -227,16 +227,17 @@ def _delete_link(session: Session, model: type[Any], pk1: int | None = None, pk2
 #####################
 #  Workflow logic
 from app.schemas import JobSpecBase
-from app.models import rolesJobSpec, rolesApplication, rolesInterview
+from app.models import rolesJobSpec, rolesApplication, rolesInterview, rolesOffer
 
 def _workflow_get_received(session: Session) -> list[JobSpecBase]:
     statement = select(rolesJobSpec).distinct()
     statement = statement.join(
                     rolesApplication, 
-                    rolesApplication.JobSpecId == rolesJobSpec.Id, 
+                    rolesApplication.JobSpecId == rolesJobSpec.Id and rolesApplication.IsActive == True, 
                     isouter=True
                 )
-    statement = statement.where(rolesApplication.Id == None)  # JobSpec has not been applied
+    statement = statement.where(rolesJobSpec.IsActive == True)      # Only non deleted JobSpecs
+    statement = statement.where(rolesApplication.Id == None)        # JobSpec has not been applied
     statement = statement.order_by(rolesJobSpec.Created.desc())
     return session.exec(statement).all()
 
@@ -244,19 +245,24 @@ def _workflow_get_applied(session: Session) -> list[JobSpecBase]:
     statement = select(rolesJobSpec).distinct()
     statement = statement.join(
                     rolesApplication, 
-                    rolesApplication.JobSpecId == rolesJobSpec.Id, 
+                    rolesApplication.JobSpecId == rolesJobSpec.Id and rolesApplication.IsActive == True, 
                     isouter=True
                 )
     statement = statement.join(
                     rolesInterview, 
-                    rolesInterview.ApplicationId == rolesApplication.Id, 
+                    rolesInterview.ApplicationId == rolesApplication.Id and rolesInterview.IsActive == True, 
                     isouter=True
                 )
-    statement = statement.where(rolesJobSpec.IsActive == True)  # JobSpec has a non discarded applications
-    statement = statement.where(rolesApplication.IsActive == True)  # JobSpec has a non discarded applications
-    statement = statement.where(rolesApplication.Id != None)
-    statement = statement.where(rolesInterview.Id == None)  # Application has no interviews
-    statement = statement.where(rolesApplication.Discarded == None)
+    statement = statement.join(
+                    rolesOffer, 
+                    rolesOffer.ApplicationId == rolesApplication.Id and rolesOffer.IsActive == True, 
+                    isouter=True
+                )
+    statement = statement.where(rolesJobSpec.IsActive == True)      # Only non deleted JobSpecs
+    statement = statement.where(rolesApplication.Id != None)        # Jobspec has been applied
+    statement = statement.where(rolesInterview.Id == None)          # Application has no interviews
+    statement = statement.where(rolesOffer.Id == None)              # Application has no offer
+    statement = statement.where(rolesApplication.Discarded == None) # Application has not been discarded
     statement = statement.order_by(rolesJobSpec.Created.desc())
     return session.exec(statement).all()
 
@@ -264,31 +270,49 @@ def _workflow_get_interview(session: Session) -> list[JobSpecBase]:
     statement = select(rolesJobSpec).distinct()
     statement = statement.join(
                     rolesApplication, 
-                    rolesApplication.JobSpecId == rolesJobSpec.Id, 
+                    rolesApplication.JobSpecId == rolesJobSpec.Id and rolesApplication.IsActive == True, 
                     isouter=True
                 )
     statement = statement.join(
                     rolesInterview, 
-                    rolesInterview.ApplicationId == rolesApplication.Id, 
+                    rolesInterview.ApplicationId == rolesApplication.Id and rolesInterview.IsActive == True, 
                     isouter=True
                 )
-    statement = statement.where(rolesJobSpec.IsActive == True)      # JobSpec not deleted
-    statement = statement.where(rolesApplication.IsActive == True)  # Application not deleted
-    statement = statement.where(rolesInterview.IsActive == True)    # Interview not deleted
-    statement = statement.where(rolesApplication.Id != None) # Jobspec has an Application
+    statement = statement.join(
+                    rolesOffer, 
+                    rolesOffer.ApplicationId == rolesApplication.Id and rolesOffer.IsActive == True, 
+                    isouter=True
+                )
+    statement = statement.where(rolesJobSpec.IsActive == True)      # Only non deleted JobSpecs
+    statement = statement.where(rolesApplication.Id != None)        # Jobspec has an Application
     statement = statement.where(rolesInterview.Id != None)          # There is at least one Interview
+    statement = statement.where(rolesOffer.Id == None)              # Application has no offer
     statement = statement.where(rolesApplication.Discarded == None) # The application is not discarded
     statement = statement.order_by(rolesJobSpec.Created.desc())
     return session.exec(statement).all()
 
 def _workflow_get_offer(session: Session) -> list[JobSpecBase]:
-    return []
+    statement = select(rolesJobSpec).distinct()
+    statement = statement.join(
+                    rolesApplication, 
+                    rolesApplication.JobSpecId == rolesJobSpec.Id and rolesApplication.IsActive == True, 
+                    isouter=True
+                )
+    statement = statement.join(
+                    rolesOffer, 
+                    rolesOffer.ApplicationId == rolesApplication.Id and rolesOffer.IsActive == True, 
+                    isouter=True
+                )
+    statement = statement.where(rolesJobSpec.IsActive == True)      # JobSpec not deleted
+    statement = statement.where(rolesOffer.Id != None)              # Application has an offer
+    statement = statement.order_by(rolesJobSpec.Created.desc())
+    return session.exec(statement).all()
 
 def _workflow_get_discarded(session: Session) -> list[JobSpecBase]:
     statement = select(rolesJobSpec).distinct()
     statement = statement.join(
                     rolesApplication, 
-                    rolesApplication.JobSpecId == rolesJobSpec.Id, 
+                    rolesApplication.JobSpecId == rolesJobSpec.Id and rolesApplication.IsActive == True, 
                     isouter=True
                 )
     statement = statement.join(
@@ -296,9 +320,8 @@ def _workflow_get_discarded(session: Session) -> list[JobSpecBase]:
                     rolesInterview.ApplicationId == rolesApplication.Id, 
                     isouter=True
                 )
-    statement = statement.where(rolesJobSpec.IsActive == True)      # JobSpec not deleted
-    statement = statement.where(rolesApplication.IsActive == True)  # Application not deleted
-    statement = statement.where(rolesApplication.Id != None) # Jobspec has an Application
+    statement = statement.where(rolesJobSpec.IsActive == True)      # Only non deleted JobSpecs
+    statement = statement.where(rolesApplication.Id != None)        # Jobspec has an Application
     statement = statement.where(rolesApplication.Discarded != None) # The application is discarded
     statement = statement.order_by(rolesJobSpec.Created.desc())
     return session.exec(statement).all()

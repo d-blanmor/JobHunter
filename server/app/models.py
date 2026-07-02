@@ -3,7 +3,6 @@ from typing import Optional
 
 from sqlmodel import Field, SQLModel, Relationship
 
-
 class tag (SQLModel, table=True):
     __tablename__ = "tags"
     Id: int = Field(
@@ -18,7 +17,7 @@ class tag (SQLModel, table=True):
     JobSpecs: list["rolesLnkJobSpecTags"] = Relationship(back_populates="Tag")
 
 class rolesLnkJobSpecBenefit(SQLModel, table=True):
-    __tablename__ = "roles_lnk_jobspec_benefits"
+    __tablename__ = "roles_lnk_jobspecs_benefits"
     JobSpecId: int = Field(
         primary_key=True,
         foreign_key="roles_job_specs.Id", 
@@ -32,6 +31,22 @@ class rolesLnkJobSpecBenefit(SQLModel, table=True):
 
     JobSpec: Optional["rolesJobSpec"] = Relationship(back_populates="Benefits")
     Benefit: Optional["rolesLuBenefit"] = Relationship(back_populates="jobspec_links")
+
+class rolesLnkOfferBenefit(SQLModel, table=True):
+    __tablename__ = "roles_lnk_offers_benefits"
+    JobSpecId: int = Field(
+        primary_key=True,
+        foreign_key="roles_offers.Id", 
+    )
+    LuBenefitId: int = Field(
+        primary_key=True,
+        foreign_key="roles_lu_benefits.Id", 
+    )
+    Notes: Optional[str] = None
+    Order: int = 0
+
+    Offer: Optional["rolesOffer"] = Relationship(back_populates="Benefits")
+    Benefit: Optional["rolesLuBenefit"] = Relationship(back_populates="offer_links")
 
 class rolesLnkJobSpecTags(SQLModel, table=True):
     __tablename__ = "roles_lnk_jobspec_tags"
@@ -96,6 +111,7 @@ class rolesLuBenefit(SQLModel, table=True):
     Order: int = 0
 
     jobspec_links: list["rolesLnkJobSpecBenefit"] = Relationship(back_populates="Benefit")
+    offer_links: list["rolesLnkOfferBenefit"] = Relationship(back_populates="Benefit")
 
 class rolesSource(SQLModel, table=True):
     __tablename__ = "roles_sources"
@@ -156,6 +172,7 @@ class rolesApplication(SQLModel, table=True):
 
     JobSpec: "rolesJobSpec" = Relationship(back_populates="Applications")
     Interviews: list["rolesInterview"] = Relationship(back_populates="Application")
+    Offer: list["rolesOffer"] = Relationship(back_populates="Application")
 
 class rolesJobSpec(SQLModel, table=True):
     __tablename__ = "roles_job_specs"
@@ -226,3 +243,19 @@ class rolesInterview(SQLModel, table=True):
 
     Application: Optional["rolesApplication"] = Relationship(back_populates="Interviews")
     Contact: Optional["rolesContact"] = Relationship(back_populates="Interviews")
+
+class rolesOffer(SQLModel, table=True):
+    __tablename__ = "roles_offers"
+    Id: int = Field(
+        primary_key=True, 
+        sa_column_kwargs={"autoincrement": True}
+    )
+    ApplicationId: int = Field(foreign_key="roles_applications.Id")
+    Offered: datetime
+    Salary: Optional[str] = None
+    Notes: Optional[str] = None
+    IsActive: bool = True
+
+    Application: Optional["rolesApplication"] = Relationship(back_populates="Offer")
+
+    Benefits: list["rolesLnkOfferBenefit"] = Relationship(back_populates="Offer")

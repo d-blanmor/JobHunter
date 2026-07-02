@@ -14,9 +14,11 @@ from .routers.roles import (
     contacts, 
     applications, 
     interviews, 
+    offers,
     jobspecs, 
-    lnk_jobspec_benefits, 
-    lnk_jobspec_tags, 
+    lnk_jobspecs_benefits, 
+    lnk_offers_benefits,
+    lnk_jobspecs_tags, 
     placesofwork, 
     sources,
 )
@@ -35,6 +37,8 @@ app.include_router(contacts.router)
 app.include_router(applications.router)
 app.include_router(jobspecs.router)
 app.include_router(interviews.router)
-app.include_router(lnk_jobspec_benefits.router)
-app.include_router(lnk_jobspec_tags.router)
+app.include_router(offers.router)
+app.include_router(lnk_jobspecs_benefits.router)
+app.include_router(lnk_offers_benefits.router)
+app.include_router(lnk_jobspecs_tags.router)
 app.include_router(stages.router)

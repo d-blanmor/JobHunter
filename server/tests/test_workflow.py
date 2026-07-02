@@ -59,17 +59,47 @@ new_Interview = {
     "IsActive": True
 }
 
+new_Offer = {
+    "Id": None,
+    "ApplicationId": None,
+    "Offered": datetime.utcnow().isoformat(),
+    "Salary": None,
+    "Notes": random_text("offd"),
+    "IsActive": True
+}
+
 def test_stage_received() -> None:
     # Create a new JobSpec
-    jobSpec = client.post(f"{API_PREFIX}/roles/job-specs", json=new_JobSpec)
-    assert jobSpec.status_code == 200, jobSpec.text
-    assert jobSpec.json()["Id"] is not None
-    jobSpecId = jobSpec.json()["Id"]
+    response = client.post(f"{API_PREFIX}/roles/job-specs", json=new_JobSpec)
+    assert response.status_code == 200, response.text
+    jobSpec = response.json()
+    assert jobSpec["Id"] is not None
+    jobSpecId = jobSpec["Id"]
 
     # The JobSpec in stage Received
     response = client.get(f"{API_PREFIX}/workflow/stages/received")
     assert response.status_code == 200, response.text
     assert any(i["Id"] == jobSpecId for i in response.json())
+
+    # The JobSpec NOT in stage Applied
+    response = client.get(f"{API_PREFIX}/workflow/stages/applied")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+
+    # The JobSpec NOT in stage Interview
+    response = client.get(f"{API_PREFIX}/workflow/stages/interview")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+    
+    # The JobSpec NOT in stage Offered
+    response = client.get(f"{API_PREFIX}/workflow/stages/offer")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+
+    # The JobSpec NOT in stage Discarded
+    response = client.get(f"{API_PREFIX}/workflow/stages/discarded")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
 
 def test_stage_applied() ->None:
     # Create a new JobSpec
@@ -88,12 +118,27 @@ def test_stage_applied() ->None:
     # The JobSpec NOT in stage Received
     response = client.get(f"{API_PREFIX}/workflow/stages/received")
     assert response.status_code == 200, response.text
-    assert not (any(i["Id"] == jobSpec["Id"] for i in response.json()))
-    
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+
     # The JobSpec in stage Applied
     response = client.get(f"{API_PREFIX}/workflow/stages/applied")
     assert response.status_code == 200, response.text
     assert any(i["Id"] == jobSpec["Id"] for i in response.json())
+
+    # The JobSpec NOT in stage Interview
+    response = client.get(f"{API_PREFIX}/workflow/stages/interview")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+    
+    # The JobSpec NOT in stage Offered
+    response = client.get(f"{API_PREFIX}/workflow/stages/offer")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+
+    # The JobSpec NOT in stage Discarded
+    response = client.get(f"{API_PREFIX}/workflow/stages/discarded")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
 
 def test_stage_interview() ->None:
     # Create a new JobSpec
@@ -126,15 +171,73 @@ def test_stage_interview() ->None:
     assert response.status_code == 200, response.text
     assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
 
-    # The JobSpec in stage Applied
+    # The JobSpec in stage Interview
     response = client.get(f"{API_PREFIX}/workflow/stages/interview")
     assert response.status_code == 200, response.text
     assert any(i["Id"] == jobSpec["Id"] for i in response.json())
 
-def test_stage_offer() ->None:
-    #jobSpecId = new_JobSpec()
+    # The JobSpec NOT in stage Offered
     response = client.get(f"{API_PREFIX}/workflow/stages/offer")
     assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+
+    # The JobSpec NOT in stage Discarded
+    response = client.get(f"{API_PREFIX}/workflow/stages/discarded")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+
+def test_stage_offer() ->None:
+    # Create a new JobSpec
+    response = client.post(f"{API_PREFIX}/roles/job-specs", json=new_JobSpec)
+    assert response.status_code == 200, response.text
+    jobSpec = response.json()
+    assert jobSpec["Id"] is not None
+
+    # Applicate the Jobspec
+    new_Application["JobSpecId"] = jobSpec["Id"]
+    response = client.post(f"{API_PREFIX}/roles/applications", json=new_Application)
+    assert response.status_code == 200, response.text
+    appl = response.json()
+    assert appl["Id"] is not None
+
+    # Schedule Interview
+    new_Interview["ApplicationId"] = appl["Id"]
+    response = client.post(f"{API_PREFIX}/roles/interviews", json=new_Interview)
+    assert response.status_code == 200, response.text
+    intv = response.json()
+    assert intv["Id"] is not None 
+
+    # Create an Offer
+    new_Offer["ApplicationId"] = appl["Id"]
+    response = client.post(f"{API_PREFIX}/roles/offers", json=new_Offer)
+    assert response.status_code == 200, response.text
+    offr = response.json()
+    assert offr["Id"] is not None
+
+    # The JobSpec NOT in stage Received
+    response = client.get(f"{API_PREFIX}/workflow/stages/received")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+    
+    # The JobSpec NOT in stage Applied
+    response = client.get(f"{API_PREFIX}/workflow/stages/applied")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+
+    # The JobSpec NOT in stage Interview
+    response = client.get(f"{API_PREFIX}/workflow/stages/interview")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+
+    # The JobSpec in stage Offered
+    response = client.get(f"{API_PREFIX}/workflow/stages/offer")
+    assert response.status_code == 200, response.text
+    assert any(i["Id"] == jobSpec["Id"] for i in response.json())
+
+    # The JobSpec NOT in stage Discarded
+    response = client.get(f"{API_PREFIX}/workflow/stages/discarded")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
 
 def test_stage_discarded() ->None:
     # Create a new JobSpec
@@ -175,6 +278,11 @@ def test_stage_discarded() ->None:
 
     # The JobSpec NOT in stage Interview
     response = client.get(f"{API_PREFIX}/workflow/stages/interview")
+    assert response.status_code == 200, response.text
+    assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
+
+    # The JobSpec NOT in stage Offered
+    response = client.get(f"{API_PREFIX}/workflow/stages/offer")
     assert response.status_code == 200, response.text
     assert not(any(i["Id"] == jobSpec["Id"] for i in response.json()))
 

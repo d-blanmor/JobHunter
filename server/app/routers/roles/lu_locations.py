@@ -1,8 +1,8 @@
 from typing import Any
 from app.config import conf_pathname
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session, select
+from fastapi import APIRouter, Depends, Query
+from sqlmodel import Session
 
 from app.database import get_session
 from app.models import rolesLuLocation
@@ -13,11 +13,12 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/roles/lookup/locations", response_model=list[LuLocationBase])
 def list_locations(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[LuLocationBase]:
-    statement = select(rolesLuLocation)
-    if active_only:
-        statement = statement.where(rolesLuLocation.IsActive == True)
-    statement = statement.order_by(rolesLuLocation.Order)
-    return session.exec(statement).all()
+    #statement = select(rolesLuLocation)
+    #if active_only:
+    #    statement = statement.where(rolesLuLocation.IsActive == True)
+    #statement = statement.order_by(rolesLuLocation.Order)
+    #return session.exec(statement).all()
+    return _get_entity_or_404(session, rolesLuLocation, None, active_only)
 
 @router.get(conf_pathname()+"/v1/roles/lookup/locations/{location_id}", response_model=LuLocationBase)
 def get_location(location_id: int, session: Session = Depends(get_session)) -> LuLocationBase:

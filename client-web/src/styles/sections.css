@@ -10,6 +10,12 @@
 .job-spec-field-row {
   display: grid;
   gap: 6px;
+  grid-template-columns: minmax(140px, 220px) minmax(0, 1fr);
+  align-items: start;
+}
+
+.job-spec-field-row > span:last-child {
+  color: #0f172a;
 }
 
 .job-spec-field-label {

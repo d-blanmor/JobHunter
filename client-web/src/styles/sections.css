@@ -1,0 +1,56 @@
+.job-spec-section {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 18px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+}
+
+.job-spec-field-row {
+  display: grid;
+  gap: 6px;
+}
+
+.job-spec-field-label {
+  font-weight: 700;
+  color: #475569;
+}
+
+.job-spec-description-section {
+  padding-top: 0;
+}
+
+.section-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.section-heading {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.section-status {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.job-spec-description {
+  margin: 0;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 14px;
+  color: #334155;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.application-section.discarded {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #991b1b;
+}

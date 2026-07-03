@@ -11,7 +11,7 @@ export async function updateApplication(payload: any) {
 }
 
 export async function getApplicationsByJobSpec(jobSpecId: number) {
-  const res = await fetch(`${API_BASE}/applications/by-job-spec/${jobSpecId}`);
+  const res = await fetch(`${API_BASE}/roles/applications-by-jobspec/{jobspec_id}`);
   if (!res.ok) throw new Error('Failed to load applications by job spec');
   return res.json();
 }

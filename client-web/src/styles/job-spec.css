@@ -1,0 +1,91 @@
+.job-spec-view {
+  display: grid;
+  gap: 22px;
+}
+
+.job-spec-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.job-spec-title {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.1;
+}
+
+.job-spec-company {
+  margin: 8px 0 0;
+  color: #475569;
+  font-size: 1rem;
+}
+
+.job-spec-link,
+.job-spec-link-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  font-size: 1.2rem;
+}
+
+.job-spec-note-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.job-spec-note-label {
+  font-weight: 700;
+  color: #475569;
+  min-width: 90px;
+}
+
+.job-spec-note-value {
+  font-weight: 600;
+}
+
+.job-spec-note-subtext {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.contact-row .job-spec-contact-block {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.job-spec-contact-phone {
+  color: #475569;
+}
+
+.job-spec-info-icon {
+  color: #64748b;
+  cursor: default;
+}
+
+.job-spec-metadata {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.job-spec-meta-item {
+  display: grid;
+  gap: 6px;
+}
+
+.job-spec-meta-label {
+  color: #475569;
+  font-size: 0.93rem;
+}

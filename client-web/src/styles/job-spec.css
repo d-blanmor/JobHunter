@@ -41,6 +41,22 @@
   flex-wrap: wrap;
 }
 
+.interviews-section {
+  max-height: 520px;
+  overflow-y: auto;
+  display: grid;
+  gap: 16px;
+}
+
+.interview-item {
+  padding: 18px;
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  display: grid;
+  gap: 12px;
+}
+
 .job-spec-note-label {
   font-weight: 700;
   color: #475569;

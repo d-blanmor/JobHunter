@@ -26,8 +26,20 @@ export async function createApplication(payload: any) {
 }
 
 export async function getApplicationsByJobSpec(jobSpecId: number) {
-  const res = await fetch(`${API_BASE}/roles/applications-by-jobspec/{jobspec_id}`);
+  const res = await fetch(`${API_BASE}/roles/applications-by-jobspec/${jobSpecId}`);
   if (!res.ok) throw new Error('Failed to load applications by job spec');
+  return res.json();
+}
+
+export async function getInterviewsByJobSpec(jobSpecId: number) {
+  const res = await fetch(`${API_BASE}/roles/interviews-by-jobspec/${jobSpecId}`);
+  if (!res.ok) throw new Error('Failed to load interviews by job spec');
+  return res.json();
+}
+
+export async function getOffersByJobSpec(jobSpecId: number) {
+  const res = await fetch(`${API_BASE}/roles/offers-by-jobspec/${jobSpecId}`);
+  if (!res.ok) throw new Error('Failed to load offers by job spec');
   return res.json();
 }
 

@@ -9,15 +9,33 @@ import {
 } from '../api/jobSpecs';
 import {
   getApplicationsByJobSpec,
-  listAllInterviews,
-  listAllOffers,
+  getInterviewsByJobSpec,
+  getOffersByJobSpec,
 } from '../api/applications';
+
+function pad(value: number) {
+  return value.toString().padStart(2, '0');
+}
 
 function formatDate(value?: string | null) {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
   return date.toLocaleString();
+}
+
+function formatDateOnly(value?: string | null) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
+}
+
+function formatDateTime(value?: string | null) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 function safeValue(value: any) {
@@ -81,12 +99,15 @@ export default function JobSpecView() {
       setError(null);
 
       try {
-        const [jobSpec, roles, works, srcs, places] = await Promise.all([
+        const [jobSpec, roles, works, srcs, places, applications, interviewsBySpec, offersBySpec] = await Promise.all([
           getJobSpecById(Number(id)),
           listRoleTypes().catch(() => []),
           listWorkModels().catch(() => []),
           listSources().catch(() => []),
           listPlacesOfWork().catch(() => []),
+          getApplicationsByJobSpec(Number(id)).catch(() => []),
+          getInterviewsByJobSpec(Number(id)).catch(() => []),
+          getOffersByJobSpec(Number(id)).catch(() => []),
         ]);
 
         if (!mounted) return;
@@ -97,30 +118,10 @@ export default function JobSpecView() {
         setSources(Array.isArray(srcs) ? srcs : []);
         setPlacesOfWork(Array.isArray(places) ? places : []);
 
-        const applications = await getApplicationsByJobSpec(Number(id)).catch(() => []);
-        const appsArray = Array.isArray(applications) ? applications : [applications];
-        const currentApplication = appsArray[0] || null;
-        setApplication(currentApplication);
-
-        if (currentApplication?.Id) {
-          const [allInterviews, allOffers] = await Promise.all([
-            listAllInterviews().catch(() => []),
-            listAllOffers().catch(() => []),
-          ]);
-
-          const interviewsArray = Array.isArray(allInterviews) ? allInterviews : [];
-          const offersArray = Array.isArray(allOffers) ? allOffers : [];
-
-          setInterviews(
-            interviewsArray.filter(
-              (item: any) => item.ApplicationId === currentApplication.Id || item.JobApplicationId === currentApplication.Id,
-            ),
-          );
-          setOffers(
-            offersArray.filter(
-              (item: any) => item.ApplicationId === currentApplication.Id || item.JobApplicationId === currentApplication.Id),
-          );
-        }
+        const applicationsArray = Array.isArray(applications) ? applications : [];
+        setApplication(applicationsArray[0] || null);
+        setInterviews(Array.isArray(interviewsBySpec) ? interviewsBySpec : []);
+        setOffers(Array.isArray(offersBySpec) ? offersBySpec : []);
       } catch (err) {
         if (!mounted) return;
         setError(err instanceof Error ? err.message : 'Failed to load job spec');
@@ -295,15 +296,15 @@ export default function JobSpecView() {
           )}
 
           {application && interviews.length > 0 && (
-            <div className="job-spec-section">
+            <div className="job-spec-section interviews-section">
               <div className="section-heading-row">
                 <h4 className="section-heading">Interviews</h4>
               </div>
               {interviews.map((interview) => (
-                <div key={interview.Id || interview.id || Math.random()} className="job-spec-section interview-item">
+                <div key={interview.Id || interview.id || Math.random()} className="interview-item">
                   <div className="job-spec-field-row">
-                    <span className="job-spec-field-label">Scheduled</span>
-                    <span>{formatDate(interview.Scheduled || interview.DateScheduled)}</span>
+                    <span className="job-spec-field-label">Scheduled Date</span>
+                    <span>{formatDateTime(interview.Scheduled || interview.DateScheduled)}</span>
                   </div>
                   <div className="job-spec-note-row contact-row">
                     <span className="job-spec-note-label">Contact</span>
@@ -314,22 +315,19 @@ export default function JobSpecView() {
                           {interview.ContactEmail || interview.Contact?.Email}
                         </a>
                       ) : null}
-                      {interview.ContactPhone || interview.Contact?.Phone ? (
-                        <span className="job-spec-contact-phone">{interview.ContactPhone || interview.Contact?.Phone}</span>
-                      ) : null}
                     </span>
                     {(interview.ContactDetails || interview.Contact?.Details) ? (
                       <span className="job-spec-info-icon" title={interview.ContactDetails || interview.Contact?.Details}>ℹ️</span>
                     ) : null}
                   </div>
                   <div className="job-spec-field-row">
-                    <span className="job-spec-field-label">Interview Notes</span>
+                    <span className="job-spec-field-label">Notes</span>
                     <span className="job-spec-description">{safeValue(interview.Notes || interview.InterviewNotes)}</span>
                   </div>
                   {interview.Outcome ? (
                     <div className="job-spec-field-row">
                       <span className="job-spec-field-label">Outcome</span>
-                      <span>{safeValue(interview.Outcome)}</span>
+                      <span className="job-spec-description">{safeValue(interview.Outcome)}</span>
                     </div>
                   ) : null}
                   {interview.Feedback ? (
@@ -343,8 +341,6 @@ export default function JobSpecView() {
             </div>
           )}
 
-          {application && <button className="button wide-button secondary-button">Add an Interview</button>}
-
           {application && !offers.length && (
             <button className="button wide-button secondary-button">Offer Received</button>
           )}
@@ -355,8 +351,8 @@ export default function JobSpecView() {
                 <h4 className="section-heading">Offer</h4>
               </div>
               <div className="job-spec-field-row">
-                <span className="job-spec-field-label">Date Offered</span>
-                <span>{formatDate(offers[0].Offered || offers[0].DateOffered)}</span>
+                <span className="job-spec-field-label">Offered Date</span>
+                <span>{formatDateOnly(offers[0].Offered || offers[0].DateOffered)}</span>
               </div>
               <div className="job-spec-field-row">
                 <span className="job-spec-field-label">Salary</span>
@@ -364,10 +360,10 @@ export default function JobSpecView() {
               </div>
               <div className="job-spec-field-row">
                 <span className="job-spec-field-label">Benefits</span>
-                <span>{normalizeBenefits(offers[0].Benefits || offers[0].Perks)}</span>
+                <span>{normalizeBenefits(offers[0].Benefits || offers[0].Perks || offers[0].BenefitList)}</span>
               </div>
               <div className="job-spec-field-row">
-                <span className="job-spec-field-label">Offer Notes</span>
+                <span className="job-spec-field-label">Notes</span>
                 <span className="job-spec-description">{safeValue(offers[0].Notes || offers[0].OfferNotes)}</span>
               </div>
             </div>

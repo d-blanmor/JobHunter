@@ -225,6 +225,42 @@ def _delete_link(session: Session, model: type[Any], pk1: int | None = None, pk2
     return rows
 
 #####################
+#  JobSpec functions
+from app.schemas import ApplicationBase, InterviewBase, OfferBase
+from app.models import rolesJobSpec, rolesApplication, rolesInterview, rolesOffer
+
+def _get_applications_by_job_spec(session: Session, job_spec_id: int) -> list[ApplicationBase]:
+    statement = select(rolesApplication)
+    statement = statement.where(rolesApplication.JobSpecId == job_spec_id)  # Directly linked to JobSpec
+    statement = statement.where(rolesApplication.IsActive == True)          # Only non deleted Applications
+    statement = statement.order_by(rolesApplication.Applied.desc())
+    return session.exec(statement).all()
+
+def _get_interviews_by_job_spec(session: Session, job_spec_id: int) -> list[InterviewBase]:
+    statement = select(rolesInterview).distinct()
+    statement = statement.join(
+                    rolesApplication, 
+                    rolesInterview.ApplicationId == rolesApplication.Id and rolesApplication.IsActive == True, 
+                )
+    statement = statement.where(rolesApplication.JobSpecId == job_spec_id)  # Directly linked to JobSpec
+    statement = statement.where(rolesInterview.IsActive == True)            # Only active Applications
+    statement = statement.order_by(rolesApplication.Applied.desc())
+    statement = statement.order_by(rolesInterview.Scheduled.desc())
+    return session.exec(statement).all()
+
+def _get_offers_by_job_spec(session: Session, job_spec_id: int) -> list[OfferBase]:
+    statement = select(rolesOffer).distinct()
+    statement = statement.join(
+                    rolesApplication, 
+                    rolesOffer.ApplicationId == rolesApplication.Id and rolesApplication.IsActive == True, 
+                )
+    statement = statement.where(rolesApplication.JobSpecId == job_spec_id)  # Directly linked to JobSpec
+    statement = statement.where(rolesOffer.IsActive == True)            # Only active Applications
+    statement = statement.order_by(rolesApplication.Applied.desc())
+    statement = statement.order_by(rolesOffer.Offered.desc())
+    return session.exec(statement).all()
+
+#####################
 #  Workflow logic
 from app.schemas import JobSpecBase
 from app.models import rolesJobSpec, rolesApplication, rolesInterview, rolesOffer

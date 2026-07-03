@@ -3,6 +3,7 @@ import HomePage from './pages/HomePage';
 import SettingsPage from './pages/SettingsPage';
 import LocationsPage from './pages/LocationsPage';
 import JobSpecCreate from './pages/JobSpecCreate';
+import JobSpecView from './pages/JobSpecView';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/locations" element={<LocationsPage />} />
           <Route path="/job-specs/new" element={<JobSpecCreate />} />
+          <Route path="/job-specs/view/:id" element={<JobSpecView />} />
         </Routes>
       </main>
     </div>

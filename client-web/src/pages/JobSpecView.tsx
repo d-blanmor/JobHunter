@@ -262,10 +262,6 @@ export default function JobSpecView() {
             <p className="job-spec-description">{safeValue(spec.Description)}</p>
           </div>
 
-          {!application && (
-            <button className="button wide-button">Apply</button>
-          )}
-
           {application && (
             <div className={`job-spec-section application-section ${application.Discarded ? 'discarded' : ''}`}>
               <div className="section-heading-row">
@@ -273,29 +269,27 @@ export default function JobSpecView() {
                 {application.Discarded ? <span className="section-status">Discarded</span> : null}
               </div>
               <div className="job-spec-field-row">
-                <span className="job-spec-field-label">Date of Application</span>
-                <span>{formatDate(application.Applied || application.DateApplied)}</span>
+                <span className="job-spec-field-label">Applied Date</span>
+                <span>{formatDateOnly(application.Applied || application.DateApplied)}</span>
               </div>
               <div className="job-spec-field-row">
-                <span className="job-spec-field-label">Date of Confirmation</span>
-                <span>{formatDate(application.Confirmed || application.DateConfirmed)}</span>
+                <span className="job-spec-field-label">Confirmed Date</span>
+                <span>{formatDateOnly(application.Confirmed || application.DateConfirmed)}</span>
               </div>
               <div className="job-spec-field-row">
-                <span className="job-spec-field-label">Application Notes</span>
+                <span className="job-spec-field-label">Notes</span>
                 <span className="job-spec-description">{safeValue(application.Notes || application.ApplicationNotes)}</span>
               </div>
               {application.Discarded ? (
                 <div className="job-spec-field-row">
                   <span className="job-spec-field-label">Discarded Date</span>
-                  <span>{formatDate(application.Discarded)}</span>
+                  <span>{formatDateOnly(application.Discarded || application.DiscardedDate)}</span>
                 </div>
-              ) : (
-                <button className="button secondary-button wide-button">Discard</button>
-              )}
+              ) : null}
             </div>
           )}
 
-          {application && interviews.length > 0 && (
+          {interviews.length > 0 && (
             <div className="job-spec-section interviews-section">
               <div className="section-heading-row">
                 <h4 className="section-heading">Interviews</h4>
@@ -341,11 +335,7 @@ export default function JobSpecView() {
             </div>
           )}
 
-          {application && !offers.length && (
-            <button className="button wide-button secondary-button">Offer Received</button>
-          )}
-
-          {application && offers.length > 0 && (
+          {offers.length > 0 && (
             <div className="job-spec-section">
               <div className="section-heading-row">
                 <h4 className="section-heading">Offer</h4>

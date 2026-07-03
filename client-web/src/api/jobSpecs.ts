@@ -1,5 +1,10 @@
 import { API_BASE } from '../config';
 
+async function parseJsonResponse(res: Response) {
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
 function normalizeLookupResponse(value: unknown): any[] {
   if (Array.isArray(value)) return value;
   if (value && typeof value === 'object') {
@@ -14,6 +19,11 @@ function normalizeLookupResponse(value: unknown): any[] {
       (value as any).value,
       (value as any).List,
       (value as any).list,
+      (value as any).Sources,
+      (value as any).WorkModels,
+      (value as any).RoleTypes,
+      (value as any).PlacesOfWork,
+      (value as any).Tags,
     ];
     for (const candidate of candidates) {
       if (Array.isArray(candidate)) return candidate;
@@ -34,7 +44,12 @@ async function fetchLookupList(endpoints: string[], errorLabel: string) {
     }
 
     const json = await res.json();
-    return normalizeLookupResponse(json);
+    const normalized = normalizeLookupResponse(json);
+    const isDev = typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV;
+    if (isDev && normalized.length === 0 && json && typeof json === 'object') {
+      console.warn(`Lookup ${errorLabel} returned an unexpected payload shape`, json);
+    }
+    return normalized;
   }
 
   throw lastError ?? new Error(`Failed to load ${errorLabel}`);
@@ -53,7 +68,7 @@ export async function saveJobSpec(payload: any) {
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Failed to save job spec: ${res.status}`);
-  return res.json();
+  return parseJsonResponse(res);
 }
 
 export async function listSources() {
@@ -87,19 +102,36 @@ export async function listRoleTypes() {
 }
 
 export async function listPlacesOfWork() {
-  const endpoints = [
-    `${API_BASE}/roles/lookup/places-of-work?active_only=true`,
-    `${API_BASE}/roles/places-of-work?active_only=true`,
-  ];
+  return fetchLookupList(
+    [
+      `${API_BASE}/roles/lookup/places-of-work?active_only=true`,
+      `${API_BASE}/roles/places-of-work?active_only=true`,
+    ],
+    'places of work',
+  );
+}
 
-  let lastError: Error | null = null;
-  for (const url of endpoints) {
-    const res = await fetch(url);
-    if (res.ok) return res.json();
-    lastError = new Error(`Failed to load places of work from ${url} (${res.status})`);
-  }
+export async function listContacts() {
+  return fetchLookupList(
+    [
+      `${API_BASE}/roles/lookup/contacts?active_only=true`,
+      `${API_BASE}/roles/contacts?active_only=true`,
+      `${API_BASE}/repository/Contact?active_only=true`,
+      `${API_BASE}/repository/contact?active_only=true`,
+      `${API_BASE}/contacts?active_only=true`,
+    ],
+    'contacts',
+  );
+}
 
-  throw lastError ?? new Error('Failed to load places of work');
+export async function softDeleteJobSpec(id: number) {
+  const jobSpec = await getJobSpecById(id);
+  const payload = {
+    ...jobSpec,
+    Id: id,
+    IsActive: false,
+  };
+  return saveJobSpec(payload);
 }
 
 export async function listTags() {
@@ -133,7 +165,7 @@ export async function createSource(payload: any) {
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Failed to create source: ${res.status}`);
-  return res.json();
+  return parseJsonResponse(res);
 }
 
 export async function createPlaceOfWork(payload: any) {
@@ -143,5 +175,29 @@ export async function createPlaceOfWork(payload: any) {
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Failed to create place of work: ${res.status}`);
-  return res.json();
+  return parseJsonResponse(res);
+}
+
+export async function createContact(payload: any) {
+  const endpoints = [
+    `${API_BASE}/roles/contacts`,
+    `${API_BASE}/repository/Contact`,
+    `${API_BASE}/repository/contact`,
+    `${API_BASE}/contacts`,
+  ];
+  for (const url of endpoints) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) continue;
+      return parseJsonResponse(res);
+    } catch (err) {
+      // try next endpoint
+      continue;
+    }
+  }
+  throw new Error('Failed to create contact');
 }

@@ -9,15 +9,27 @@ import {
   listReceivedJobSpecs,
 } from '../api/summary';
 import {
+  createApplication,
+  createInterview,
   listAllApplications,
   listAllInterviews,
   listAllOffers,
+  getApplicationById,
+  getOfferById,
+  updateOffer,
+  getInterviewById,
+  updateInterview,
+  createOffer,
+  updateApplication,
 } from '../api/applications';
 import {
   listJobSpecTags,
   listRoleTypes,
   listTags,
   listWorkModels,
+  listContacts,
+  createContact,
+  softDeleteJobSpec,
 } from '../api/jobSpecs';
 import { DEFAULT_PAGE_SIZE } from '../config';
 
@@ -34,6 +46,12 @@ type StageItem = {
   interviewDate: string | null;
   offerDate: string | null;
   discardedDate: string | null;
+  ApplicationId: number | null;
+  Application: any | null;
+  InterviewId?: number | null;
+  Interview?: any | null;
+  OfferId?: number | null;
+  Offer?: any | null;
   tagIds: number[];
   tagNames: string[];
 };
@@ -46,11 +64,11 @@ type Props = {
 };
 
 const stageDateLabels: Record<StageType, string> = {
-  received: 'Date Creation',
-  applied: 'Date Applied',
-  interview: 'Interview Date',
-  offers: 'Date Offered',
-  discarded: 'Date Discarded',
+  received: 'Recieved',
+  applied: 'Applied',
+  interview: 'Next Interview',
+  offers: 'Offered',
+  discarded: 'Discarded',
 };
 
 const PAGE_SIZE = DEFAULT_PAGE_SIZE;
@@ -118,8 +136,14 @@ function buildJobSpecItem(
     Created: spec.Created ?? null,
     applicationDate: latestApplication?.Applied ?? null,
     interviewDate: latestInterview?.Scheduled ?? null,
+    InterviewId: latestInterview?.Id ?? null,
+    Interview: latestInterview ?? null,
     offerDate: latestOffer?.Offered ?? null,
+    OfferId: latestOffer?.Id ?? null,
+    Offer: latestOffer ?? null,
     discardedDate: latestApplication?.Discarded ?? null,
+    ApplicationId: latestApplication?.Id ?? null,
+    Application: latestApplication ?? null,
     tagIds: jobSpecTagIds,
     tagNames: jobSpecTagIds.map((id) => tagsMap.get(id) ?? 'Unknown'),
   };
@@ -157,74 +181,102 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
   const [roleTypes, setRoleTypes] = useState<any[]>([]);
   const [workModels, setWorkModels] = useState<any[]>([]);
   const [tags, setTags] = useState<any[]>([]);
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [contactFormOpen, setContactFormOpen] = useState(false);
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactNotes, setContactNotes] = useState('');
+  const [contactFormError, setContactFormError] = useState<string | null>(null);
+  const [contactCreating, setContactCreating] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+  const [interviewFormOpen, setInterviewFormOpen] = useState(false);
+  const [activeApplicationId, setActiveApplicationId] = useState<number | null>(null);
+  const [interviewSchedule, setInterviewSchedule] = useState('');
+  const [interviewContactId, setInterviewContactId] = useState<number | null>(null);
+  const [interviewNotes, setInterviewNotes] = useState('');
+  const [interviewFormError, setInterviewFormError] = useState<string | null>(null);
+  const [offerFormOpen, setOfferFormOpen] = useState(false);
+  const [offerOfferedDate, setOfferOfferedDate] = useState('');
+  const [offerSalary, setOfferSalary] = useState('');
+  const [offerNotes, setOfferNotes] = useState('');
+  const [offerFormError, setOfferFormError] = useState<string | null>(null);
+  const [offerCreating, setOfferCreating] = useState(false);
 
-  useEffect(() => {
-    if (!open) return;
+  const loadStageData = async () => {
     let mounted = true;
     setLoading(true);
     setError(null);
 
-    async function loadData() {
+    try {
+      const [roleTypeData, workModelData, tagData] = await Promise.all([
+        listRoleTypes(),
+        listWorkModels(),
+        listTags(),
+      ]);
+
+      let contactData: any[] = [];
       try {
-        const [roleTypeData, workModelData, tagData] = await Promise.all([
-          listRoleTypes(),
-          listWorkModels(),
-          listTags(),
-        ]);
-
-        if (!mounted) return;
-        setRoleTypes(roleTypeData);
-        setWorkModels(workModelData);
-        setTags(tagData);
-
-        const stageJobSpecs = await loadStageSpecs(stage);
-        const apps = ['applied', 'interview', 'offers', 'discarded'].includes(stage)
-          ? await listAllApplications()
-          : [];
-        const interviews = stage === 'interview' ? await listAllInterviews() : [];
-        const offers = stage === 'offers' ? await listAllOffers() : [];
-        const tagMap = new Map(tagData.map((tag: any) => [tag.Id, tag.Name]));
-
-        const jobSpecTags = await Promise.all(
-          stageJobSpecs.map(async (spec: any) => {
-            try {
-              const relations = await listJobSpecTags(spec.Id);
-              return {
-                id: spec.Id,
-                tagIds: Array.isArray(relations)
-                  ? relations
-                      .map((relation: any) => relation.TagId)
-                      .filter((tagId) => typeof tagId === 'number')
-                  : [],
-              };
-            } catch (tagErr) {
-              console.warn('[StageModal] failed loading tags for job spec', spec.Id, tagErr);
-              return { id: spec.Id, tagIds: [] };
-            }
-          }),
-        );
-
-        if (!mounted) return;
-
-        const itemsWithMeta = stageJobSpecs.map((spec: any) => {
-          const specTags = jobSpecTags.find((relation) => relation.id === spec.Id);
-          return buildJobSpecItem(spec, stage, apps, interviews, offers, tagMap, specTags?.tagIds ?? []);
-        });
-
-        setItems(itemsWithMeta);
-      } catch (err) {
-        if (!mounted) return;
-        setError(err instanceof Error ? err.message : 'Failed to load stage items');
-      } finally {
-        if (!mounted) return;
-        setLoading(false);
+        contactData = await listContacts();
+      } catch (contactErr) {
+        console.warn('[StageModal] failed to load contacts', contactErr);
       }
-    }
 
-    loadData();
-    return () => {
-      mounted = false;
-    };
+      if (!mounted) return;
+      setRoleTypes(roleTypeData);
+      setWorkModels(workModelData);
+      setTags(tagData);
+      setContacts(contactData);
+
+      const stageJobSpecs = await loadStageSpecs(stage);
+      const apps = ['applied', 'interview', 'offers', 'discarded'].includes(stage)
+        ? await listAllApplications()
+        : [];
+      const interviews = stage === 'interview' ? await listAllInterviews() : [];
+      const offers = stage === 'offers' ? await listAllOffers() : [];
+      const tagMap = new Map<number, string>(
+        tagData.map((tag: any): [number, string] => [Number(tag.Id), String(tag.Name)]),
+      );
+
+      const jobSpecTags = await Promise.all(
+        stageJobSpecs.map(async (spec: any) => {
+          try {
+            const relations = await listJobSpecTags(spec.Id);
+            return {
+              id: spec.Id,
+              tagIds: Array.isArray(relations)
+                ? relations
+                    .map((relation: any) => relation.TagId)
+                    .filter((tagId) => typeof tagId === 'number')
+                : [],
+            };
+          } catch (tagErr) {
+            console.warn('[StageModal] failed loading tags for job spec', spec.Id, tagErr);
+            return { id: spec.Id, tagIds: [] };
+          }
+        }),
+      );
+
+      if (!mounted) return;
+
+      const itemsWithMeta = stageJobSpecs.map((spec: any) => {
+        const specTags = jobSpecTags.find((relation) => relation.id === spec.Id);
+        return buildJobSpecItem(spec, stage, apps, interviews, offers, tagMap, specTags?.tagIds ?? []);
+      });
+
+      setItems(itemsWithMeta);
+    } catch (err) {
+      if (!mounted) return;
+      setError(err instanceof Error ? err.message : 'Failed to load stage items');
+    } finally {
+      if (!mounted) return;
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    loadStageData();
   }, [open, stage]);
 
   useEffect(() => {
@@ -232,6 +284,321 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
   }, [dateFrom, searchPosition, searchCompany, selectedRoleTypeIds.join(','), selectedWorkModelIds.join(','), selectedTagIds.join(',')]);
 
   const stageDateLabel = stageDateLabels[stage];
+
+  const handleCreateApplication = async (jobSpecId: number) => {
+    setError(null);
+    setActionLoadingId(jobSpecId);
+
+    try {
+      await createApplication({
+        JobSpecId: jobSpecId,
+        Applied: new Date().toISOString(),
+        IsActive: true,
+      });
+      await loadStageData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create application');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleSoftDeleteJobSpec = async (jobSpecId: number) => {
+    if (!window.confirm('Are you sure you want to soft delete this Job Spec?')) return;
+    setError(null);
+    setActionLoadingId(jobSpecId);
+
+    try {
+      await softDeleteJobSpec(jobSpecId);
+      await loadStageData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete job spec');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const openInterviewForm = (applicationId: number) => {
+    setActiveApplicationId(applicationId);
+    setInterviewSchedule('');
+    setInterviewContactId(null);
+    setInterviewNotes('');
+    setInterviewFormError(null);
+    setInterviewFormOpen(true);
+  };
+
+  const openContactForm = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setContactName('');
+    setContactEmail('');
+    setContactPhone('');
+    setContactNotes('');
+    setContactFormError(null);
+    setContactFormOpen(true);
+  };
+
+  const openOfferForm = (applicationId: number) => {
+    setActiveApplicationId(applicationId);
+    // default offered date to today in YYYY-MM-DD
+    setOfferOfferedDate(new Date().toISOString().slice(0, 10));
+    setOfferSalary('');
+    setOfferNotes('');
+    setOfferFormError(null);
+    setOfferFormOpen(true);
+    setInterviewFormOpen(false);
+  };
+
+  const closeOfferForm = () => {
+    setOfferFormOpen(false);
+    setActiveApplicationId(null);
+    setOfferOfferedDate('');
+    setOfferSalary('');
+    setOfferNotes('');
+    setOfferFormError(null);
+    setOfferCreating(false);
+  };
+
+  const handleCreateOffer = async () => {
+    if (!activeApplicationId) {
+      setOfferFormError('No application selected.');
+      return;
+    }
+    if (!offerOfferedDate) {
+      setOfferFormError('Offered date is required.');
+      return;
+    }
+    setOfferFormError(null);
+    setOfferCreating(true);
+    try {
+      await createOffer({
+        ApplicationId: activeApplicationId,
+        Offered: new Date(offerOfferedDate).toISOString(),
+        Salary: offerSalary || null,
+        Notes: offerNotes || null,
+        IsActive: true,
+      });
+      closeOfferForm();
+      await loadStageData();
+    } catch (err) {
+      setOfferFormError(err instanceof Error ? err.message : 'Failed to create offer');
+    } finally {
+      setOfferCreating(false);
+    }
+  };
+
+  const handleSoftDeleteInterview = async (interviewId: number) => {
+    if (!window.confirm('Are you sure you want to soft delete this interview?')) return;
+    setError(null);
+    setActionLoadingId(interviewId);
+    try {
+      const interview = await getInterviewById(interviewId);
+      const minimalPayload: any = {};
+      for (const [key, value] of Object.entries(interview || {})) {
+        if (value === null) {
+          minimalPayload[key] = null;
+        } else if (typeof value !== 'object') {
+          minimalPayload[key] = value;
+        }
+      }
+      minimalPayload.Id = interviewId;
+      minimalPayload.IsActive = false;
+      await updateInterview(minimalPayload);
+      await loadStageData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete interview');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleSoftDeleteOffer = async (offerId: number) => {
+    if (!window.confirm('Are you sure you want to soft delete this offer?')) return;
+    setError(null);
+    setActionLoadingId(offerId);
+    try {
+      const offer = await getOfferById(offerId);
+      const minimalPayload: any = {};
+      for (const [key, value] of Object.entries(offer || {})) {
+        if (value === null) {
+          minimalPayload[key] = null;
+        } else if (typeof value !== 'object') {
+          minimalPayload[key] = value;
+        }
+      }
+      minimalPayload.Id = offerId;
+      minimalPayload.IsActive = false;
+      console.debug('updateOffer payload', minimalPayload);
+      await updateOffer(minimalPayload);
+      await loadStageData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete offer');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleDiscardApplication = async (applicationId: number) => {
+    if (!window.confirm('Mark this application as discarded?')) return;
+    setError(null);
+    setActionLoadingId(applicationId);
+    try {
+      const application = await getApplicationById(applicationId);
+      const minimalPayload: any = {};
+      for (const [key, value] of Object.entries(application || {})) {
+        if (value === null) {
+          minimalPayload[key] = null;
+        } else if (typeof value !== 'object') {
+          minimalPayload[key] = value;
+        }
+      }
+      minimalPayload.Id = applicationId;
+      const iso = new Date().toISOString();
+      minimalPayload.Discarded = iso;
+      minimalPayload.DiscardedDate = iso;
+      console.debug('updateApplication discard payload', minimalPayload);
+      await updateApplication(minimalPayload);
+      await loadStageData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to discard application');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleRestoreApplication = async (applicationId: number) => {
+    if (!window.confirm('Restore this application (clear discarded date)?')) return;
+    setError(null);
+    setActionLoadingId(applicationId);
+    try {
+      const application = await getApplicationById(applicationId);
+      const minimalPayload: any = {};
+      for (const [key, value] of Object.entries(application || {})) {
+        if (value === null) {
+          minimalPayload[key] = null;
+        } else if (typeof value !== 'object') {
+          minimalPayload[key] = value;
+        }
+      }
+      minimalPayload.Id = applicationId;
+      minimalPayload.Discarded = null;
+      minimalPayload.DiscardedDate = null;
+      console.debug('updateApplication restore payload', minimalPayload);
+      await updateApplication(minimalPayload);
+      await loadStageData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to restore application');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const closeContactForm = () => {
+    setContactFormOpen(false);
+    setContactName('');
+    setContactEmail('');
+    setContactPhone('');
+    setContactNotes('');
+    setContactFormError(null);
+    setContactCreating(false);
+  };
+
+  const handleCreateContact = async () => {
+    if (!contactName.trim()) {
+      setContactFormError('Name is required');
+      return;
+    }
+    setContactFormError(null);
+    setContactCreating(true);
+    try {
+      const payload = {
+        Name: contactName.trim(),
+        Email: contactEmail.trim() || null,
+        Phone: contactPhone.trim() || null,
+        Details: contactNotes.trim() || null,
+        IsActive: true,
+      };
+      const created = await createContact(payload);
+      const newContact = created ?? payload;
+      setContacts((prev) => [newContact, ...prev]);
+      const newId = newContact.Id ?? newContact.id ?? null;
+      if (newId) setInterviewContactId(Number(newId));
+      // Close contact form then ensure the interview form remains open so user can continue creating the interview.
+      closeContactForm();
+      setInterviewFormOpen(true);
+    } catch (err) {
+      setContactFormError(err instanceof Error ? err.message : 'Failed to create contact');
+    } finally {
+      setContactCreating(false);
+    }
+  };
+
+  const closeInterviewForm = () => {
+    setInterviewFormOpen(false);
+    setActiveApplicationId(null);
+    setInterviewSchedule('');
+    setInterviewContactId(null);
+    setInterviewNotes('');
+    setInterviewFormError(null);
+  };
+
+  const handleCreateInterview = async () => {
+    if (!activeApplicationId) {
+      setInterviewFormError('No application selected.');
+      return;
+    }
+    if (!interviewSchedule) {
+      setInterviewFormError('Schedule date is required.');
+      return;
+    }
+
+    setError(null);
+    setInterviewFormError(null);
+    setActionLoadingId(activeApplicationId);
+
+    try {
+      await createInterview({
+        ApplicationId: activeApplicationId,
+        Scheduled: new Date(interviewSchedule).toISOString(),
+        ContactId: interviewContactId,
+        Notes: interviewNotes,
+        IsActive: true,
+      });
+      closeInterviewForm();
+      await loadStageData();
+    } catch (err) {
+      setInterviewFormError(err instanceof Error ? err.message : 'Failed to create interview');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleSoftDeleteApplication = async (applicationId: number) => {
+    if (!window.confirm('Are you sure you want to soft delete this application?')) return;
+    setError(null);
+    setActionLoadingId(applicationId);
+
+    try {
+      const application = await getApplicationById(applicationId);
+      // Build a minimal payload for updating the application to avoid modifying related JobSpec or nested objects.
+      const minimalPayload: any = {};
+      for (const [key, value] of Object.entries(application || {})) {
+        // keep primitives and nulls only; skip nested objects/arrays which may represent linked entities
+        if (value === null) {
+          minimalPayload[key] = null;
+        } else if (typeof value !== 'object') {
+          minimalPayload[key] = value;
+        }
+      }
+      minimalPayload.Id = applicationId;
+      minimalPayload.IsActive = false;
+      await updateApplication(minimalPayload);
+      await loadStageData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete application');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
 
   const filteredItems = useMemo(() => {
     const dateThreshold = dateFrom ? parseDate(dateFrom) : null;
@@ -367,11 +734,11 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
           <div className="stage-table">
             <div className="stage-row stage-row-header">
               <div className="stage-cell stage-cell-date">{stageDateLabel}</div>
-              <div className="stage-cell">Position</div>
-              <div className="stage-cell">Company</div>
+              <div className="stage-cell">Job Position</div>
               <div className="stage-cell">Role Type</div>
               <div className="stage-cell">Work Model</div>
               <div className="stage-cell">Tags</div>
+              <div className="stage-cell stage-cell-actions">Actions</div>
             </div>
             {pagedItems.length === 0 && (
               <div className="stage-row empty-row">
@@ -395,8 +762,25 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                       : item.discardedDate,
                   )}
                 </div>
-                <div className="stage-cell">{item.Position || '—'}</div>
-                <div className="stage-cell">{item.Company || '—'}</div>
+                <div className="stage-cell stage-cell-job-position">
+                  {item.Position || item.Company ? (
+                    <>
+                      {item.Position ? (
+                        <span className="job-position-name">{item.Position}</span>
+                      ) : (
+                        <span className="job-position-empty">—</span>
+                      )}
+                      {item.Position && item.Company && (
+                        <span className="job-position-separator"> at </span>
+                      )}
+                      {item.Company ? (
+                        <span className="job-company-name">{item.Company}</span>
+                      ) : null}
+                    </>
+                  ) : (
+                    <span className="job-position-empty">—</span>
+                  )}
+                </div>
                 <div className="stage-cell">{getRoleTypeLabel(item.RoleTypeId)}</div>
                 <div className="stage-cell">{getWorkModelLabel(item.WorkModelId)}</div>
                 <div className="stage-cell">
@@ -408,10 +792,339 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                     '—'
                   )}
                 </div>
+                <div className="stage-cell stage-cell-actions">
+                  {stage === 'received' ? (
+                    <div className="stage-row-actions">
+                      <button
+                        type="button"
+                        className={`stage-action-button${actionLoadingId === item.Id ? ' disabled' : ''}`}
+                        title="Create application for this job spec"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (actionLoadingId !== item.Id) handleCreateApplication(item.Id);
+                        }}
+                        disabled={actionLoadingId === item.Id}
+                      >
+                        →
+                      </button>
+                      <button
+                        type="button"
+                        className={`stage-action-button stage-action-button-delete${actionLoadingId === item.Id ? ' disabled' : ''}`}
+                        title="Soft delete this job spec"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (actionLoadingId !== item.Id) handleSoftDeleteJobSpec(item.Id);
+                        }}
+                        disabled={actionLoadingId === item.Id}
+                      >
+                        ✖
+                      </button>
+                      <button
+                        type="button"
+                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                        title="Discard application"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                            handleDiscardApplication(item.ApplicationId);
+                          }
+                        }}
+                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  ) : stage === 'applied' ? (
+                    <div className="stage-row-actions">
+                      <button
+                        type="button"
+                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                        title="Create interview for this application"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                            openInterviewForm(item.ApplicationId);
+                          }
+                        }}
+                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
+                      >
+                        →
+                      </button>
+                      <button
+                        type="button"
+                        className={`stage-action-button stage-action-button-delete${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                        title="Soft delete this application"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                            handleSoftDeleteApplication(item.ApplicationId);
+                          }
+                        }}
+                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
+                      >
+                        ✖
+                      </button>
+                      <button
+                        type="button"
+                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                        title="Discard application"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                            handleDiscardApplication(item.ApplicationId);
+                          }
+                        }}
+                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  ) : stage === 'interview' ? (
+                    <div className="stage-row-actions">
+                      <button
+                        type="button"
+                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                        title="Create interview for this application"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                            openInterviewForm(item.ApplicationId);
+                          }
+                        }}
+                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
+                      >
+                        +
+                      </button>
+                      <button
+                        type="button"
+                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                        title="Create offer for this application"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                            openOfferForm(item.ApplicationId);
+                          }
+                        }}
+                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
+                      >
+                        →
+                      </button>
+                      <button
+                        type="button"
+                        className={`stage-action-button stage-action-button-delete${actionLoadingId === item.InterviewId ? ' disabled' : ''}`}
+                        title="Soft delete this interview"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.InterviewId && actionLoadingId !== item.InterviewId) {
+                            handleSoftDeleteInterview(item.InterviewId);
+                          }
+                        }}
+                        disabled={!item.InterviewId || actionLoadingId === item.InterviewId}
+                      >
+                        ✖
+                      </button>
+                      <button
+                        type="button"
+                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                        title="Discard application"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                            handleDiscardApplication(item.ApplicationId);
+                          }
+                        }}
+                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  ) : stage === 'offers' ? (
+                    <div className="stage-row-actions">
+                      <button
+                        type="button"
+                        className={`stage-action-button stage-action-button-delete${actionLoadingId === item.OfferId ? ' disabled' : ''}`}
+                        title="Soft delete this offer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.OfferId && actionLoadingId !== item.OfferId) {
+                            handleSoftDeleteOffer(item.OfferId);
+                          }
+                        }}
+                        disabled={!item.OfferId || actionLoadingId === item.OfferId}
+                      >
+                        ✖
+                      </button>
+                      <button
+                        type="button"
+                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                        title="Discard application"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                            handleDiscardApplication(item.ApplicationId);
+                          }
+                        }}
+                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  ) : stage === 'discarded' ? (
+                    <div className="stage-row-actions">
+                      <button
+                        type="button"
+                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                        title="Restore application"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                            handleRestoreApplication(item.ApplicationId);
+                          }
+                        }}
+                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
+                      >
+                        ↺
+                      </button>
+                    </div>
+                  ) : (
+                    '—'
+                  )}
+                </div>
               </div>
             ))}
           </div>
 
+          {contactFormOpen && (
+            <div className="stage-modal-popup-overlay contact-popup">
+              <div className="stage-modal-popup">
+                <h4>Create Contact</h4>
+                {contactFormError && <p className="error">{contactFormError}</p>}
+                <div className="modal-field">
+                  <label>Name</label>
+                  <input value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Full name" />
+                </div>
+                <div className="modal-field">
+                  <label>Email</label>
+                  <input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="Email address" />
+                </div>
+                <div className="modal-field">
+                  <label>Phone</label>
+                  <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="Phone number" />
+                </div>
+                <div className="modal-field">
+                  <label>Notes</label>
+                  <textarea value={contactNotes} onChange={(e) => setContactNotes(e.target.value)} rows={4} />
+                </div>
+                <div className="modal-actions">
+                  <button className="button secondary-button" type="button" onClick={closeContactForm}>
+                    Cancel
+                  </button>
+                  <button className="button primary-button" type="button" onClick={handleCreateContact} disabled={contactCreating}>
+                    Create
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {offerFormOpen && (
+            <div className="stage-modal-popup-overlay">
+              <div className="stage-modal-popup">
+                <h4>Create Offer</h4>
+                {offerFormError && <p className="error">{offerFormError}</p>}
+                <div className="modal-field">
+                  <label>Offered date</label>
+                  <input
+                    type="date"
+                    value={offerOfferedDate}
+                    onChange={(e) => setOfferOfferedDate(e.target.value)}
+                  />
+                </div>
+                <div className="modal-field">
+                  <label>Salary</label>
+                  <input value={offerSalary} onChange={(e) => setOfferSalary(e.target.value)} placeholder="Salary amount" />
+                </div>
+                <div className="modal-field">
+                  <label>Notes</label>
+                  <textarea value={offerNotes} onChange={(e) => setOfferNotes(e.target.value)} rows={4} />
+                </div>
+                <div className="modal-actions">
+                  <button className="button secondary-button" type="button" onClick={closeOfferForm}>
+                    Cancel
+                  </button>
+                  <button className="button primary-button" type="button" onClick={handleCreateOffer} disabled={offerCreating}>
+                    OK
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {interviewFormOpen && (
+            <div className="stage-modal-popup-overlay">
+              <div className="stage-modal-popup">
+                <h4>Create Interview</h4>
+                {interviewFormError && <p className="error">{interviewFormError}</p>}
+                <div className="modal-field">
+                  <label>Schedule Date</label>
+                  <input
+                    type="date"
+                    value={interviewSchedule}
+                    onChange={(event) => setInterviewSchedule(event.target.value)}
+                  />
+                </div>
+                <div className="modal-field">
+                  <label>Contact</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={(e) => e.stopPropagation()}>
+                    <select
+                      value={interviewContactId ?? ''}
+                      onChange={(event) => setInterviewContactId(event.target.value ? Number(event.target.value) : null)}
+                    >
+                      <option value="">No contact</option>
+                      {contacts.map((contact) => (
+                        <option key={contact.Id ?? contact.id} value={contact.Id ?? contact.id}>
+                          {contact.Name || contact.name || contact.Title || contact.Email || contact.EmailAddress || 'Unnamed contact'}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="stage-action-button"
+                      title="Create new contact"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openContactForm(e);
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div className="modal-field">
+                  <label>Notes</label>
+                  <textarea
+                    value={interviewNotes}
+                    onChange={(event) => setInterviewNotes(event.target.value)}
+                    placeholder="Interview notes"
+                    rows={4}
+                  />
+                </div>
+                <div className="modal-actions">
+                  <button className="button secondary-button" type="button" onClick={closeInterviewForm}>
+                    Cancel
+                  </button>
+                  <button
+                    className="button primary-button"
+                    type="button"
+                    onClick={handleCreateInterview}
+                    disabled={actionLoadingId === activeApplicationId}
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="stage-pagination">
             <button className="button secondary-button" onClick={() => handlePageChange(1)} disabled={page === 1}>
               First

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import StageModal from '../components/StageModal';
-import { getJobSpecCounts } from '../api/summary';
+import { inStageReceived, inStageApplied, inStageInterview, inStageOffer, inStageDiscarded } from '../api/workflow';
 
 type Stage = 'received' | 'applied' | 'interview' | 'offers' | 'discarded';
 
@@ -12,6 +12,29 @@ type Counts = {
   offers: number;
   discarded: number;
 };
+
+export async function getJobSpecCounts(): Promise<Counts> {
+  try {
+    const [inReceived, inApplied, inInterview, inOffer, inDiscarded] = await Promise.all([
+      await inStageReceived(),
+      await inStageApplied(),
+      await inStageInterview(),
+      await inStageOffer(),
+      await inStageDiscarded(),
+    ]);
+
+    return {
+      received: Array.isArray(inReceived) ? inReceived.length : 0,
+      applied: Array.isArray(inApplied) ? inApplied.length : 0,
+      interview: Array.isArray(inInterview) ? inInterview.length : 0,
+      offers: Array.isArray(inOffer) ? inOffer.length : 0,
+      discarded: Array.isArray(inDiscarded) ? inDiscarded.length : 0,
+    };
+  } catch (err) {
+    console.error('[summary] getJobSpecCounts error:', err);
+    throw err;
+  }
+}
 
 export default function HomePage() {
   const [counts, setCounts] = useState<Counts>({ received: 0, applied: 0, interview: 0, offers: 0, discarded: 0 });
@@ -25,8 +48,8 @@ export default function HomePage() {
     async function loadCounts() {
       setLoading(true);
       try {
-        const c = await getJobSpecCounts();
-        if (mounted) setCounts(c);
+        const counters = await getJobSpecCounts();
+        if (mounted) setCounts(counters);
       } catch (err) {
         if (mounted) setError(err instanceof Error ? err.message : 'Failed to load counts');
       } finally {

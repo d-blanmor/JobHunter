@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { saveJobSpec, listSources, listWorkModels, listRoleTypes, listPlacesOfWork, createSource, createPlaceOfWork } from '../api/jobSpecs';
 import Modal from '../components/Modal';
 import { listLocations } from '../api/lu_locations';
+import { listRoleTypes } from '../api/lu_roletypes';
+import { listWorkModels } from '../api/lu_workmodels';
+import { listPlacesOfWork, savePlaceOfWork } from '../api/place_of_work';
+import { listSources, saveSource } from '../api/sources';
+import { saveJobSpec } from '../api/jobSpecs';
 
 export default function JobSpecCreate() {
   const navigate = useNavigate();
@@ -62,7 +66,7 @@ export default function JobSpecCreate() {
     if (!newSourceName.trim()) return;
     try {
       setLoading(true);
-      const created = await createSource({ Name: newSourceName.trim(), IsActive: true });
+      const created = await saveSource({ Name: newSourceName.trim(), IsActive: true });
       setSources((prev) => [...prev, created]);
       setSourceId(created.Id);
       setShowSourceModal(false);
@@ -80,7 +84,7 @@ export default function JobSpecCreate() {
       setLoading(true);
       const payload: any = { LocationId: Number(newPlaceLocationId), IsActive: true };
       if (newPlaceAddress.trim()) payload.Address = newPlaceAddress.trim();
-      const created = await createPlaceOfWork(payload);
+      const created = await savePlaceOfWork(payload);
       setPlacesOfWork((prev) => [...prev, created]);
       setPlaceOfWorkId(created.Id);
       setShowPlaceModal(false);

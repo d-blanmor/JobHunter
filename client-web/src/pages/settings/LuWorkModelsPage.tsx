@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import Modal from '../../components/Modal';
-import { listWorkModels, getWorkModel, saveWorkModel, deleteWorkModel } from '../../api/lu_workmodels';
+import { listWorkModels, saveWorkModel, deleteWorkModel } from '../../api/lu_workmodels';
 
 interface LookupItem {
   Id: number;

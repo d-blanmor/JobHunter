@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import Modal from '../../components/Modal';
-import { listTags, getTag, saveTag, deleteTag } from '../../api/tags';
+import { listTags, saveTag, deleteTag, getJobSpecsByTag, deleteJobSpecsByTag } from '../../api/tags';
 
 interface TagItem {
   Id: number;

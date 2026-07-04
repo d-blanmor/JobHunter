@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import Modal from '../../components/Modal';
-import { listRoleTypes, getRoleType, saveRoleType, deleteRoleType } from '../../api/lu_roletypes';
+import { listRoleTypes, saveRoleType, deleteRoleType } from '../../api/lu_roletypes';
 
 interface LookupItem {
   Id: number;

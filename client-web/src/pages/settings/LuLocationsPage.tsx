@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import Modal from '../../components/Modal';
-import { listLocations, getLocation, saveLocation, deleteLocation } from '../../api/lu_locations';
+import { listLocations, saveLocation, deleteLocation } from '../../api/lu_locations';
 
 interface LocationItem {
   Id: number;

@@ -1,7 +1,7 @@
 import { API_BASE } from '../config';
 
-export async function listWorkModels() {
-  const res = await fetch(`${API_BASE}/roles/lookup/work-models?active_only=true`);
+export async function listWorkModels(IsActve: boolean = true) {
+  const res = await fetch(`${API_BASE}/roles/lookup/work-models?active_only=${IsActve}`);
   if (!res.ok) {
     if (res.status != 404) throw new Error(`Failed to load work models: ${res.status}`);
     return "()";

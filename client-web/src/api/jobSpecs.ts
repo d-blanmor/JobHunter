@@ -1,5 +1,6 @@
 import { API_BASE } from '../config';
 
+/*
 async function parseJsonResponse(res: Response) {
   const text = await res.text();
   return text ? JSON.parse(text) : null;
@@ -54,8 +55,15 @@ async function fetchLookupList(endpoints: string[], errorLabel: string) {
 
   throw lastError ?? new Error(`Failed to load ${errorLabel}`);
 }
+*/
 
-export async function getJobSpecById(id: number) {
+export async function listAllJobSpecs(IsActve: boolean = true) {
+  const res = await fetch(`${API_BASE}/roles/job-specs?active_only=${IsActve}`);
+  if (!res.ok) throw new Error('Failed to load job specs');
+  return res.json();
+}
+
+export async function getJobSpec(id: number) {
   const res = await fetch(`${API_BASE}/roles/job-specs/${id}`);
   if (!res.ok) throw new Error('Failed to load job spec');
   return res.json();
@@ -68,136 +76,105 @@ export async function saveJobSpec(payload: any) {
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Failed to save job spec: ${res.status}`);
-  return parseJsonResponse(res);
-}
-
-export async function listSources() {
-  return fetchLookupList(
-    [
-      `${API_BASE}/roles/lookup/sources?active_only=true`,
-      `${API_BASE}/roles/sources?active_only=true`,
-    ],
-    'sources',
-  );
-}
-
-export async function listWorkModels() {
-  return fetchLookupList(
-    [
-      `${API_BASE}/roles/lookup/work-models?active_only=true`,
-      `${API_BASE}/roles/work-models?active_only=true`,
-    ],
-    'work models',
-  );
-}
-
-export async function listRoleTypes() {
-  return fetchLookupList(
-    [
-      `${API_BASE}/roles/lookup/role-types?active_only=true`,
-      `${API_BASE}/roles/role-types?active_only=true`,
-    ],
-    'role types',
-  );
-}
-
-export async function listPlacesOfWork() {
-  return fetchLookupList(
-    [
-      `${API_BASE}/roles/lookup/places-of-work?active_only=true`,
-      `${API_BASE}/roles/places-of-work?active_only=true`,
-    ],
-    'places of work',
-  );
-}
-
-export async function listContacts() {
-  return fetchLookupList(
-    [
-      `${API_BASE}/roles/lookup/contacts?active_only=true`,
-      `${API_BASE}/roles/contacts?active_only=true`,
-      `${API_BASE}/repository/Contact?active_only=true`,
-      `${API_BASE}/repository/contact?active_only=true`,
-      `${API_BASE}/contacts?active_only=true`,
-    ],
-    'contacts',
-  );
-}
-
-export async function softDeleteJobSpec(id: number) {
-  const jobSpec = await getJobSpecById(id);
-  const payload = {
-    ...jobSpec,
-    Id: id,
-    IsActive: false,
-  };
-  return saveJobSpec(payload);
-}
-
-export async function listTags() {
-  const res = await fetch(`${API_BASE}/tags?active_only=true`);
-  if (!res.ok) throw new Error('Failed to load tags');
   return res.json();
 }
 
-export async function listJobSpecTags(jobSpecId: number) {
+export async function deleteJobSpec(id: number) {
+  const res = await fetch(`${API_BASE}/roles/job-specs/${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error(`Failed to delete job spec: ${res.status}`);
+  return res.json();
+}
+
+// Linked Benefits
+
+export async function listAllJobSpecsBenefits() {
+  const res = await fetch(`${API_BASE}/roles/lnk/jobspecs-benefits`);
+  if (!res.ok) throw new Error('Failed to load job specs benefits');
+  return res.json();
+}
+
+export async function getJobSpecBenefit(jobSpecId: number, benefitId: number) {
+  const res = await fetch(`${API_BASE}/roles/lnk/jobspec-benefit/${jobSpecId}/${benefitId}`);
+  if (!res.ok) throw new Error('Failed to load job spec benefit');
+  return res.json();
+}
+
+export async function getJobSpecBenefits(jobSpecId: number) {
+  const res = await fetch(`${API_BASE}/roles/lnk/jobspec-benefits/${jobSpecId}`);
+  if (!res.ok) throw new Error('Failed to load job spec benefits');
+  return res.json();
+}
+
+export async function saveJobSpecBenefit(payload: any) {
+  const res = await fetch(`${API_BASE}/roles/lnk/jobspec-benefit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Failed to save job spec benefit: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteJobSpecBenefit(jobSpecId: number, benefitId: number) {
+  const res = await fetch(`${API_BASE}/roles/lnk/jobspecs-benefits/${jobSpecId}/${benefitId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error(`Failed to delete job spec benefit: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteJobSpecBenefits(jobSpecId: number) {
+  const res = await fetch(`${API_BASE}/roles/lnk/jobspec-benefits/${jobSpecId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error(`Failed to delete job spec benefits: ${res.status}`);
+  return res.json();
+}
+
+// Linked Tags
+
+export async function listAllJobSpecsTags() {
+  const res = await fetch(`${API_BASE}/roles/lnk/jobspecs-tags`);
+  if (!res.ok) throw new Error('Failed to load job specs tags');
+  return res.json();
+}
+
+export async function getJobSpecTag(jobSpecId: number, tagId: number) {
+  const res = await fetch(`${API_BASE}/roles/lnk/jobspec-tag/${jobSpecId}/${tagId}`);
+  if (!res.ok) throw new Error('Failed to load job spec tag');
+  return res.json();
+}
+
+export async function getJobSpecTags(jobSpecId: number) {
   const res = await fetch(`${API_BASE}/roles/lnk/jobspec-tags/${jobSpecId}`);
   if (!res.ok) throw new Error('Failed to load job spec tags');
   return res.json();
 }
 
-export async function listInterviews() {
-  const res = await fetch(`${API_BASE}/roles/interviews?active_only=true`);
-  if (!res.ok) throw new Error('Failed to load interviews');
-  return res.json();
-}
-
-export async function listOffers() {
-  const res = await fetch(`${API_BASE}/roles/offers?active_only=true`);
-  if (!res.ok) throw new Error('Failed to load offers');
-  return res.json();
-}
-
-export async function createSource(payload: any) {
-  const res = await fetch(`${API_BASE}/roles/sources`, {
+export async function saveJobSpecTag(payload: any) {
+  const res = await fetch(`${API_BASE}/roles/lnk/jobspec-tag`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(`Failed to create source: ${res.status}`);
-  return parseJsonResponse(res);
+  if (!res.ok) throw new Error(`Failed to save job spec tag: ${res.status}`);
+  return res.json();
 }
 
-export async function createPlaceOfWork(payload: any) {
-  const res = await fetch(`${API_BASE}/roles/places-of-work`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+export async function deleteJobSpecTag(jobSpecId: number, tagId: number) {
+  const res = await fetch(`${API_BASE}/roles/lnk/jobspecs-tags/${jobSpecId}/${tagId}`, {
+    method: 'DELETE',
   });
-  if (!res.ok) throw new Error(`Failed to create place of work: ${res.status}`);
-  return parseJsonResponse(res);
+  if (!res.ok) throw new Error(`Failed to delete job spec tag: ${res.status}`);
+  return res.json();
 }
 
-export async function createContact(payload: any) {
-  const endpoints = [
-    `${API_BASE}/roles/contacts`,
-    `${API_BASE}/repository/Contact`,
-    `${API_BASE}/repository/contact`,
-    `${API_BASE}/contacts`,
-  ];
-  for (const url of endpoints) {
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) continue;
-      return parseJsonResponse(res);
-    } catch (err) {
-      // try next endpoint
-      continue;
-    }
-  }
-  throw new Error('Failed to create contact');
+export async function deleteJobSpecTags(jobSpecId: number) {
+  const res = await fetch(`${API_BASE}/roles/lnk/jobspec-tags/${jobSpecId}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error(`Failed to delete job spec tags: ${res.status}`);
+  return res.json();
 }

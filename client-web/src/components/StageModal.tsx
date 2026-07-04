@@ -1,39 +1,88 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from './Modal';
+import { inStageReceived, inStageApplied, inStageInterview, inStageOffer, inStageDiscarded } from '../api/workflow';
 import {
-  listAppliedJobSpecs,
-  listDiscardedJobSpecs,
-  listInterviewJobSpecs,
-  listOffersJobSpecs,
-  listReceivedJobSpecs,
-} from '../api/summary';
+  listWorkModels,
+  getWorkModel,
+  saveWorkModel,
+  deleteWorkModel,
+} from '../api/lu_workmodels';
 import {
-  createApplication,
-  createInterview,
+  listTags,
+  getTag,
+  getTagByName,
+  getTagByContext,
+  saveTag,
+  deleteTag,
+  getJobSpecsByTag,
+  deleteJobSpecsByTag,
+} from '../api/tags';
+import {
+  listRoleTypes,
+  getRoleType,
+  saveRoleType,
+  deleteRoleType,
+} from '../api/lu_roletypes';
+import {
+  listContacts,
+  getContact,
+  saveContact,
+  deleteContact,
+} from '../api/contacts';
+import {
+  listAllJobSpecs,
+  getJobSpec,
+  saveJobSpec,
+  deleteJobSpec,
+  listAllJobSpecsBenefits,
+  getJobSpecBenefit,
+  getJobSpecBenefits,
+  saveJobSpecBenefit,
+  deleteJobSpecBenefit,
+  deleteJobSpecBenefits,
+  listAllJobSpecsTags,
+  getJobSpecTag,
+  getJobSpecTags,
+  saveJobSpecTag,
+  deleteJobSpecTag,
+  deleteJobSpecTags,
+} from '../api/jobSpecs';
+import {
   listAllApplications,
-  listAllInterviews,
-  listAllOffers,
-  getApplicationById,
-  getOfferById,
-  updateOffer,
-  getInterviewById,
-  updateInterview,
-  createOffer,
-  updateApplication,
+  getApplication,
+  getApplicationsByJobSpec,
+  saveLocation,
+  saveApplication,
+  deleteApplication
 } from '../api/applications';
 import {
-  listJobSpecTags,
-  listRoleTypes,
-  listTags,
-  listWorkModels,
-  listContacts,
-  createContact,
-  softDeleteJobSpec,
-} from '../api/jobSpecs';
+  listAllInterviews,
+  getInterview,
+  getInterviewByJobSpec,
+  saveInterview,
+  deleteInterview
+} from '../api/interviews';
+import {
+  listAllOffers,
+  getOffer,
+  getOfferByJobSpec,
+  saveOffer,
+  deleteOffer,
+  listAllOffersBenefits,
+  getOfferBenefit,
+  getOfferBenefits,
+  saveOfferBenefit,
+  deleteOfferBenefit,
+  deleteOfferBenefits,
+} from '../api/offers';
 import { DEFAULT_PAGE_SIZE } from '../config';
-
-type StageType = 'received' | 'applied' | 'interview' | 'offers' | 'discarded';
+import { Stage,
+  JobSpec,
+  Application,
+  Interview,
+  Offer,
+} from '../defs/types';
 
 type StageItem = {
   Id: number;
@@ -57,13 +106,13 @@ type StageItem = {
 };
 
 type Props = {
-  stage: StageType;
+  stage: Stage;
   title: string;
   open: boolean;
   onClose: () => void;
 };
 
-const stageDateLabels: Record<StageType, string> = {
+const stageDateLabels: Record<Stage, string> = {
   received: 'Recieved',
   applied: 'Applied',
   interview: 'Next Interview',
@@ -92,7 +141,7 @@ function parseDate(value?: string | null) {
 
 function buildJobSpecItem(
   spec: any,
-  stage: StageType,
+  stage: Stage,
   applications: any[],
   interviews: any[],
   offers: any[],
@@ -149,18 +198,18 @@ function buildJobSpecItem(
   };
 }
 
-function loadStageSpecs(stage: StageType) {
+function loadStageSpecs(stage: Stage) {
   switch (stage) {
     case 'received':
-      return listReceivedJobSpecs();
+      return inStageReceived();
     case 'applied':
-      return listAppliedJobSpecs();
+      return inStageApplied();
     case 'interview':
-      return listInterviewJobSpecs();
+      return inStageInterview();
     case 'offers':
-      return listOffersJobSpecs();
+      return inStageOffer();
     case 'discarded':
-      return listDiscardedJobSpecs();
+      return inStageDiscarded();
   }
 }
 
@@ -241,7 +290,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       const jobSpecTags = await Promise.all(
         stageJobSpecs.map(async (spec: any) => {
           try {
-            const relations = await listJobSpecTags(spec.Id);
+            const relations = await getJobSpecTags(spec.Id);
             return {
               id: spec.Id,
               tagIds: Array.isArray(relations)
@@ -290,7 +339,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     setActionLoadingId(jobSpecId);
 
     try {
-      await createApplication({
+      await saveApplication({
         JobSpecId: jobSpecId,
         Applied: new Date().toISOString(),
         IsActive: true,
@@ -309,7 +358,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     setActionLoadingId(jobSpecId);
 
     try {
-      await softDeleteJobSpec(jobSpecId);
+      await deleteJobSpec(jobSpecId);
       await loadStageData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete job spec');
@@ -370,7 +419,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     setOfferFormError(null);
     setOfferCreating(true);
     try {
-      await createOffer({
+      await saveOffer({
         ApplicationId: activeApplicationId,
         Offered: new Date(offerOfferedDate).toISOString(),
         Salary: offerSalary || null,
@@ -391,7 +440,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     setError(null);
     setActionLoadingId(interviewId);
     try {
-      const interview = await getInterviewById(interviewId);
+      const interview = await getInterview(interviewId);
       const minimalPayload: any = {};
       for (const [key, value] of Object.entries(interview || {})) {
         if (value === null) {
@@ -402,7 +451,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       }
       minimalPayload.Id = interviewId;
       minimalPayload.IsActive = false;
-      await updateInterview(minimalPayload);
+      await saveInterview(minimalPayload);
       await loadStageData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete interview');
@@ -416,7 +465,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     setError(null);
     setActionLoadingId(offerId);
     try {
-      const offer = await getOfferById(offerId);
+      const offer = await getOffer(offerId);
       const minimalPayload: any = {};
       for (const [key, value] of Object.entries(offer || {})) {
         if (value === null) {
@@ -428,7 +477,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       minimalPayload.Id = offerId;
       minimalPayload.IsActive = false;
       console.debug('updateOffer payload', minimalPayload);
-      await updateOffer(minimalPayload);
+      await saveOffer(minimalPayload);
       await loadStageData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete offer');
@@ -442,7 +491,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     setError(null);
     setActionLoadingId(applicationId);
     try {
-      const application = await getApplicationById(applicationId);
+      const application = await getApplication(applicationId);
       const minimalPayload: any = {};
       for (const [key, value] of Object.entries(application || {})) {
         if (value === null) {
@@ -456,7 +505,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       minimalPayload.Discarded = iso;
       minimalPayload.DiscardedDate = iso;
       console.debug('updateApplication discard payload', minimalPayload);
-      await updateApplication(minimalPayload);
+      await saveApplication(minimalPayload);
       await loadStageData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to discard application');
@@ -470,7 +519,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     setError(null);
     setActionLoadingId(applicationId);
     try {
-      const application = await getApplicationById(applicationId);
+      const application = await getApplication(applicationId);
       const minimalPayload: any = {};
       for (const [key, value] of Object.entries(application || {})) {
         if (value === null) {
@@ -483,7 +532,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       minimalPayload.Discarded = null;
       minimalPayload.DiscardedDate = null;
       console.debug('updateApplication restore payload', minimalPayload);
-      await updateApplication(minimalPayload);
+      await saveApplication(minimalPayload);
       await loadStageData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to restore application');
@@ -578,7 +627,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     setActionLoadingId(applicationId);
 
     try {
-      const application = await getApplicationById(applicationId);
+      const application = await getApplication(applicationId);
       // Build a minimal payload for updating the application to avoid modifying related JobSpec or nested objects.
       const minimalPayload: any = {};
       for (const [key, value] of Object.entries(application || {})) {
@@ -591,7 +640,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       }
       minimalPayload.Id = applicationId;
       minimalPayload.IsActive = false;
-      await updateApplication(minimalPayload);
+      await saveApplication(minimalPayload);
       await loadStageData();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete application');

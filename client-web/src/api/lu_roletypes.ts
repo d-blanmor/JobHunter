@@ -1,7 +1,7 @@
 import { API_BASE } from '../config';
 
-export async function listRoleTypes() {
-  const res = await fetch(`${API_BASE}/roles/lookup/role-types?active_only=true`);
+export async function listRoleTypes(IsActve: boolean = true) {
+  const res = await fetch(`${API_BASE}/roles/lookup/role-types?active_only=${IsActve}`);
   if (!res.ok) {
     if (res.status != 404) throw new Error(`Failed to load role types: ${res.status}`);
     return "()";

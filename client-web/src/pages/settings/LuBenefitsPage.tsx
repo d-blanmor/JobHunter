@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import Modal from '../../components/Modal';
-import { listBenefits, getBenefit, saveBenefit, deleteBenefit } from '../../api/lu_benefits';
+import { listBenefits, saveBenefit, deleteBenefit, getJobSpecsBenefit, getOffersBenefit } from '../../api/lu_benefits';
 
 interface LookupItem {
   Id: number;

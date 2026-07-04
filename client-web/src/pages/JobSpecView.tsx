@@ -1,17 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
-  getJobSpecById,
-  listRoleTypes,
-  listWorkModels,
-  listSources,
-  listPlacesOfWork,
-} from '../api/jobSpecs';
-import {
-  getApplicationsByJobSpec,
-  getInterviewsByJobSpec,
-  getOffersByJobSpec,
-} from '../api/applications';
+
+import { listWorkModels } from '../api/lu_workmodels';
+import { listRoleTypes } from '../api/lu_roletypes';
+import { listPlacesOfWork } from '../api/place_of_work';
+import { listSources } from '../api/sources';
+import { getJobSpec } from '../api/jobSpecs';
+import { getApplicationsByJobSpec } from '../api/applications';
+import { getInterviewByJobSpec } from '../api/interviews';
+import { getOfferByJobSpec } from '../api/offers';
 
 function pad(value: number) {
   return value.toString().padStart(2, '0');
@@ -100,14 +97,14 @@ export default function JobSpecView() {
 
       try {
         const [jobSpec, roles, works, srcs, places, applications, interviewsBySpec, offersBySpec] = await Promise.all([
-          getJobSpecById(Number(id)),
+          getJobSpec(Number(id)),
           listRoleTypes().catch(() => []),
           listWorkModels().catch(() => []),
           listSources().catch(() => []),
           listPlacesOfWork().catch(() => []),
           getApplicationsByJobSpec(Number(id)).catch(() => []),
-          getInterviewsByJobSpec(Number(id)).catch(() => []),
-          getOffersByJobSpec(Number(id)).catch(() => []),
+          getInterviewByJobSpec(Number(id)).catch(() => []),
+          getOfferByJobSpec(Number(id)).catch(() => []),
         ]);
 
         if (!mounted) return;
@@ -156,33 +153,46 @@ export default function JobSpecView() {
 
   return (
     <section className="page">
-      <div className="page-header-row">
-        <div>
-          <h2>Job Spec Details</h2>
-          <p className="page-subtitle">Review the job spec and linked application history.</p>
+      {loading && (
+        <div className="page-header-row">
+          <div>
+            <h2 className="job-spec-title"><p>Loading job spec...</p></h2>
+          </div>
+          <button className="button secondary-button" onClick={() => navigate(-1)}>
+            Back
+          </button>
         </div>
-        <button className="button secondary-button" onClick={() => navigate(-1)}>
-          Back
-        </button>
-      </div>
-
-      {loading && <p>Loading job spec...</p>}
-      {error && <p className="error">{error}</p>}
+      )}
+      {error && (
+        <div className="page-header-row">
+          <div>
+            <h2 className="job-spec-title"><p className="error">{error}</p></h2>
+          </div>
+          <button className="button secondary-button" onClick={() => navigate(-1)}>
+            Back
+          </button>
+        </div>
+      )}
 
       {!loading && !error && spec && (
         <div className="job-spec-view">
-          <div className="job-spec-header">
+          <div className="page-header-row">
             <div>
-              <h3 className="job-spec-title">{safeValue(spec.Position)}</h3>
+              <h2 className="job-spec-title">
+                {safeValue(spec.Position)}
+                {spec.Link ? (
+                  <a href={spec.Link} target="_blank" rel="noreferrer" className="job-spec-link" title="Open job link">
+                    🔗
+                  </a>
+                ) : (
+                  <span className="job-spec-link-placeholder">No link</span>
+                )}
+              </h2>
               <p className="job-spec-company">{safeValue(spec.Company)}</p>
             </div>
-            {spec.Link ? (
-              <a href={spec.Link} target="_blank" rel="noreferrer" className="job-spec-link" title="Open job link">
-                🔗
-              </a>
-            ) : (
-              <span className="job-spec-link-placeholder">No link</span>
-            )}
+            <button className="button secondary-button" onClick={() => navigate(-1)}>
+              Back
+            </button>
           </div>
 
           <div className="job-spec-notes">

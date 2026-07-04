@@ -1,11 +1,8 @@
 import { API_BASE } from '../config';
 
-export async function listLocations() {
-  const res = await fetch(`${API_BASE}/roles/lookup/locations?active_only=true`);
-  if (!res.ok) {
-    if (res.status != 404) throw new Error(`Failed to load locations: ${res.status}`);
-    return "()";
-  }
+export async function listLocations(IsActve: boolean = true) {
+  const res = await fetch(`${API_BASE}/roles/lookup/locations?active_only=${IsActve}`);
+  if (!res.ok) throw new Error(`Failed to load locations: ${res.status}`);
   return res.json();
 }
 

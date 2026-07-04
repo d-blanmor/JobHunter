@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveJobSpec, listSources, listWorkModels, listRoleTypes, listPlacesOfWork, createSource, createPlaceOfWork } from '../api/jobSpecs';
 import Modal from '../components/Modal';
-import { listLocations } from '../api/locations';
+import { listLocations } from '../api/lu_locations';
 
 export default function JobSpecCreate() {
   const navigate = useNavigate();

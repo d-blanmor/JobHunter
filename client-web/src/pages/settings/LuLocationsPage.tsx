@@ -1,6 +1,7 @@
+import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
-import Modal from '../components/Modal';
-import { listLocations, saveLocation, deleteLocation } from '../api/locations';
+import Modal from '../../components/Modal';
+import { listLocations, getLocation, saveLocation, deleteLocation } from '../../api/lu_locations';
 
 interface LocationItem {
   Id: number;
@@ -26,7 +27,7 @@ export default function LocationsPage() {
     setError(null);
     try {
       const data = await listLocations();
-      setLocations(data);
+      if (data != "()") setLocations(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -151,76 +152,71 @@ export default function LocationsPage() {
       {error && <p className="error">{error}</p>}
       {!loading && !error && (
         <>
-          <div className="button-row button-row-top">
-            <button type="button" className="button" onClick={openCreateModal}>
-              Create new location
-            </button>
+          <div className="settings-button">
+            <Link to="" className="button settings-link" onClick={openCreateModal}>
+              Create new Location
+            </Link>
           </div>
 
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Id</th>
-                <th>Country</th>
-                <th>City</th>
-                <th>Order</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orderedLocations.map((location, index) => (
-                <tr key={location.Id}>
-                  <td>{location.Id}</td>
-                  <td>{location.Country}</td>
-                  <td>{location.City || '—'}</td>
-                  <td>{location.Order}</td>
-                  <td>
-                    <div className="action-buttons">
-                      {index > 0 && (
+          {orderedLocations.length != 0 ? (
+            <table className="lookup-table">
+              <tbody>
+                {orderedLocations.map((location, index) => (
+                  <tr key={location.Id}>
+                    <td> &#10625; </td>
+                    <td>{location.Country}</td>
+                    <td>{location.City || '—'}</td>
+                    <td className="cell-actions">
+                      <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
+                        {index > 0 ? (
+                          <button
+                            type="button"
+                            className="lookup-action-button lookup-action-up"
+                            onClick={() => moveLocation(location, 'up')}
+                            aria-label="Move up"
+                          >
+                            &#11014;
+                          </button>
+                        ) : (
+                          <div className="action-placeholder" />
+                        )}
+                        {index < orderedLocations.length - 1 ? (
+                          <button
+                            type="button"
+                            className="lookup-action-button lookup-action-down"
+                            onClick={() => moveLocation(location, 'down')}
+                            aria-label="Move down"
+                          >
+                            &#11015;
+                          </button>
+                        ) : (
+                          <div className="action-placeholder" />
+                        )}
                         <button
                           type="button"
-                          className="button secondary-button"
-                          onClick={() => moveLocation(location, 'up')}
+                          className="lookup-action-button lookup-action-edit"
+                          onClick={() => openEditModal(location)}
+                          aria-label="Edit location"
                         >
-                          Up
+                          &#9999;
                         </button>
-                      )}
-                      {index < orderedLocations.length - 1 && (
                         <button
                           type="button"
-                          className="button secondary-button"
-                          onClick={() => moveLocation(location, 'down')}
+                          className="lookup-action-button lookup-action-delete"
+                          onClick={() => handleDeleteLocation(location)}
+                          aria-label="Delete location"
                         >
-                          Down
+                          &#10060;
                         </button>
-                      )}
-                      <button
-                        type="button"
-                        className="button secondary-button"
-                        onClick={() => openEditModal(location)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        className="button secondary-button delete-button"
-                        onClick={() => handleDeleteLocation(location)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="button-row button-row-bottom">
-            <button type="button" className="button" onClick={openCreateModal}>
-              Create new location
-            </button>
-          </div>
-
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            ''
+          )}
           {isModalOpen && (
             <div className="modal-overlay" role="dialog" aria-modal="true">
               <div className="modal">

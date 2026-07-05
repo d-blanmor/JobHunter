@@ -1,7 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import StageModal from '../components/StageModal';
-import { inStageReceived, inStageApplied, inStageInterview, inStageOffer, inStageDiscarded } from '../api/workflow';
+import {
+  inStageReceived,
+  inStageApplied,
+  inStageInterview,
+  inStageOffer,
+  inStageDiscarded,
+} from '../api/workflow';
 
 import SourceModal from '../components/SourceModal';
 import { listSources } from '../api/sources';
@@ -19,7 +25,13 @@ type Counts = {
 
 export async function getJobSpecCounts(): Promise<Counts> {
   try {
-    const [inReceived, inApplied, inInterview, inOffer, inDiscarded] = await Promise.all([
+    const [
+      inReceived,
+      inApplied,
+      inInterview,
+      inOffer,
+      inDiscarded,
+    ] = await Promise.all([
       await inStageReceived(),
       await inStageApplied(),
       await inStageInterview(),
@@ -41,11 +53,18 @@ export async function getJobSpecCounts(): Promise<Counts> {
 }
 
 export default function HomePage() {
-  const [counts, setCounts] = useState<Counts>({ received: 0, applied: 0, interview: 0, offers: 0, discarded: 0 });
+  const [counts, setCounts] = useState<Counts>({
+    received: 0,
+    applied: 0,
+    interview: 0,
+    offers: 0,
+    discarded: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalStage, setModalStage] = useState<Stage | null>(null);
 
+  /* ---- Portal (source) state -------------------------------------------- */
   const [sources, setSources] = useState<SourceItem[]>([]);
   const [sourcesLoading, setSourcesLoading] = useState(true);
   const [sourcesError, setSourcesError] = useState<string | null>(null);
@@ -54,6 +73,7 @@ export default function HomePage() {
 
   const navigate = useNavigate();
 
+  /* ---- Fetch job‑spec counts ------------------------------------------- */
   useEffect(() => {
     let mounted = true;
 
@@ -63,7 +83,8 @@ export default function HomePage() {
         const counters = await getJobSpecCounts();
         if (mounted) setCounts(counters);
       } catch (err) {
-        if (mounted) setError(err instanceof Error ? err.message : 'Failed to load counts');
+        if (mounted)
+          setError(err instanceof Error ? err.message : 'Failed to load counts');
       } finally {
         if (mounted) setLoading(false);
       }
@@ -75,23 +96,26 @@ export default function HomePage() {
     };
   }, []);
 
+  /* ---- Portal list fetch utility ---------------------------------------- */
+  const fetchSources = async (mounted: boolean = true) => {
+    setSourcesLoading(true);
+    try {
+      const data = await listSources(); // API defined elsewhere
+      if (mounted && Array.isArray(data)) setSources(data);
+    } catch (err) {
+      if (mounted)
+        setSourcesError(
+          err instanceof Error ? err.message : 'Failed to load portals',
+        );
+    } finally {
+      if (mounted) setSourcesLoading(false);
+    }
+  };
+
+  /* ---- Fetch portal list on mount -------------------------------------- */
   useEffect(() => {
     let mounted = true;
-    async function loadSources() {
-      setSourcesLoading(true);
-      try {
-        const data = await listSources();          // API defined elsewhere
-        if (mounted && Array.isArray(data)) setSources(data);
-      } catch (err) {
-        if (mounted)
-          setSourcesError(
-            err instanceof Error ? err.message : 'Failed to load portals',
-          );
-      } finally {
-        if (mounted) setSourcesLoading(false);
-      }
-    }
-    loadSources();
+    fetchSources(mounted);
     return () => {
       mounted = false;
     };
@@ -115,6 +139,7 @@ export default function HomePage() {
 
   return (
     <section className="page">
+      {/* ----------------------------------------------------------------- */}
       <div className="page-header-row">
         <h2>Job specs</h2>
         <Link className="button" to="/job-specs/new">
@@ -128,29 +153,54 @@ export default function HomePage() {
       {!loading && !error && (
         <div className="status-grid-container">
           <div className="status-row">
-            <div className="status-box status-box-clickable" role="button" tabIndex={0} onClick={() => openModalFor('received')}>
+            <div
+              className="status-box status-box-clickable"
+              role="button"
+              tabIndex={0}
+              onClick={() => openModalFor('received')}
+            >
               <div className="status-title">Received</div>
               <div className="status-value">{counts.received}</div>
             </div>
             <div className="status-arrow">→</div>
-            <div className="status-box status-box-clickable" role="button" tabIndex={0} onClick={() => openModalFor('applied')}>
+            <div
+              className="status-box status-box-clickable"
+              role="button"
+              tabIndex={0}
+              onClick={() => openModalFor('applied')}
+            >
               <div className="status-title">Applied</div>
               <div className="status-value">{counts.applied}</div>
             </div>
             <div className="status-arrow">→</div>
-            <div className="status-box status-box-clickable" role="button" tabIndex={0} onClick={() => openModalFor('interview')}>
+            <div
+              className="status-box status-box-clickable"
+              role="button"
+              tabIndex={0}
+              onClick={() => openModalFor('interview')}
+            >
               <div className="status-title">Interview</div>
               <div className="status-value">{counts.interview}</div>
             </div>
             <div className="status-arrow">→</div>
-            <div className="status-box status-box-clickable" role="button" tabIndex={0} onClick={() => openModalFor('offers')}>
+            <div
+              className="status-box status-box-clickable"
+              role="button"
+              tabIndex={0}
+              onClick={() => openModalFor('offers')}
+            >
               <div className="status-title">Offers</div>
               <div className="status-value">{counts.offers}</div>
             </div>
           </div>
 
           <div className="discarded-row">
-            <div className="status-box status-box-discarded status-box-clickable" role="button" tabIndex={0} onClick={() => openModalFor('discarded')}>
+            <div
+              className="status-box status-box-discarded status-box-clickable"
+              role="button"
+              tabIndex={0}
+              onClick={() => openModalFor('discarded')}
+            >
               <div className="status-title">Discarded</div>
               <div className="status-value">{counts.discarded}</div>
             </div>
@@ -158,29 +208,34 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ----------- Job Seeking Portals Section --------------- */}
+      {/* ----------------------------------------------------------------- */}
       <div
         className="page-header-row"
         style={{ marginTop: '2rem' }}
       >
         <h2>Job Seeking Portals</h2>
-        <div className="status-box status-box-discarded status-box-clickable" 
-            style={{
-              marginRight: '.5rem',
-              background: 'none',
-              border: 0,
-              cursor: 'pointer',
-            }}
-            role="button" 
-            tabIndex={0} 
-            onClick={() => { setCurrentId(null); setModalOpen(true); }}>Add new Portal</div>
 
+        <div
+          className="status-box status-box-discarded status-box-clickable"
+          style={{
+            marginRight: '.5rem',
+            background: 'none',
+            border: 0,
+            cursor: 'pointer',
+          }}
+          role="button"
+          tabIndex={0}
+          onClick={() => {
+            setCurrentId(null);
+            setModalOpen(true);
+          }}
+        >
+          Add new Portal
+        </div>
       </div>
 
       {sourcesLoading && <p>Loading portals...</p>}
-      {sourcesError && (
-        <p className="error">{sourcesError}</p>
-      )}
+      {sourcesError && <p className="error">{sourcesError}</p>}
       {!sourcesLoading &&
         !sourcesError &&
         sources.length > 0 && (
@@ -198,16 +253,23 @@ export default function HomePage() {
                   marginBottom: '.5rem',
                 }}
               >
-                <div className="status-box status-box-discarded status-box-clickable" 
-                    style={{
-                      marginRight: '.5rem',
-                      background: 'none',
-                      border: 0,
-                      cursor: 'pointer',
-                    }}
-                    role="button" 
-                    tabIndex={0} 
-                    onClick={() => { setCurrentId(src.Id); setModalOpen(true); }}>✏️</div>
+                <div
+                  className="status-box status-box-discarded status-box-clickable"
+                  style={{
+                    marginRight: '.5rem',
+                    background: 'none',
+                    border: 0,
+                    cursor: 'pointer',
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    setCurrentId(src.Id);
+                    setModalOpen(true);
+                  }}
+                >
+                  ✏️
+                </div>
                 <a
                   href={src.PortalURL || '#'}
                   target="_blank"
@@ -234,19 +296,22 @@ export default function HomePage() {
           </ul>
         )}
 
-      {/* STAGE MODAL (if open) */}
-
+      {/* ----------------------------------------------------------------- */}
       {modalStage && (
-        <StageModal stage={modalStage} title={titleMap[modalStage]} open={true} onClose={closeModal} />
+        <StageModal
+          stage={modalStage}
+          title={titleMap[modalStage]}
+          open={true}
+          onClose={closeModal}
+        />
       )}
 
       {modalOpen && (
         <SourceModal
           sourceId={currentId}
           onClose={() => setModalOpen(false)}
-          onSuccess={() => {
-            // refresh sources list or refetch via useEffect dependency
-            listSources(); // define this function to reload data
+          onSuccess={async () => {
+            await fetchSources(true); // refresh portal list after modal close
             setModalOpen(false);
           }}
         />

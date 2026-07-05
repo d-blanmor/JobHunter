@@ -9,6 +9,7 @@ import TagsPage from './pages/settings/TagsPage';
 import JobSpecCreate from './pages/JobSpecCreate';
 import JobSpecView from './pages/JobSpecView';
 import Contacts from './pages/Contacts';
+import SourcesPage from './pages/settings/Sources';
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/contacts" element={<Contacts />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/sources" element={<SourcesPage />} />
           <Route path="/settings/lu_benefits" element={<LuBenefitsPage />} />
           <Route path="/settings/lu_locations" element={<LuLocationsPage />} />
           <Route path="/settings/lu_roletypes" element={<LuRoleTypesPage />} />

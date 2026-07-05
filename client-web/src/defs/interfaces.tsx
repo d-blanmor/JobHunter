@@ -1,6 +1,4 @@
-export type Stage = 'received' | 'applied' | 'interview' | 'offers' | 'discarded';
-
-export type Tag = {
+export interface TagItem {
   Id: number;
   Name: string;
   Context?: string | null;
@@ -8,7 +6,7 @@ export type Tag = {
   Order: number | null;
 }
 
-export type luLocation = {
+export interface luLocationItem {
   Id: number;
   Country: string;
   City?: string | null;
@@ -16,28 +14,28 @@ export type luLocation = {
   Order: number | null;
 }
 
-export type luRoleType = {
+export interface luRoleinterfaceItem {
   Id: number;
   Name: string;
   IsActive: boolean | true;
   Order: number | null;
 }
 
-export type luWorkModel = {
+export interface luWorkModelItem {
   Id: number;
   Name: string;
   IsActive: boolean | true;
   Order: number | null;
 }
 
-export type luBenefit = {
+export interface luBenefitItem {
   Id: number;
   Name: string;
   IsActive: boolean | true;
   Order: number | null;
 }
 
-export type Source = {
+export interface SourceItem {
   Id: number;
   Name: string;
   PortalURL?: string | null;
@@ -45,7 +43,7 @@ export type Source = {
   IsActive: boolean | true;
 }
 
-export interface LocationItem {
+export interface LocationItemItem {
   Id: number;
   Country: string;
   City?: string;
@@ -53,7 +51,7 @@ export interface LocationItem {
   Order: number;
 }
 
-export type PlaceOfWork = {
+export interface PlaceOfWorkItem {
   Id: number;
   LocationId: number;
   Location: Location;
@@ -61,7 +59,7 @@ export type PlaceOfWork = {
   IsActive: boolean | true;
 }
 
-export type Contact = {
+export interface ContactItem {
   Id: number;
   Name: string;
   Email?: string | null;
@@ -70,18 +68,18 @@ export type Contact = {
   IsActive: boolean | true;
 }
 
-export type Application = {
+export interface ApplicationItem {
   Id: number;
   Applied: string;
   Confirmed?: string | null;
   Discarded?: string | null;
   Notes?: string | null;
-  Interviews?: Interview[] | null;
-  Offers?: Offer[] | null;
+  Interviews?: InterviewItem[] | null;
+  Offers?: OfferItem[] | null;
   IsActive: boolean | true;
 }
 
-export type JobSpec = {
+export interface JobSpecItem {
   Id: number;
   Position: string;
   Created: string | null;
@@ -98,20 +96,32 @@ export type JobSpec = {
   RoleType?: string | null;
   SalaryExpectation?: string | null;
   ContactId?: number | null;
-  Contact?: Contact | null;
+  Contact?: ContactItem | null;
   Published?: string | null;
-  Applications?: Application[] | null;
-  Benefits?: luBenefit[] | null;
-  Tags?: Tag[] | null;
+  Applications?: ApplicationItem[] | null;
+  Benefits?: luBenefitItem[] | null;
+  Tags?: TagItem[] | null;
   IsActive: boolean | true;
 }
 
-export type Offer = {
+export interface InterviewItem {
+  Id: number;
+  ApplicationId: number;
+  Scheduled: string;
+  ContactId?: number | null;
+  Contact?: ContactItem | null;
+  Notes?: string | null;
+  Outcome?: string | null;
+  Feedback?: string | null;
+  IsActive: boolean | true;
+}
+
+export interface OfferItem {
   Id: number;
   ApplicationId: number;
   Offered: string;
   Salary?: string | null;
   Notes?: string | null;
-  Benefits?: luBenefit[] | null;
+  Benefits?: luBenefitItem[] | null;
   IsActive: boolean | true;
 }

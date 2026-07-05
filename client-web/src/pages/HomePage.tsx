@@ -1,7 +1,11 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import StageModal from '../components/StageModal';
 import { inStageReceived, inStageApplied, inStageInterview, inStageOffer, inStageDiscarded } from '../api/workflow';
+
+import SourceModal from '../components/SourceModal';
+import { listSources } from '../api/sources';
+import { SourceItem } from '../defs/interfaces';
 
 type Stage = 'received' | 'applied' | 'interview' | 'offers' | 'discarded';
 
@@ -42,6 +46,14 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null);
   const [modalStage, setModalStage] = useState<Stage | null>(null);
 
+  const [sources, setSources] = useState<SourceItem[]>([]);
+  const [sourcesLoading, setSourcesLoading] = useState(true);
+  const [sourcesError, setSourcesError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentId, setCurrentId] = useState<number | null>(null); // id of source being edited
+
+  const navigate = useNavigate();
+
   useEffect(() => {
     let mounted = true;
 
@@ -58,6 +70,28 @@ export default function HomePage() {
     }
 
     loadCounts();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadSources() {
+      setSourcesLoading(true);
+      try {
+        const data = await listSources();          // API defined elsewhere
+        if (mounted && Array.isArray(data)) setSources(data);
+      } catch (err) {
+        if (mounted)
+          setSourcesError(
+            err instanceof Error ? err.message : 'Failed to load portals',
+          );
+      } finally {
+        if (mounted) setSourcesLoading(false);
+      }
+    }
+    loadSources();
     return () => {
       mounted = false;
     };
@@ -124,8 +158,98 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* ----------- Job Seeking Portals Section --------------- */}
+      <div
+        className="page-header-row"
+        style={{ marginTop: '2rem' }}
+      >
+        <h2>Job Seeking Portals</h2>
+        <div className="status-box status-box-discarded status-box-clickable" 
+            style={{
+              marginRight: '.5rem',
+              background: 'none',
+              border: 0,
+              cursor: 'pointer',
+            }}
+            role="button" 
+            tabIndex={0} 
+            onClick={() => { setCurrentId(null); setModalOpen(true); }}>Add new Portal</div>
+
+      </div>
+
+      {sourcesLoading && <p>Loading portals...</p>}
+      {sourcesError && (
+        <p className="error">{sourcesError}</p>
+      )}
+      {!sourcesLoading &&
+        !sourcesError &&
+        sources.length > 0 && (
+          <ul
+            className="source-list"
+            style={{ listStyle: 'none', padding: 0 }}
+          >
+            {sources.map((src) => (
+              <li
+                key={src.Id}
+                className="source-item"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '.5rem',
+                }}
+              >
+                <div className="status-box status-box-discarded status-box-clickable" 
+                    style={{
+                      marginRight: '.5rem',
+                      background: 'none',
+                      border: 0,
+                      cursor: 'pointer',
+                    }}
+                    role="button" 
+                    tabIndex={0} 
+                    onClick={() => { setCurrentId(src.Id); setModalOpen(true); }}>✏️</div>
+                <a
+                  href={src.PortalURL || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    marginRight: 'auto',
+                    textDecoration: 'none',
+                    color: '#0066cc',
+                  }}
+                >
+                  {src.Name}
+                </a>
+
+                {src.Details && (
+                  <span
+                    className="source-details"
+                    style={{ marginLeft: '1rem', color: '#666', fontSize: '.85rem' }}
+                  >
+                    {src.Details}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+
+      {/* STAGE MODAL (if open) */}
+
       {modalStage && (
         <StageModal stage={modalStage} title={titleMap[modalStage]} open={true} onClose={closeModal} />
+      )}
+
+      {modalOpen && (
+        <SourceModal
+          sourceId={currentId}
+          onClose={() => setModalOpen(false)}
+          onSuccess={() => {
+            // refresh sources list or refetch via useEffect dependency
+            listSources(); // define this function to reload data
+            setModalOpen(false);
+          }}
+        />
       )}
     </section>
   );

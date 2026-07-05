@@ -2,87 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from './Modal';
 import { inStageReceived, inStageApplied, inStageInterview, inStageOffer, inStageDiscarded } from '../api/workflow';
-import {
-  listWorkModels,
-  getWorkModel,
-  saveWorkModel,
-  deleteWorkModel,
-} from '../api/lu_workmodels';
-import {
-  listTags,
-  getTag,
-  getTagByName,
-  getTagByContext,
-  saveTag,
-  deleteTag,
-  getJobSpecsByTag,
-  deleteJobSpecsByTag,
-} from '../api/tags';
-import {
-  listRoleTypes,
-  getRoleType,
-  saveRoleType,
-  deleteRoleType,
-} from '../api/lu_roletypes';
-import {
-  listContacts,
-  getContact,
-  saveContact,
-  deleteContact,
-} from '../api/contacts';
-import {
-  listAllJobSpecs,
-  getJobSpec,
-  saveJobSpec,
-  deleteJobSpec,
-  listAllJobSpecsBenefits,
-  getJobSpecBenefit,
-  getJobSpecBenefits,
-  saveJobSpecBenefit,
-  deleteJobSpecBenefit,
-  deleteJobSpecBenefits,
-  listAllJobSpecsTags,
-  getJobSpecTag,
-  getJobSpecTags,
-  saveJobSpecTag,
-  deleteJobSpecTag,
-  deleteJobSpecTags,
-} from '../api/jobSpecs';
-import {
-  listAllApplications,
-  getApplication,
-  getApplicationsByJobSpec,
-  saveLocation,
-  saveApplication,
-  deleteApplication
-} from '../api/applications';
-import {
-  listAllInterviews,
-  getInterview,
-  getInterviewByJobSpec,
-  saveInterview,
-  deleteInterview
-} from '../api/interviews';
-import {
-  listAllOffers,
-  getOffer,
-  getOfferByJobSpec,
-  saveOffer,
-  deleteOffer,
-  listAllOffersBenefits,
-  getOfferBenefit,
-  getOfferBenefits,
-  saveOfferBenefit,
-  deleteOfferBenefit,
-  deleteOfferBenefits,
-} from '../api/offers';
+import { listWorkModels } from '../api/lu_workmodels';
+import { listTags } from '../api/tags';
+import { listRoleTypes } from '../api/lu_roletypes';
+import { listContacts } from '../api/contacts';
+import { deleteJobSpec, getJobSpecTags } from '../api/jobSpecs';
+import { listAllApplications, getApplication, saveApplication } from '../api/applications';
+import { listAllInterviews, getInterview, saveInterview } from '../api/interviews';
+import { listAllOffers, getOffer, saveOffer } from '../api/offers';
 import { DEFAULT_PAGE_SIZE } from '../config';
-import { Stage,
-  JobSpec,
-  Application,
-  Interview,
-  Offer,
-} from '../defs/types';
+import { Stage } from '../defs/types';
 
 type StageItem = {
   Id: number;

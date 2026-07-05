@@ -29,26 +29,47 @@ export default function JobSpecCreate() {
 
   useEffect(() => {
     let mounted = true;
+
     async function load() {
       setLoading(true);
       try {
-        const [s, w, r, p, locs] = await Promise.all([listSources(), listWorkModels(), listRoleTypes(), listPlacesOfWork(), listLocations()]);
+        const [
+          s,
+          w,
+          r,
+          pRaw,   // <- raw result from listPlacesOfWork()
+          locs
+        ] = await Promise.all([
+          listSources(),
+          listWorkModels(),
+          listRoleTypes(),
+          listPlacesOfWork(),     // <-- may return non‑array
+          listLocations()
+        ]);
+
         if (!mounted) return;
+
         setSources(s);
         setWorkModels(w);
         setRoleTypes(r);
-        setPlacesOfWork(p);
+
+        /*  <--- NEW CODE ---------------------------------------------------- */
+        // Ensure we always store an array. If the API returns an object that
+        // contains a data field, you can adapt the check accordingly.
+        const places = Array.isArray(pRaw) ? pRaw : (pRaw?.data ?? []);
+        setPlacesOfWork(places);
+        /*  ---------------------------------------------------------------- */
+
         setLocations(locs);
-      } catch (err) {
+      } catch (err: any) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
         if (mounted) setLoading(false);
       }
     }
+
     load();
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, []);
 
   const handleCancel = () => {
@@ -107,6 +128,7 @@ export default function JobSpecCreate() {
       Position: position.trim(),
       Company: company.trim() || undefined,
       Description: description.trim() || undefined,
+      Created: new Date().toISOString(),
       IsActive: true,
     };
     if (sourceId) payload.SourceId = Number(sourceId);

@@ -1,22 +1,51 @@
 :root {
-  color-scheme: light;
-  font-family: Inter, system-ui, sans-serif;
-  background: #f5f7fb;
-  color: #111827;
+  /* --- THEME VARIABLES (SYSTEM) --- */
+  /* Light Skin Variables (Default): Explicitly defined for robustness */
+  --color-brand-primary: #1d4ed8; /* Blue-700 */
+  --color-brand-secondary: #3b82f6; /* Blue-500 */
+  --color-text-default: #111827;
+  --color-text-muted: #475569;
+  --color-background-page: #ffffff; /* White background for content cards */
+  --color-background-main: #f5f7fb; /* Light grey background for main body area */
+  --color-border-default: #e5e7eb;
+  /* --- WORKFLOW STAGE COLORS (LIGHT SKIN) --- */
+  --stage-received-bg: #d1fae5; /* Green-100 - Received */
+  --stage-applied-bg: #a7f3d0; /* Green-200 - Applied */ 
+  --stage-interview-bg: #6ee7b3; /* Green-300 - Interview */ 
+  --stage-offers-bg: #4ade80; /* Green-400 - Offer Goal */ 
+  /* --- END STAGE COLORS --- */
+  --color-scheme: light;
+}
+
+/* DARK MODE EXAMPLE */
+[data-skin="dark"] {
+  --color-text-default: #f3f4f6;
+  --color-text-muted: #9ca3af;
+  --color-background-page: #1f2937; /* Darker card background */
+  --color-background-main: #111827; /* Deep dark background */
+  --color-border-default: #374151;
+}
+
+/* OCEAN/CUSTOM SKIN EXAMPLE */
+[data-skin="ocean"] {
+    --color-brand-primary: #0ea5e9; /* Sky Blue for Ocean Skin */
+    --color-text-default: #1f2937;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background: #f5f7fb;
+  background: var(--color-background-main);
+  color: var(--color-text-default);
 }
 
 button,
 input,
 select {
   font: inherit;
+  transition: all 0.2s ease;
+  border-color: var(--color-border-default);
 }
-
 .app-shell {
   max-width: 1040px;
   margin: 0 auto;
@@ -38,7 +67,7 @@ select {
 }
 
 .page {
-  background: white;
+  background: var(--color-background-page);
   border-radius: 18px;
   box-shadow: 0 18px 60px rgba(15, 23, 42, 0.08);
   padding: 24px;
@@ -50,16 +79,123 @@ select {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 20x;
 }
 
 .page-subtitle {
   margin: 6px 0 0;
-  color: #475569;
+  color: var(--color-text-muted);
   font-size: 0.98rem;
 }
 
 .wide-button {
   width: 100%;
   justify-content: center;
+}
+.status-grid-container {
+  display: flex; /* Use flex layout for rows */
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 3rem;
+}
+.status-row {
+  display: flex; /* Items horizontally */
+  align-items: stretch;
+  gap: 16px;
+}
+.status-arrow {
+    /* Styling for the arrow separator */
+    font-size: 2rem; /* Larger gap indication */
+    line-height: 1; /* Keeps it vertically centered with boxes */
+}
+.status-box {
+  flex-grow: 1; /* Allows all status boxes to take equal space horizontally */
+  min-width: 0; /* Necessary for flex item in a row context */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--color-background-page); /* Use card background */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05); /* Softer shadow than the main page card */
+}
+.status-title {
+  font-size: 1rem; /* Small, descriptive title */
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+.status-value {
+  font-size: 3rem; /* Large, primary number */
+  font-weight: 700;
+  color: var(--color-brand-primary); /* Use brand color for emphasis */
+}
+/* Specific Styles Overrides */
+.status-box-discarded {
+    /* Visually distinct background/border if needed, but keeping it clean with card style */
+}
+.source-list {
+  padding: 1rem 0; /* Padding around the list items within their container */
+}
+.source-item {
+    /* Ensures the source item content is aligned nicely */
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border-default);
+}
+.source-item:last-child {
+    border-bottom: none;
+}
+
+.status-grid-container {
+  display: flex; /* Use flex layout for rows */
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 3rem;
+}
+.status-row {
+  display: flex; /* Items horizontally */
+  align-items: stretch;
+  gap: 16px;
+}
+.status-arrow {
+    /* Styling for the arrow separator */
+    font-size: 2rem; /* Larger gap indication */
+    line-height: 1; /* Keeps it vertically centered with boxes */
+}
+.status-box {
+  flex-grow: 1; /* Allows all status boxes to take equal space horizontally */
+  min-width: 0; /* Necessary for flex item in a row context */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--color-background-page); /* Use card background */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05); /* Softer shadow than the main page card */
+}
+.status-title {
+  font-size: 1rem; /* Small, descriptive title */
+  color: var(--color-text-muted);
+  margin-bottom: 8px;
+}
+.status-value {
+  font-size: 3rem; /* Large, primary number */
+  font-weight: 700;
+  color: var(--color-brand-primary); /* Use brand color for emphasis */
+}
+/* Specific Styles Overrides */
+.status-box-discarded {
+    /* Visually distinct background/border if needed, but keeping it clean with card style */
+}
+.source-list {
+  padding: 1rem 0; /* Padding around the list items within their container */
+}
+.source-item {
+    /* Ensures the source item content is aligned nicely */
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border-default);
+}
+.source-item:last-child {
+    border-bottom: none;
 }

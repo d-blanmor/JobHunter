@@ -253,23 +253,7 @@ export default function HomePage() {
                   marginBottom: '.5rem',
                 }}
               >
-                <div
-                  className="status-box status-box-discarded status-box-clickable"
-                  style={{
-                    marginRight: '.5rem',
-                    background: 'none',
-                    border: 0,
-                    cursor: 'pointer',
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => {
-                    setCurrentId(src.Id);
-                    setModalOpen(true);
-                  }}
-                >
-                  ✏️
-                </div>
+                {src.PortalURL ? (
                 <a
                   href={src.PortalURL || '#'}
                   target="_blank"
@@ -282,7 +266,18 @@ export default function HomePage() {
                 >
                   {src.Name}
                 </a>
-
+                ) : (
+                  <span
+                    className="source-details"
+                  style={{
+                    marginRight: 'auto',
+                    textDecoration: 'none',
+                    color: '#0066cc',
+                  }}
+                  >
+                    {src.Name}
+                  </span>
+                )}
                 {src.Details && (
                   <span
                     className="source-details"

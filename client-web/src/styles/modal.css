@@ -1,7 +1,8 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  /* Use a semi-transparent overlay based on background color */
+  background: rgba(15, 23, 42, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11,11 +12,11 @@
 .modal {
   width: min(100%, 1250px);
   max-width: 94rem;
-  background: white;
+  background: var(--color-background-page); /* USE VARIABLE */
   border-radius: 18px;
   padding: 24px;
   box-shadow: 0 18px 60px rgba(15, 23, 42, 0.18);
-  font-size: 0.96rem;
+  /* Shadow needs to adjust slightly for dark mode visibility */
 }
 
 .modal-field {
@@ -28,6 +29,7 @@
 .modal-field label {
   font-weight: 600;
   font-size: 0.82rem;
+  color: var(--color-text-default);
 }
 
 .modal-field input,
@@ -35,10 +37,10 @@
 .modal-field textarea {
   width: 80%;
   padding: 8px 10px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-border-default); /* USE VARIABLE */
   border-radius: 10px;
-  background: white;
-  font-size: 0.68rem;
+  background: var(--color-background-page);
+  color: var(--color-text-default);
 }
 
 .modal-field textarea {
@@ -61,7 +63,7 @@
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 10x;
   margin-top: 18px;
 }
 
@@ -70,3 +72,4 @@
     width: min(100%, 92vw);
   }
 }
+

@@ -158,30 +158,6 @@ export default function SourcesPage() {
                     <td>{source.PortalURL || '—'}</td>
                     <td className="cell-actions">
                       <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
-                        {index > 0 ? (
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-up"
-                            //onClick={() => moveSource(source, 'up')}
-                            aria-label="Move up"
-                          >
-                            &#11014;
-                          </button>
-                        ) : (
-                          <div className="action-placeholder" />
-                        )}
-                        {index < 10 - 1 ? (
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-down"
-                            //onClick={() => moveSource(source, 'down')}
-                            aria-label="Move down"
-                          >
-                            &#11015;
-                          </button>
-                        ) : (
-                          <div className="action-placeholder" />
-                        )}
                         <button
                           type="button"
                           className="lookup-action-button lookup-action-edit"

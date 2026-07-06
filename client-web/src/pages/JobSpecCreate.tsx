@@ -148,7 +148,7 @@ export default function JobSpecCreate() {
   };
 
   return (
-    <section className="page">
+    <section className="page job-spec-create">
       <h2>Create Job Spec</h2>
       {loading && <p>Loading...</p>}
       {error && <p className="error">{error}</p>}

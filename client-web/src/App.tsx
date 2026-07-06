@@ -11,6 +11,7 @@ import JobSpecView from './pages/JobSpecView';
 import Contacts from './pages/Contacts';
 import SourcesPage from './pages/settings/Sources';
 import React, { useState, useEffect } from 'react';
+import { FaSun, FaMoon } from 'react-icons/fa';
 
 function App() {
   /* State to manage the current skin theme (e.g., 'light', 'dark') */
@@ -29,7 +30,7 @@ function App() {
   return (
     // Pass the skin context/attribute to a wrapper element that encapsulates everything
     <div className="app-shell" data-skin={currentSkin}>
-      {/* HEADER: SUGGESTION: This area should house a button that calls handleSkinChange() */}
+      {/* HEADER with theme toggle icon */}
       <header className="app-header">
         <div>
           <h1>JobHunter UI</h1>
@@ -41,7 +42,24 @@ function App() {
           {/* CORRECTED: Link targets the dedicated settings index page */}
           <Link to="/settings">Settings</Link>
             {/* Skin Selector Example: A button/dropdown here */}
-            <button className="wide-button" onClick={()=>handleSkinChange(currentSkin==='light'?'dark':'light')} style={{marginLeft:'auto'}}>{currentSkin==='light'? 'Dark Mode': 'Light Mode'} </button>
+            <button
+  aria-label={currentSkin === "light" ? "Switch to dark mode" : "Switch to light mode"}
+  onClick={() => handleSkinChange(currentSkin === 'light' ? 'dark' : 'light')}
+  style={{
+    marginLeft: 'auto',
+    background: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    color: 'inherit',
+    fontSize: '1.5rem',
+    padding: 0
+  }}>
+  {currentSkin === 'light' ? (
+    <FaMoon aria-hidden="true" />
+  ) : (
+    <FaSun aria-hidden="true" />
+  )}
+</button>
         </nav>
       </header>
 

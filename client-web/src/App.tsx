@@ -41,7 +41,7 @@ function App() {
           {/* CORRECTED: Link targets the dedicated settings index page */}
           <Link to="/settings">Settings</Link>
             {/* Skin Selector Example: A button/dropdown here */}
-            <span>Theme: {currentSkin}</span>{/* Placeholder display of current skin */}
+            <button className="wide-button" onClick={()=>handleSkinChange(currentSkin==='light'?'dark':'light')} style={{marginLeft:'auto'}}>{currentSkin==='light'? 'Dark Mode': 'Light Mode'} </button>
         </nav>
       </header>
 

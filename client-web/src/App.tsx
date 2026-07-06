@@ -14,11 +14,29 @@ import React, { useState, useEffect } from 'react';
 import { FaSun, FaMoon } from 'react-icons/fa';
 
 function App() {
-  /* State to manage the current skin theme (e.g., 'light', 'dark') */
-  const [currentSkin, setCurrentSkin] = useState('light');
+/* State to manage the current skin theme (e.g., 'light', 'dark') */
+    const [currentSkin, setCurrentSkin] = useState<'light' | 'dark'>(() => {
+  const match = document.cookie.match(/(^|;\s*)app-skin=([^;]+)/);
+  if (match && (match[2] === 'light' || match[2] === 'dark')) return match[2] as 'light' | 'dark';
+  return 'light';
+});
 
   // Apply the selected skin via data attribute on the top-level shell div.
-  useEffect(() => {
+  // Read cookie on mount
+   useEffect(() => {
+     const match = document.cookie.match(/(^|;\s*)app-skin=([^;]+)/);
+     if (match && (match[2] === 'light' || match[2] === 'dark'))
+       setCurrentSkin(match[2] as 'light' | 'dark');
+   }, []);
+
+   // Update cookie when skin changes
+   useEffect(() => {
+     document.cookie = `app-skin=${currentSkin}; path=/; max-age=31536000`;
+   }, [currentSkin]);
+
+   // Apply the selected skin via data attribute on the top-level shell div.
+   useEffect(() => {
+
     document.body.setAttribute('data-skin', currentSkin);
   }, [currentSkin]);
 

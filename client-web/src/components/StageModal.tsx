@@ -5,7 +5,7 @@ import { inStageReceived, inStageApplied, inStageInterview, inStageOffer, inStag
 import { listWorkModels } from '../api/lu_workmodels';
 import { listTags } from '../api/tags';
 import { listRoleTypes } from '../api/lu_roletypes';
-import { listContacts } from '../api/contacts';
+import { listContacts, saveContact } from '../api/contacts';
 import { deleteJobSpec, getJobSpecTags } from '../api/jobSpecs';
 import { listAllApplications, getApplication, saveApplication } from '../api/applications';
 import { listAllInterviews, getInterview, saveInterview } from '../api/interviews';
@@ -312,7 +312,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     setContactPhone('');
     setContactNotes('');
     setContactFormError(null);
-    setContactFormOpen(true);
+//    setContactFormOpen(true);
   };
 
   const openOfferForm = (applicationId: number) => {
@@ -495,7 +495,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
         Details: contactNotes.trim() || null,
         IsActive: true,
       };
-      const created = await createContact(payload);
+      const created = await saveContact(payload);
       const newContact = created ?? payload;
       setContacts((prev) => [newContact, ...prev]);
       const newId = newContact.Id ?? newContact.id ?? null;
@@ -534,7 +534,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     setActionLoadingId(activeApplicationId);
 
     try {
-      await createInterview({
+      await saveInterview({
         ApplicationId: activeApplicationId,
         Scheduled: new Date(interviewSchedule).toISOString(),
         ContactId: interviewContactId,

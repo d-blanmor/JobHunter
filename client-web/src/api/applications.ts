@@ -14,6 +14,7 @@ export async function listAllApplications(IsActve: boolean = true) {
 export async function getApplication(id: number) {
   const res = await fetch(`${API_BASE}/roles/applications/${id}`);
   if (!res.ok) throw new Error(`Failed to load application ${id}`);
+  return res.json();
 }
 
 export async function getApplicationsByJobSpec(jobSpecId: number) {
@@ -39,7 +40,6 @@ export async function saveApplication(payload: any) {
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`Failed to save application: ${res.status}`);
-  //return parseJsonResponse(res);
   return res.json();
 }
 

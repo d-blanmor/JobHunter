@@ -120,10 +120,16 @@ class rolesSource(SQLModel, table=True):
         sa_column_kwargs={"autoincrement": True}
     )
     Name: str
+    ParentId: Optional[int] = Field(foreign_key="roles_sources.Id")
     PortalURL: Optional[str] = None
+    Icon: Optional[bytes] = None
     Details: Optional[str] = None
     IsActive: bool = True
+    Order: int = 0
+
     JobSpecs: list["rolesJobSpec"] = Relationship(back_populates="Source")
+    #Children: list["rolesSource"] = Relationship(back_populates="Children")
+    Contacts: list["rolesContact"] = Relationship(back_populates="Source")
 
 class rolesPlaceOfWork(SQLModel, table=True):
     __tablename__ = "roles_places_of_work"
@@ -148,10 +154,12 @@ class rolesContact(SQLModel, table=True):
     Email: Optional[str] = None
     Phone: Optional[str] = None
     Details: Optional[str] = None
+    SourceId: Optional[int] = Field(foreign_key="roles_sources.Id", nullable=True)
     IsActive: bool = True
 
     JobSpecs: list["rolesJobSpec"] = Relationship(back_populates="Contact")
     Interviews: list["rolesInterview"] = Relationship(back_populates="Contact")
+    Source: list["rolesSource"] = Relationship(back_populates="Contacts")
 
 class rolesApplication(SQLModel, table=True):
     __tablename__ = "roles_applications"
@@ -167,6 +175,8 @@ class rolesApplication(SQLModel, table=True):
     Applied: datetime
     Confirmed: Optional[datetime] = None
     Discarded: Optional[datetime] = None
+    Letter: Optional[str] = None
+    CV: Optional[str] = None
     Notes: Optional[str] = None
     IsActive: bool = True
 
@@ -188,7 +198,6 @@ class rolesJobSpec(SQLModel, table=True):
         index=True
     )
     Link: Optional[str] = None
-    Description: Optional[str] = None
     PlaceOfWorkId: Optional[int] = Field(
         default=None, 
         foreign_key="roles_places_of_work.Id", 
@@ -210,6 +219,9 @@ class rolesJobSpec(SQLModel, table=True):
         foreign_key="roles_contacts.Id", 
         index=True
     )
+    Description: Optional[str] = None
+    Analysis: Optional[str] = None
+    Notes: Optional[str] = None
     Published: Optional[datetime] = None
     Created: datetime = Field(default_factory=datetime.utcnow)
     IsActive: bool = True
@@ -236,6 +248,8 @@ class rolesInterview(SQLModel, table=True):
         default=None, 
         foreign_key="roles_contacts.Id"
     )
+    Description: Optional[int] = None
+    Analysis: Optional[int] = None
     Notes: Optional[str] = None
     Outcome: Optional[str] = None
     Feedback: Optional[str] = None
@@ -253,9 +267,17 @@ class rolesOffer(SQLModel, table=True):
     ApplicationId: int = Field(foreign_key="roles_applications.Id")
     Offered: datetime
     Salary: Optional[str] = None
+    Description: Optional[str] = None
     Notes: Optional[str] = None
     IsActive: bool = True
 
     Application: Optional["rolesApplication"] = Relationship(back_populates="Offer")
 
     Benefits: list["rolesLnkOfferBenefit"] = Relationship(back_populates="Offer")
+
+class appSetting(SQLModel, table=True):
+    __tablename__ = "app_settings"
+    Key: str = Field(primary_key=True)
+    Value: Optional[str] = None
+    Notes: Optional[str] = None
+    IsActive: bool = True

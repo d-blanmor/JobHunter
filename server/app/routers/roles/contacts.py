@@ -7,7 +7,7 @@ from sqlmodel import Session
 from app.database import get_session
 from app.models import rolesContact
 from app.schemas import ContactBase
-from app.dependencies import _get_entity_or_404, _upsert_entity, _soft_delete_entity
+from app.dependencies import _get_entity_or_404, _upsert_entity, _soft_delete_entity, _get_contacts_by_source
 
 router = APIRouter()
 
@@ -18,6 +18,10 @@ def list_contacts(*, session: Session = Depends(get_session), active_only: bool 
 @router.get(conf_pathname()+"/v1/roles/contacts/{contact_id}", response_model=ContactBase)
 def get_contact(contact_id: int, session: Session = Depends(get_session)) -> ContactBase:
     return _get_entity_or_404(session, rolesContact, contact_id)
+
+@router.get(conf_pathname()+"/v1/roles/contacts/by-source/{source_id}", response_model=list[ContactBase])
+def get_contacts_by_source(source_id: int, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[ContactBase]:
+    return _get_contacts_by_source(session, source_id, active_only);
 
 @router.post(conf_pathname()+"/v1/roles/contacts", response_model=ContactBase)
 def create_or_update_contact(payload: ContactBase, session: Session = Depends(get_session)) -> ContactBase:

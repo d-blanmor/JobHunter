@@ -224,6 +224,82 @@ def _delete_link(session: Session, model: type[Any], pk1: int | None = None, pk2
 
     return rows
 
+def _get_appSetting_or_404(session: Session, model: type[Any], settingKey: str | None = None, IsActive: bool | None = None) -> Any:
+    statement = select(model)
+    if settingKey is not None:
+        appSettings = session.get(model, (settingKey))
+    else:
+        if IsActive:
+            statement = statement.where(model.IsActive == True)
+        statement = statement.order_by(model.Key)
+        appSettings = session.exec(statement).all()
+    if not appSettings:
+        raise HTTPException(status_code=404, detail=f"{model.__name__} not found")
+    return appSettings
+
+def _upsert_appSetting(session: Session, model: type[Any], payload: dict[str, Any]) -> Any:
+    if isinstance(payload, BaseModel):
+        data: dict[str, Any] = payload.model_dump(exclude_unset=True)
+    else:
+        data = payload
+    appSettingKey = data.get("Key")
+
+    appSetting = session.get(model, appSettingKey)
+    if appSetting is None:
+        # The setting doesn't exist, needs to be created
+        appSetting = model(**data)
+    else:
+        if appSetting.IsActive == False:
+            # It appears the setting has previously been deleted, is user tries to recreate it will fail, so we´ll undelete it with the new information
+            appSetting.Value = payload.Value
+            appSetting.Notes = payload.Notes
+            appSetting.IsActive = payload.IsActive
+        # The setting exists, needs to be updated
+        for key, value in data.items():
+            setattr(appSetting, key, value)
+
+    session.add(appSetting)
+    session.commit()
+    session.refresh(appSetting)
+    return appSetting
+
+def _soft_delete_appSetting(session: Session, model: type[Any], appSettingKey: str) -> Any:
+    appSetting = _get_appSetting_or_404(session, model, appSettingKey)
+    appSetting.IsActive = False
+    session.add(appSetting)
+    session.commit()
+    session.refresh(appSetting)
+    return appSetting
+
+#####################
+#  special entities
+from app.schemas import ContactBase, SourceBase
+from app.models import rolesContact, rolesSource
+
+def _get_contacts_by_source(session: Session, source_id: int, active_only: bool = True) -> list[ContactBase]:
+    statement = select(rolesContact)
+    statement = statement.where(rolesContact.SourceId  == source_id)    # Directly linked to a Source
+    if (active_only):
+        statement = statement.where(rolesContact.IsActive == True)      # Only non deleted Contacts
+    statement = statement.order_by(rolesContact.Name.desc())
+    return session.exec(statement).all()
+
+def _get_main_sources(session: Session, active_only: bool = True) -> list[SourceBase]:
+    statement = select(rolesSource)
+    statement = statement.where(rolesSource.ParentId == None)       # ony main sources (have no parent)
+    if (active_only):
+        statement = statement.where(rolesSource.IsActive == True)   # Only non deleted Contacts
+    statement = statement.order_by(rolesSource.Order.asc())
+    return session.exec(statement).all()
+
+def _get_sources_by_parent(session: Session, parent_id: int, active_only: bool = True) -> list[SourceBase]:
+    statement = select(rolesSource)
+    statement = statement.where(rolesSource.ParentId == parent_id)  # Directly children of the given source
+    if (active_only):
+        statement = statement.where(rolesSource.IsActive == True)   # Only non deleted Contacts
+    statement = statement.order_by(rolesSource.Order.asc())
+    return session.exec(statement).all()
+
 #####################
 #  JobSpec functions
 from app.schemas import ApplicationBase, InterviewBase, OfferBase

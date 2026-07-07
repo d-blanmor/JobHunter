@@ -5,6 +5,7 @@ from .routers.workflows import stages
 from .routers import (
     initiate,
     tags,
+    appSettings,
 )
 from .routers.roles import (
     lu_benefits, 
@@ -27,6 +28,7 @@ app = FastAPI(title="JobHunter API", version="0.1.0")
 
 app.include_router(initiate.router)
 app.include_router(tags.router)
+app.include_router(appSettings.router)
 app.include_router(lu_locations.router)
 app.include_router(lu_roletypes.router)
 app.include_router(lu_workmodels.router)

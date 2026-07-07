@@ -8,7 +8,7 @@ import { listPlacesOfWork, savePlaceOfWork } from '../api/place_of_work';
 import { listSources, saveSource } from '../api/sources';
 import { listContacts, saveContact } from '../api/contacts';
 import { saveJobSpec } from '../api/jobSpecs';
-import { JobSpecItem, ContactItem } from '../defs/interfaces';
+import { newJobSpecItem, newPlaceOfWorkItem, newContactItem } from '../defs/interfaces';
 
 export default function JobSpecCreate() {
   const navigate = useNavigate();
@@ -134,7 +134,11 @@ export default function JobSpecCreate() {
     if (!newPlaceLocationId) return;
     try {
       setLoading(true);
-      const payload: any = { LocationId: Number(newPlaceLocationId), IsActive: true };
+      const payload: newPlaceOfWorkItem = { 
+        Id: null,
+        LocationId: Number(newPlaceLocationId), 
+        IsActive: true 
+      };
       if (newPlaceAddress.trim()) payload.Address = newPlaceAddress.trim();
       const created = await savePlaceOfWork(payload);
       setPlacesOfWork((prev) => [...prev, created]);
@@ -150,13 +154,14 @@ export default function JobSpecCreate() {
   };
 
   const handleCreateContact = async () => {
-    if (!contactName.trim()) {
+    if (!newContactName.trim()) {
       setContactFormError('Name is required');
       return;
     }
     try {
       setLoading(true);
-      const payload:ContactItem = {
+      const payload: newContactItem = {
+        Id: null,
         Name: newContactName.trim(),
         Email: newContactEmail.trim() || null,
         Phone: newContactPhone.trim() || null,
@@ -193,7 +198,8 @@ export default function JobSpecCreate() {
       setError('Position is required');
       return;
     }
-    const payload: JobSpecItem = {
+    const payload: newJobSpecItem = {
+      Id: null,
       Position: position.trim(),
       Company: company.trim() || undefined,
       Link: link.trim() || undefined,

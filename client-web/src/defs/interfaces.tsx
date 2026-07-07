@@ -15,7 +15,7 @@ export interface luLocationItem {
   Order: number | null;
 }
 
-export interface luRoleinterfaceItem {
+export interface luRoleTypeItem {
   Id: number;
   Name: string;
   IsActive: boolean | true;
@@ -69,17 +69,6 @@ export interface ContactItem {
   IsActive: boolean | true;
 }
 
-export interface ApplicationItem {
-  Id: number;
-  Applied: string;
-  Confirmed?: string | null;
-  Discarded?: string | null;
-  Notes?: string | null;
-  Interviews?: InterviewItem[] | null;
-  Offers?: OfferItem[] | null;
-  IsActive: boolean | true;
-}
-
 export interface JobSpecItem {
   Id: number;
   Position: string;
@@ -102,6 +91,17 @@ export interface JobSpecItem {
   Applications?: ApplicationItem[] | null;
   Benefits?: luBenefitItem[] | null;
   Tags?: TagItem[] | null;
+  IsActive: boolean | true;
+}
+
+export interface ApplicationItem {
+  Id: number;
+  Applied: string;
+  Confirmed?: string | null;
+  Discarded?: string | null;
+  Notes?: string | null;
+  Interviews?: InterviewItem[] | null;
+  Offers?: OfferItem[] | null;
   IsActive: boolean | true;
 }
 
@@ -144,7 +144,7 @@ export interface newLuLocationItem {
   Order: number | null;
 }
 
-export interface newLuRoleinterfaceItem {
+export interface newLuRoleTypeItem {
   Id?: number | null;
   Name: string;
   IsActive: boolean | true;

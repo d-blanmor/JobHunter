@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../components/Modal';
+
 import { listLocations } from '../api/lu_locations';
 import { listRoleTypes } from '../api/lu_roletypes';
 import { listWorkModels } from '../api/lu_workmodels';
@@ -8,6 +9,7 @@ import { listPlacesOfWork, savePlaceOfWork } from '../api/place_of_work';
 import { listSources, saveSource } from '../api/sources';
 import { listContacts, saveContact } from '../api/contacts';
 import { saveJobSpec } from '../api/jobSpecs';
+
 import { newJobSpecItem, newPlaceOfWorkItem, newContactItem } from '../defs/interfaces';
 
 export default function JobSpecCreate() {

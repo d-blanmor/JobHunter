@@ -60,7 +60,7 @@ export interface PlaceOfWorkItem {
 }
 
 export interface ContactItem {
-  Id: number;
+  Id?: number;
   Name: string;
   Email?: string | null;
   Phone?: string | null;
@@ -80,7 +80,7 @@ export interface ApplicationItem {
 }
 
 export interface JobSpecItem {
-  Id: number;
+  Id?: number;
   Position: string;
   Created: string | null;
   Company?: string | null;

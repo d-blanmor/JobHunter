@@ -106,6 +106,18 @@ export type JobSpec = {
   IsActive: boolean | true;
 }
 
+export type Interview = {
+  Id: number;
+  ApplicationId: number;
+  Scheduled: string;
+  ContactId?: number | null;
+  Contact?: Contact | null;
+  Notes?: string | null;
+  Outcome?: string | null;
+  Feedback?: string | null;
+  IsActive: boolean | true;
+}
+
 export type Offer = {
   Id: number;
   ApplicationId: number;

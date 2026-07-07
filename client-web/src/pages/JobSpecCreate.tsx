@@ -6,7 +6,9 @@ import { listRoleTypes } from '../api/lu_roletypes';
 import { listWorkModels } from '../api/lu_workmodels';
 import { listPlacesOfWork, savePlaceOfWork } from '../api/place_of_work';
 import { listSources, saveSource } from '../api/sources';
+import { listContacts, saveContact } from '../api/contacts';
 import { saveJobSpec } from '../api/jobSpecs';
+import { JobSpecItem, ContactItem } from '../defs/interfaces';
 
 export default function JobSpecCreate() {
   const navigate = useNavigate();
@@ -15,12 +17,25 @@ export default function JobSpecCreate() {
 
   const [position, setPosition] = useState('');
   const [company, setCompany] = useState('');
+  const [link, setLink] = useState('');
+  const [published, setPublished] = useState('');
+  const [contactId, setContactId] = useState<number | null>(null);
+  const [salaryExpectation, setSalaryExpectation] = useState('');
   const [description, setDescription] = useState('');
   const [sourceId, setSourceId] = useState<number | ''>('');
   const [workModelId, setWorkModelId] = useState<number | ''>('');
   const [roleTypeId, setRoleTypeId] = useState<number | ''>('');
   const [placeOfWorkId, setPlaceOfWorkId] = useState<number | ''>('');
 
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [contactFormOpen, setContactFormOpen] = useState(false);
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactNotes, setContactNotes] = useState('');
+  const [contactFormError, setContactFormError] = useState<string | null>(null);
+  const [contactCreating, setContactCreating] = useState(false);
+  
   const [sources, setSources] = useState<any[]>([]);
   const [workModels, setWorkModels] = useState<any[]>([]);
   const [roleTypes, setRoleTypes] = useState<any[]>([]);
@@ -34,33 +49,43 @@ export default function JobSpecCreate() {
       setLoading(true);
       try {
         const [
-          s,
-          w,
-          r,
-          pRaw,   // <- raw result from listPlacesOfWork()
-          locs
+          lSources,
+          lWorkModels,
+          lRoleTypes,
+          lPlacesOfWork,
+          lLocations,
+          lContacts
         ] = await Promise.all([
           listSources(),
           listWorkModels(),
           listRoleTypes(),
-          listPlacesOfWork(),     // <-- may return non‑array
-          listLocations()
+          listPlacesOfWork(),
+          listLocations(),
+          listContacts()
         ]);
 
         if (!mounted) return;
 
-        setSources(s);
-        setWorkModels(w);
-        setRoleTypes(r);
-
-        /*  <--- NEW CODE ---------------------------------------------------- */
-        // Ensure we always store an array. If the API returns an object that
-        // contains a data field, you can adapt the check accordingly.
-        const places = Array.isArray(pRaw) ? pRaw : (pRaw?.data ?? []);
+        const sources = Array.isArray(lSources) ? lSources : (lSources?.data ?? []);
+        setSources(sources);
+        const workModels = Array.isArray(lWorkModels) ? lWorkModels : (lWorkModels?.data ?? []);
+        setWorkModels(workModels);
+        const roleTypes = Array.isArray(lRoleTypes) ? lRoleTypes : (lRoleTypes?.data ?? []);
+        setRoleTypes(roleTypes);
+        const places = Array.isArray(lPlacesOfWork) ? lPlacesOfWork : (lPlacesOfWork?.data ?? []);
         setPlacesOfWork(places);
-        /*  ---------------------------------------------------------------- */
+        const locations = Array.isArray(lLocations) ? lLocations : (lLocations?.data ?? []);
+        setLocations(locations);
+        const contacts = Array.isArray(lContacts) ? lContacts : (lContacts?.data ?? []);
+        setContacts(contacts);
 
-        setLocations(locs);
+        let contactData: any[] = [];
+        try {
+          contactData = await listContacts();
+        } catch (contactErr) {
+          console.warn('[StageModal] failed to load contacts', contactErr);
+        }
+
       } catch (err: any) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -82,6 +107,12 @@ export default function JobSpecCreate() {
   const [showPlaceModal, setShowPlaceModal] = useState(false);
   const [newPlaceLocationId, setNewPlaceLocationId] = useState<number | ''>('');
   const [newPlaceAddress, setNewPlaceAddress] = useState('');
+
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [newContactName, setNewContactName] = useState('');
+  const [newContactEmail, setNewContactEmail] = useState('');
+  const [newContactPhone, setNewContactPhone] = useState('');
+  const [newContactNotes, setNewContactNotes] = useState('');
 
   const handleCreateSource = async () => {
     if (!newSourceName.trim()) return;
@@ -118,16 +149,58 @@ export default function JobSpecCreate() {
     }
   };
 
+  const handleCreateContact = async () => {
+    if (!contactName.trim()) {
+      setContactFormError('Name is required');
+      return;
+    }
+    try {
+      setLoading(true);
+      const payload:ContactItem = {
+        Name: newContactName.trim(),
+        Email: newContactEmail.trim() || null,
+        Phone: newContactPhone.trim() || null,
+        Details: newContactNotes.trim() || null,
+        IsActive: true
+      };
+      const created = await saveContact(payload);
+      const newContact = created ?? payload;
+      setContacts((prev) => [newContact, ...prev]);
+      const newId = newContact.Id ?? newContact.id ?? null;
+      if (newId) setContactId(Number(newId));
+      closeContactForm();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const closeContactForm = () => {
+    setShowContactModal(false);
+    setContactFormOpen(false);
+    setContactName('');
+    setContactEmail('');
+    setContactPhone('');
+    setContactNotes('');
+    setContactFormError(null);
+    setContactCreating(false);
+  };
+
   const handleSubmit = async () => {
     setError(null);
     if (!position.trim()) {
       setError('Position is required');
       return;
     }
-    const payload: any = {
+    const payload: JobSpecItem = {
       Position: position.trim(),
       Company: company.trim() || undefined,
+      Link: link.trim() || undefined,
       Description: description.trim() || undefined,
+      SalaryExpectation: salaryExpectation.trim() || undefined,
+      Published: new Date(published).toISOString(),
+      ContactId: contactId || undefined,
       Created: new Date().toISOString(),
       IsActive: true,
     };
@@ -135,6 +208,7 @@ export default function JobSpecCreate() {
     if (workModelId) payload.WorkModelId = Number(workModelId);
     if (roleTypeId) payload.RoleTypeId = Number(roleTypeId);
     if (placeOfWorkId) payload.PlaceOfWorkId = Number(placeOfWorkId);
+    if (contactId) payload.ContactId = Number(contactId);
 
     try {
       setLoading(true);
@@ -145,6 +219,7 @@ export default function JobSpecCreate() {
     } finally {
       setLoading(false);
     }
+
   };
 
   return (
@@ -178,6 +253,20 @@ export default function JobSpecCreate() {
           </div>
 
           <div className="modal-field">
+            <label>URL</label>
+            <input value={link} onChange={(e) => setLink(e.target.value)} />
+          </div>
+
+          <div className="modal-field">
+            <label>Publish Date</label>
+            <input
+              type="date"
+              value={published}
+              onChange={(event) => setPublished(event.target.value)}
+            />
+          </div>
+
+          <div className="modal-field">
             <label>Work model</label>
             <select value={workModelId} onChange={(e) => setWorkModelId(e.target.value ? Number(e.target.value) : '')}>
               <option value="">—</option>
@@ -195,6 +284,11 @@ export default function JobSpecCreate() {
                 <option key={r.Id} value={r.Id}>{r.Name}</option>
               ))}
             </select>
+          </div>
+
+          <div className="modal-field">
+            <label>Salary Expectation</label>
+            <input value={salaryExpectation} onChange={(e) => setSalaryExpectation(e.target.value)} />
           </div>
 
           <div className="modal-field">
@@ -219,6 +313,33 @@ export default function JobSpecCreate() {
           </div>
 
           <div className="modal-field">
+            <label>Contact</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={(e) => e.stopPropagation()}>
+              <select
+                value={contactId ?? ''}
+                onChange={(event) => setContactId(event.target.value ? Number(event.target.value) : null)}
+              >
+                <option value="">No contact</option>
+                {contacts.map((contact) => (
+                  <option key={contact.Id ?? contact.id} value={contact.Id ?? contact.id}>
+                    {contact.Name || contact.name || contact.Title || contact.Email || contact.EmailAddress || 'Unnamed contact'}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="button small"
+                title="Create new contact"
+                onClick={(e) => {
+                  setShowContactModal(true);
+                }}
+              >
+                +
+              </button>
+            </div>
+          </div>
+
+          <div className="modal-field">
             <label>Description</label>
             <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
@@ -229,6 +350,7 @@ export default function JobSpecCreate() {
           </div>
         </div>
       )}
+
       {showSourceModal && (
         <Modal title="Create Source" onClose={() => setShowSourceModal(false)}>
           <div className="modal-field">
@@ -263,6 +385,32 @@ export default function JobSpecCreate() {
           </div>
         </Modal>
       )}
+
+      {showContactModal && (
+        <Modal title="Create Contact" onClose={() => setShowContactModal(false)}>
+          <div className="modal-field">
+            <label>Name</label>
+            <input value={newContactName} onChange={(e) => setNewContactName(e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>Email</label>
+            <input value={newContactEmail} onChange={(e) => setNewContactEmail(e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>Phone</label>
+            <input value={newContactPhone} onChange={(e) => setNewContactPhone(e.target.value)} />
+          </div>
+          <div className="modal-field">
+            <label>Details</label>
+            <input value={newContactNotes} onChange={(e) => setNewContactNotes(e.target.value)} />
+          </div>
+          <div className="modal-actions">
+            <button className="button" onClick={handleCreateContact}>OK</button>
+            <button className="button secondary-button" onClick={() => closeContactForm()}>Cancel</button>
+          </div>
+        </Modal>
+      )}
+
     </section>
   );
 }

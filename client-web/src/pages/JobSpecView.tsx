@@ -36,7 +36,8 @@ function formatDate(value?: string | null) {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleString();
+  //return date.toLocaleString();
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 }
 
 function formatDateOnly(value?: string | null) {
@@ -285,11 +286,13 @@ export default function JobSpecView() {
                   <a href={jobSpec.Link} target="_blank" rel="noreferrer" className="job-spec-link" title="Open job link">
                     🔗
                   </a>
-                ) : (
-                  <span className="job-spec-link-placeholder">No link</span>
-                )}
+                ) : null}
               </h2>
-              <p className="job-spec-company">{safeValue(jobSpec.Company)}</p>
+              {jobSpec.Company ? (
+                <p className="job-spec-company">{safeValue(jobSpec.Company)}</p>
+              ) : (
+                <p className="job-spec-company">- Unknown Company -</p>
+              )}
             </div>
             <button className="button secondary-button" onClick={() => navigate(-1)}>
               Back
@@ -297,7 +300,7 @@ export default function JobSpecView() {
           </div>
 
           <div className="job-spec-notes">
-            {source ? (
+            {jobSpec.SourceId ? (
               <div className="job-spec-note-row">
                 <span className="job-spec-note-label">Source:</span>
                 <span className="job-spec-note-value">{safeValue(source.Name)}</span>
@@ -307,92 +310,111 @@ export default function JobSpecView() {
                   </a>
                 ) : null}
               </div>
-            ) : (
-              <div className="job-spec-note-row">
-                <span className="job-spec-note-label">Source:</span>
-                <span className="job-spec-note-value">—</span>
-              </div>
-            )}
+            ) : null}
             {source?.Details ? <p className="job-spec-note-subtext">{source.Details}</p> : null}
 
-            {(contact?.name || contact?.email || contact?.phone) && (
+            {jobSpec.Contact ? (
               <div className="job-spec-note-row contact-row">
                 <span className="job-spec-note-label">Contact:</span>
                 <span>
-                  {contact?.name || '—'}
-                  {contact?.email ? (
-                    <a href={`mailto:${contact.email}`} className="job-spec-contact-link">
-                      {contact.email}
+                  {jobSpec.Contact.Name || '—'}
+                  {jobSpec.Contact.Email ? (
+                    <a href={`mailto:${jobSpec.Contact.Email}`} className="job-spec-contact-link">
+                      {jobSpec.Contact.Email}
                     </a>
                   ) : null}
-                  {contact?.phone ? <span className="job-spec-contact-phone">{contact.phone}</span> : null}
+                  {jobSpec.Contact.Phone ? <span className="job-spec-contact-phone">{jobSpec.Contact.Phone}</span> : null}
                 </span>
-                {contact?.details ? (
-                  <span className="job-spec-info-icon" title={contact.details}>ℹ️</span>
+                {jobSpec.Contact.Details ? (
+                  <span className="job-spec-info-icon" title={jobSpec.Contact.Details}>ℹ️</span>
                 ) : null}
               </div>
-            )}
+            ) : null}
           </div>
 
-          <div className="job-spec-metadata">
-            <div className="job-spec-meta-item">
-              <span className="job-spec-meta-label">Published</span>
-              <span>{formatDate(jobSpec.Published)}</span>
+          {jobSpec.Published || jobSpec.Created ? (
+            <div className="job-spec-metadata">
+              {jobSpec.Published ? (
+                <div className="job-spec-meta-item">
+                  <span className="job-spec-meta-label">Published</span>
+                  <span>{formatDateOnly(jobSpec.Published)}</span>
+                </div>
+              ) : null }
+              {jobSpec.Created ? (
+                <div className="job-spec-meta-item">
+                  <span className="job-spec-meta-label">Created</span>
+                  <span>{formatDate(jobSpec.Created)}</span>
+                </div>
+              ) : null}
             </div>
-            <div className="job-spec-meta-item">
-              <span className="job-spec-meta-label">Created</span>
-              <span>{formatDate(jobSpec.Created)}</span>
+          ) : null}
+          {jobSpec.PlaceOfWorkId || jobSpec.RoleTypeId || jobSpec.WorkModelId || jobSpec.SalaryExpectation || jobSpec.Benefits.length > 0 ? (
+            <div className="job-spec-section">
+              {jobSpec.PlaceOfWorkId ? (
+                <div className="job-spec-field-row">
+                  <span className="job-spec-field-label">Place of Work</span>
+                  <span>{placeOfWork ? `${placeOfWork.label}${placeOfWork.address ? ` — ${placeOfWork.address}` : ''}` : '—'}</span>
+                </div>
+              ) : null}
+              {jobSpec.RoleTypeId ? (
+                <div className="job-spec-field-row">
+                  <span className="job-spec-field-label">Role Type</span>
+                  <span>{roleTypeName}</span>
+                </div>
+              ) : null}
+              {jobSpec.WorkModelId ? (
+                <div className="job-spec-field-row">
+                  <span className="job-spec-field-label">Work Model</span>
+                  <span>{workModelName}</span>
+                </div>
+              ) : null}
+              {jobSpec.SalaryExpectation ? (
+                <div className="job-spec-field-row">
+                  <span className="job-spec-field-label">Salary Expectation</span>
+                  <span>{safeValue(salary)}</span>
+                </div>
+              ) : null}
+              {jobSpec.Benefits.length > 0 ? (
+                <div className="job-spec-field-row">
+                  <span className="job-spec-field-label">Benefits</span>
+                  <span>{normalizeBenefits(jobSpec.Benefits)}</span>
+                </div>
+              ) : null}
             </div>
-          </div>
+          ) : null}
+          {jobSpec.Description ? (
+            <div className="job-spec-section job-spec-description-section">
+              <h4 className="section-heading">Description</h4>
+              <p className="job-spec-description">{safeValue(jobSpec.Description)}</p>
+            </div>
+          ) : null}
 
-          <div className="job-spec-section">
-            <div className="job-spec-field-row">
-              <span className="job-spec-field-label">Place of Work</span>
-              <span>{placeOfWork ? `${placeOfWork.label}${placeOfWork.address ? ` — ${placeOfWork.address}` : ''}` : '—'}</span>
-            </div>
-            <div className="job-spec-field-row">
-              <span className="job-spec-field-label">Role Type</span>
-              <span>{roleTypeName}</span>
-            </div>
-            <div className="job-spec-field-row">
-              <span className="job-spec-field-label">Work Model</span>
-              <span>{workModelName}</span>
-            </div>
-            <div className="job-spec-field-row">
-              <span className="job-spec-field-label">Salary Expectation</span>
-              <span>{safeValue(salary)}</span>
-            </div>
-            <div className="job-spec-field-row">
-              <span className="job-spec-field-label">Benefits</span>
-              <span>{benefits}</span>
-            </div>
-          </div>
-
-          <div className="job-spec-section job-spec-description-section">
-            <h4 className="section-heading">Description</h4>
-            <p className="job-spec-description">{safeValue(jobSpec.Description)}</p>
-          </div>
-
-          {applications.length > 0 && (
-            <div className={`job-spec-section application-section ${applications[0].Discarded ? 'discarded' : ''}`}>
+          {jobSpec.Applications.length > 0 && (
+            <div className={`job-spec-section application-section ${jobSpec.Applications[0].Discarded ? 'discarded' : ''}`}>
               <div className="section-heading-row">
                 <h4 className="section-heading">Application</h4>
-                {applications[0].Discarded ? <span className="section-status">Discarded</span> : null}
+                {jobSpec.Applications[0].Discarded ? <span className="section-status">Discarded</span> : null}
               </div>
-              {applications.map((application) => (
+              {jobSpec.Applications.map((application) => (
                 <div key={application.Id || Math.random()} className="application-item">
-                  <div className="job-spec-field-row">
-                    <span className="job-spec-field-label">Applied Date</span>
-                    <span>{formatDateOnly(application.Applied)}</span>
-                  </div>
-                  <div className="job-spec-field-row">
-                    <span className="job-spec-field-label">Confirmed Date</span>
-                    <span>{formatDateOnly(application.Confirmed)}</span>
-                  </div>
-                  <div className="job-spec-field-row">
-                    <span className="job-spec-field-label">Notes</span>
-                    <span className="job-spec-description">{safeValue(application.Notes)}</span>
-                  </div>
+                  {application.Applied ? (
+                    <div className="job-spec-field-row">
+                      <span className="job-spec-field-label">Applied Date</span>
+                      <span>{formatDateOnly(application.Applied)}</span>
+                    </div>
+                  ) : null}
+                  {application.Confirmed ? (
+                    <div className="job-spec-field-row">
+                      <span className="job-spec-field-label">Confirmed Date</span>
+                      <span>{formatDateOnly(application.Confirmed)}</span>
+                    </div>
+                  ) : null}
+                  {application.Notes ? (
+                    <div className="job-spec-field-row">
+                      <span className="job-spec-field-label">Notes</span>
+                      <span className="job-spec-description">{safeValue(application.Notes)}</span>
+                    </div>
+                  ) : null}
                   {application.Discarded ? (
                     <div className="job-spec-field-row">
                       <span className="job-spec-field-label">Discarded Date</span>
@@ -411,28 +433,35 @@ export default function JobSpecView() {
               </div>
               {interviews.map((interview) => (
                 <div key={interview.Id || Math.random()} className="interview-item">
-                  <div className="job-spec-field-row">
-                    <span className="job-spec-field-label">Scheduled Date</span>
-                    <span>{formatDateTime(interview.Scheduled || interview.DateScheduled)}</span>
-                  </div>
-                  <div className="job-spec-note-row contact-row">
-                    <span className="job-spec-note-label">Contact</span>
-                    <span>
-                      {safeValue(interview.Contact?.Name)}
-                      {interview.Contact?.Email ? (
-                        <a href={`mailto:${interview.Contact?.Email}`} className="job-spec-contact-link">
-                          {interview.Contact?.Email}
-                        </a>
+                  {interview.Scheduled ? (
+                    <div className="job-spec-field-row">
+                      <span className="job-spec-field-label">Scheduled Date</span>
+                      <span>{formatDateTime(interview.Scheduled)}</span>
+                    </div>
+                  ) : null}
+                  {interview.Contact ? (
+                    <div className="job-spec-note-row contact-row">
+                      <span className="job-spec-note-label">Contact:</span>
+                      <span>
+                        {interview.Contact.Name || '—'}
+                        {interview.Contact.Email ? (
+                          <a href={`mailto:${interview.Contact.Email}`} className="job-spec-contact-link">
+                            {interview.Contact.Email}
+                          </a>
+                        ) : null}
+                        {interview.Contact.Phone ? <span className="job-spec-contact-phone">{interview.Contact.Phone}</span> : null}
+                      </span>
+                      {interview.Contact.Details ? (
+                        <span className="job-spec-info-icon" title={interview.Contact.Details}>ℹ️</span>
                       ) : null}
-                    </span>
-                    {(interview.Contact?.Details) ? (
-                      <span className="job-spec-info-icon" title={interview.Contact?.Details}>ℹ️</span>
-                    ) : null}
-                  </div>
-                  <div className="job-spec-field-row">
-                    <span className="job-spec-field-label">Notes</span>
-                    <span className="job-spec-description">{safeValue(interview.Notes)}</span>
-                  </div>
+                    </div>
+                  ) : null}
+                  {interview.Notes ? (
+                    <div className="job-spec-field-row">
+                      <span className="job-spec-field-label">Notes</span>
+                      <span className="job-spec-description">{safeValue(interview.Notes)}</span>
+                    </div>
+                  ) : null}
                   {interview.Outcome ? (
                     <div className="job-spec-field-row">
                       <span className="job-spec-field-label">Outcome</span>
@@ -457,22 +486,30 @@ export default function JobSpecView() {
               </div>
               {offers.map((offer) => (
                 <div key={offer.Id || Math.random()} className="offer-item">
-                  <div className="job-spec-field-row">
-                    <span className="job-spec-field-label">Offered Date</span>
-                    <span>{formatDateOnly(offer.Offered)}</span>
-                  </div>
-                  <div className="job-spec-field-row">
-                    <span className="job-spec-field-label">Salary</span>
-                    <span>{safeValue(offer.Salary)}</span>
-                  </div>
-                  <div className="job-spec-field-row">
-                    <span className="job-spec-field-label">Benefits</span>
-                    <span>{normalizeBenefits(offer.Benefits)}</span>
-                  </div>
-                  <div className="job-spec-field-row">
-                    <span className="job-spec-field-label">Notes</span>
-                    <span className="job-spec-description">{safeValue(offer.Notes)}</span>
-                  </div>
+                  {offer.Offered ? (
+                    <div className="job-spec-field-row">
+                      <span className="job-spec-field-label">Offered Date</span>
+                      <span>{formatDateOnly(offer.Offered)}</span>
+                    </div>
+                  ) : null}
+                  {offer.Salary ? (
+                    <div className="job-spec-field-row">
+                      <span className="job-spec-field-label">Salary</span>
+                      <span>{safeValue(offer.Salary)}</span>
+                    </div>
+                  ) : null}
+                  {offer.Benefits ? (
+                    <div className="job-spec-field-row">
+                      <span className="job-spec-field-label">Benefits</span>
+                      <span>{normalizeBenefits(offer.Benefits)}</span>
+                    </div>
+                  ) : null}
+                  {offer.Notes ? (
+                    <div className="job-spec-field-row">
+                      <span className="job-spec-field-label">Notes</span>
+                      <span className="job-spec-description">{safeValue(offer.Notes)}</span>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>

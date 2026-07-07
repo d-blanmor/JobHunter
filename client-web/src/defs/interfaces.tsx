@@ -88,9 +88,9 @@ export interface JobSpecItem {
   ContactId?: number | null;
   Contact?: ContactItem | null;
   Published?: string | null;
-  Applications?: ApplicationItem[] | null;
-  Benefits?: luBenefitItem[] | null;
-  Tags?: TagItem[] | null;
+  Applications: ApplicationItem[] | [];
+  Benefits: luBenefitItem[] | [];
+  Tags: TagItem[] | [];
   IsActive: boolean | true;
 }
 

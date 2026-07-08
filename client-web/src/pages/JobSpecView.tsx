@@ -167,7 +167,7 @@ export default function JobSpecView() {
         jobSpec.Tags = jsTags;
         setApplications(Array.isArray(applications) ? applications : []);
         jobSpec.Applications = applications;
-        if (jobSpec.Applications && jobSpec.Applications.len > 0) {
+        if (jobSpec.Applications && jobSpec.Applications.length > 0) {
           setInterviews(Array.isArray(interviews) ? interviews : []);
           jobSpec.Applications[0].Interviews = interviews;
           setOffers(Array.isArray(offers) ? offers : []);
@@ -191,7 +191,6 @@ export default function JobSpecView() {
         setContacts(Array.isArray(luContacts) ? luContacts : []);
         setBenefits(Array.isArray(luBenefits) ? luBenefits : []);
         setTags(Array.isArray(luTags) ? luTags : []);
-
       } catch (err) {
         if (!mounted) return;
         setError(err instanceof Error ? err.message : 'Failed to load job spec');
@@ -367,13 +366,13 @@ export default function JobSpecView() {
                   ) : ''}
                 </div>
               ) : null}
-              {jobSpec.RoleTypeId ? (
+              {jobSpec.RoleTypeId && roleType ? (
                 <div className="job-spec-field-row">
                   <span className="job-spec-field-label">Role Type</span>
                   <span>{safeValue(roleType.Name)}</span>
                 </div>
               ) : null}
-              {jobSpec.WorkModelId ? (
+              {jobSpec.WorkModelId && workModel ? (
                 <div className="job-spec-field-row">
                   <span className="job-spec-field-label">Work Model</span>
                   <span>{safeValue(workModel.Name)}</span>
@@ -563,12 +562,12 @@ export default function JobSpecView() {
             </div>
           )}
 
-          {offers.length > 0 && (
+          {jobSpec.Applications && jobSpec.Applications[0] && jobSpec.Applications[0].Offers && jobSpec.Applications[0].Offers.length > 0 && (
             <div className="job-spec-section offers-section">
               <div className="section-heading-row">
                 <h4 className="section-heading">Offer</h4>
               </div>
-              {offers.map((offer) => (
+              {jobSpec.Applications[0].Offers.map((offer) => (
                 <div key={offer.Id || Math.random()} className="offer-item">
                   {offer.Offered ? (
                     <div className="job-spec-field-row">

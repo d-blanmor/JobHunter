@@ -31,6 +31,7 @@ export default function JobSpecCreate() {
   const [contactId, setContactId] = useState<number | null>(null);
   const [salaryExpectation, setSalaryExpectation] = useState('');
   const [description, setDescription] = useState('');
+  const [notes, setNotes] = useState('');
   const [workModelId, setWorkModelId] = useState<number | ''>('');
   const [roleTypeId, setRoleTypeId] = useState<number | ''>('');
   const [placeOfWorkId, setPlaceOfWorkId] = useState<number | ''>('');
@@ -204,20 +205,25 @@ export default function JobSpecCreate() {
     const payload: newJobSpecItem = {
       Id: null,
       Position: position.trim(),
-      Company: company.trim() || undefined,
-      Link: link.trim() || undefined,
-      Description: description.trim() || undefined,
-      SalaryExpectation: salaryExpectation.trim() || undefined,
-      Published: new Date(published).toISOString(),
-      ContactId: contactId || undefined,
+      Company: company.trim() || null,
+      SourceId: Number(sourceId) || null,
+      Link: link.trim() || null,
+      PlaceOfWorkId: Number(placeOfWorkId) || null,
+      WorkModelId: Number(workModelId) || null,
+      RoleTypeId: Number(roleTypeId) || null,
+      SalaryExpectation: salaryExpectation.trim() || null,
+      ContactId: Number(contactId) || null,
+      Description: description.trim() || null,
+      Analysis: null,
+      Notes: notes.trim() || null,
       Created: new Date().toISOString(),
       IsActive: true,
     };
-    if (sourceId) payload.SourceId = Number(sourceId);
-    if (workModelId) payload.WorkModelId = Number(workModelId);
-    if (roleTypeId) payload.RoleTypeId = Number(roleTypeId);
-    if (placeOfWorkId) payload.PlaceOfWorkId = Number(placeOfWorkId);
-    if (contactId) payload.ContactId = Number(contactId);
+    try {
+      if (published) payload.Published = new Date(published).toISOString();
+    } catch(err){
+      payload.Published = null;
+    }
 
     try {
       setLoading(true);
@@ -412,6 +418,13 @@ export default function JobSpecCreate() {
               onChange={(e) => setDescription(e.target.value)} />
           </div>
 
+          <div className="modal-field">
+            <textarea 
+              value={notes} 
+              placeholder="Notes about the role" 
+              onChange={(e) => setNotes(e.target.value)} />
+          </div>
+
           <div className="modal-actions">
             <button className="button" onClick={handleSubmit}>OK</button>
             <button className="button secondary-button" onClick={handleCancel}>Cancel</button>
@@ -448,6 +461,7 @@ export default function JobSpecCreate() {
       {modalOpenContact && (
         <ContactModal
           contactId={null}
+          iniSourceId={sourceId || null}
           title = "Create new Contact"
           onClose={() => setModalOpenContact(false)}
           onSuccess={async () => {

@@ -7,6 +7,7 @@ import { newContactItem, ContactItem } from '../defs/interfaces';
 type Props = {
   /** id of the source to edit; null or undefined means create new */
   contactId?: number | null;
+  iniSourceId?: number | null;
   title: string;
   onClose: () => void;
   onSuccess?: () => void;      // called after successful submit

@@ -59,7 +59,6 @@ function safeValue(value: any) {
 }
 
 function getSource(spec: any, sources: SourceItem[]) {
-  if (spec.Source) return spec.Source;
   return sources.find((item) => item.Id === spec.SourceId) || null;
 }
 
@@ -75,28 +74,18 @@ function getPlaceOfWork(spec: any, places: any[]) {
   };
 }
 
-function getWorkModel(spec: any) {
-  const model = spec.WorkModel || {};
-  return {
-    name: model.Name || spec.WorkModel || spec.WorkModel?.Name || '—',
-  };
+function getWorkModel(spec: any, models: any[]) {
+  return models.find((item) => item.Id === spec.WorkModelId) || null;
+};
+
+function getRoleType(spec: any, roleTypes: any[]) {
+  return roleTypes.find((item) => item.Id === spec.RoleTypeId) || null;
 }
 
-function getRoleType(spec: any) {
-  const roleType = spec.RoleType || {};
-  return {
-    name: roleType.Name || spec.RoleType || spec.RoleType?.Name || '—',
-  };
-}
-
-function getContact(spec: any) {
-  const contact = spec.Contact || {};
-  return {
-    name: contact.Name || spec.ContactName || spec.Contact?.Name || '—',
-    email: contact.Email || spec.ContactEmail || spec.Contact?.Email || '',
-    phone: contact.Phone || spec.ContactPhone || spec.Contact?.Phone || '',
-    details: contact.Details || spec.ContactDetails || spec.Contact?.Details || '',
-  };
+function getContact(contactId: any, contacts: any[]) {
+  const contact = contacts.find((item) => item.Id === contactId);
+  if (!contact) return null;
+  return contact;
 }
 
 function normalizeBenefits(value: any) {
@@ -117,11 +106,12 @@ export default function JobSpecView() {
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);
   const [offers, setOffers] = useState<OfferItem[]>([]);
   const [ofBenefits, setOfBenefits] = useState<luBenefitItem[]>([]);
+  const [inContact, setInContact] = useState< any > (null);
   // Lookups
-  const [lRoleTypes, setRoleTypes] = useState<luRoleTypeItem[]>([]);
-  const [lWorkModels, setWorkModels] = useState<luWorkModelItem[]>([]);
   const [lSources, setSources] = useState<SourceItem[]>([]);
   const [lPlacesOfWork, setPlacesOfWork] = useState<PlaceOfWorkItem[]>([]);
+  const [lWorkModels, setWorkModels] = useState<luWorkModelItem[]>([]);
+  const [lRoleTypes, setRoleTypes] = useState<luRoleTypeItem[]>([]);
   const [lContacts, setContacts] = useState<ContactItem[]>([]);
   const [lBenefits, setBenefits] = useState<luBenefitItem[]>([]); 
   const [lTags, setTags] = useState<TagItem[]>([]); 
@@ -145,13 +135,13 @@ export default function JobSpecView() {
           applications, 
           interviews, 
           offers,
-          sources, 
-          placesOfWork, 
-          workModels, 
-          roleTypes, 
-          contacts,
-          benefits,
-          tags,
+          luSources, 
+          luPlacesOfWork, 
+          luWorkModels, 
+          luRoleTypes, 
+          luContacts,
+          luBenefits,
+          luTags,
         ] = await Promise.all([
           getJobSpec(Number(id)),
           getJobSpecBenefits(Number(id)).catch(() => []),
@@ -159,10 +149,10 @@ export default function JobSpecView() {
           getApplicationsByJobSpec(Number(id)).catch(() => []),
           getInterviewByJobSpec(Number(id)).catch(() => []),
           getOfferByJobSpec(Number(id)).catch(() => []),
-          listRoleTypes().catch(() => []),
-          listWorkModels().catch(() => []),
           listSources().catch(() => []),
           listPlacesOfWork().catch(() => []),
+          listWorkModels().catch(() => []),
+          listRoleTypes().catch(() => []),
           listContacts().catch(() => []),
           listBenefits().catch(() => []),
           listTags().catch(() => []),
@@ -178,9 +168,9 @@ export default function JobSpecView() {
         setApplications(Array.isArray(applications) ? applications : []);
         jobSpec.Applications = applications;
         setInterviews(Array.isArray(interviews) ? interviews : []);
-        jobSpec.Applications.Interviews = interviews;
+        jobSpec.Applications[0].Interviews = interviews;
         setOffers(Array.isArray(offers) ? offers : []);
-        jobSpec.Applications.Offers = offers;
+        jobSpec.Applications[0].Offers = offers;
 
         // Get benefits for each offer if needed
         if (Array.isArray(jobSpec.Applications) && jobSpec.Applications.length > 0) {
@@ -194,13 +184,13 @@ export default function JobSpecView() {
           }
         }
 
-        setRoleTypes(Array.isArray(lRoleTypes) ? roleTypes : []);
-        setWorkModels(Array.isArray(lWorkModels) ? workModels : []);
-        setSources(Array.isArray(lSources) ? sources : []);
-        setPlacesOfWork(Array.isArray(lPlacesOfWork) ? placesOfWork : []);
-        setContacts(Array.isArray(lContacts) ? contacts : []);
-        setBenefits(Array.isArray(lBenefits) ? benefits : []);
-        setTags(Array.isArray(tags) ? lTags : []);
+        setSources(Array.isArray(luSources) ? luSources : []);
+        setPlacesOfWork(Array.isArray(luPlacesOfWork) ? luPlacesOfWork : []);
+        setWorkModels(Array.isArray(luWorkModels) ? luWorkModels : []);
+        setRoleTypes(Array.isArray(luRoleTypes) ? luRoleTypes : []);
+        setContacts(Array.isArray(luContacts) ? luContacts : []);
+        setBenefits(Array.isArray(luBenefits) ? luBenefits : []);
+        setTags(Array.isArray(luTags) ? luTags : []);
 
       } catch (err) {
         if (!mounted) return;
@@ -219,21 +209,17 @@ export default function JobSpecView() {
 
   const source = useMemo(() => (jobSpec ? getSource(jobSpec, lSources) : null), [jobSpec, lSources]);
   const placeOfWork = useMemo(() => (jobSpec ? getPlaceOfWork(jobSpec, lPlacesOfWork) : null), [jobSpec, lPlacesOfWork]);
-  const workModel = useMemo(() => (jobSpec ? getWorkModel(jobSpec) : null), [jobSpec]);
-  const roleType = useMemo(() =>  (jobSpec ? getRoleType(jobSpec) : null), [jobSpec]);
-  const contact = useMemo(() => (jobSpec ? getContact(jobSpec) : null), [jobSpec]);
-  // TODO: Get assigned tags to jobspec
+  const roleType = useMemo(() =>  (jobSpec ? getRoleType(jobSpec, lRoleTypes) : null), [jobSpec]);
+  const workModel = useMemo(() => (jobSpec ? getWorkModel(jobSpec, lWorkModels) : null), [jobSpec,lWorkModels]);
+  const contact = useMemo(() => (jobSpec ? getContact(jobSpec.ContactId, lContacts) : null), [jobSpec]);
+  // TODO: Get assigned benefits in jsBenefits to jobspec
+  // TODO: Get assigned tags in jsTags to jobspec
   
   const sourceName = useMemo(() => {
     if (!jobSpec?.SourceId) return '—';
     const found = lSources.find((item) => item.Id === jobSpec.SourceId);
     return found?.Name || '—';
   }, [jobSpec, lSources]);
-  const placeOfWorkName = useMemo(() => {
-    if (!jobSpec?.PlaceOfWorkId) return '—';
-    const found = lPlacesOfWork.find((item) => item.Id === jobSpec.PlaceOfWorkId);
-    return found?.Location || '—';
-  }, [jobSpec, lPlacesOfWork]);
   const workModelName = useMemo(() => {
     if (!jobSpec?.WorkModelId) return '—';
     const found = lWorkModels.find((item) => item.Id === jobSpec.WorkModelId);
@@ -302,33 +288,49 @@ export default function JobSpecView() {
           <div className="job-spec-notes">
             {jobSpec.SourceId ? (
               <div className="job-spec-note-row">
-                <span className="job-spec-note-label">Source:</span>
-                <span className="job-spec-note-value">{safeValue(source.Name)}</span>
-                {source.PortalURL ? (
+                <span className="job-spec-note-label">Found in</span>
+                <span className="job-spec-note-value">{safeValue(source?.Name)}</span>
+                {source?.PortalURL ? (
                   <a href={source.PortalURL} target="_blank" rel="noreferrer" className="job-spec-inline-link" title="Open source portal">
                     🔗
                   </a>
                 ) : null}
-              </div>
-            ) : null}
-            {source?.Details ? <p className="job-spec-note-subtext">{source.Details}</p> : null}
-
-            {jobSpec.Contact ? (
-              <div className="job-spec-note-row contact-row">
-                <span className="job-spec-note-label">Contact:</span>
-                <span>
-                  {jobSpec.Contact.Name || '—'}
-                  {jobSpec.Contact.Email ? (
-                    <a href={`mailto:${jobSpec.Contact.Email}`} className="job-spec-contact-link">
-                      {jobSpec.Contact.Email}
-                    </a>
-                  ) : null}
-                  {jobSpec.Contact.Phone ? <span className="job-spec-contact-phone">{jobSpec.Contact.Phone}</span> : null}
-                </span>
-                {jobSpec.Contact.Details ? (
-                  <span className="job-spec-info-icon" title={jobSpec.Contact.Details}>ℹ️</span>
+                {source?.Details ? (
+                  <span className="job-spec-info-icon" title={source.Details}>ℹ️</span>
                 ) : null}
               </div>
+            ) : null}
+
+            {jobSpec.ContactId ? (
+              <div>
+                <div className="job-spec-note-row contact-row">
+                  <span className="job-spec-note-label">Contact </span>
+                  <span>
+                    {contact?.Name || '—'}
+                  </span>
+                  {contact?.Details ? (
+                    <span className="job-spec-info-icon" title={contact.Details}>ℹ️</span>
+                  ) : null}
+                </div>
+
+              {contact?.Email ? (
+                <div className="job-spec-note-row contact-row">
+                  <span>
+                    <a href={`mailto:${contact.Email}`} target="_blank" rel="noreferrer" className="job-spec-contact-link" title={`Send email to ${contact?.Name || 'contact'}`}>
+                      {contact.Email || '—'}
+                    </a>
+                  </span>
+                </div>
+                ) : null}
+
+              {contact?.Phone ? (
+                <div className="job-spec-note-row contact-row">
+                  <span>
+                    {contact?.Phone ? <span className="job-spec-contact-phone">{contact.Phone}</span> : null}
+                  </span>
+                </div>
+              ) : null}
+            </div>
             ) : null}
           </div>
 
@@ -336,36 +338,45 @@ export default function JobSpecView() {
             <div className="job-spec-metadata">
               {jobSpec.Published ? (
                 <div className="job-spec-meta-item">
-                  <span className="job-spec-meta-label">Published</span>
+                  <span className="job-spec-meta-label">Published since</span>
                   <span>{formatDateOnly(jobSpec.Published)}</span>
                 </div>
               ) : null }
               {jobSpec.Created ? (
                 <div className="job-spec-meta-item">
-                  <span className="job-spec-meta-label">Created</span>
+                  <span className="job-spec-meta-label">Tracked since</span>
                   <span>{formatDate(jobSpec.Created)}</span>
                 </div>
               ) : null}
             </div>
           ) : null}
-          {jobSpec.PlaceOfWorkId || jobSpec.RoleTypeId || jobSpec.WorkModelId || jobSpec.SalaryExpectation || jobSpec.Benefits.length > 0 ? (
+
+          {jobSpec.PlaceOfWorkId || jobSpec.RoleTypeId || jobSpec.WorkModelId || jobSpec.SalaryExpectation || (jobSpec.Benefits && jobSpec.Benefits.length > 0) ? (
             <div className="job-spec-section">
               {jobSpec.PlaceOfWorkId ? (
                 <div className="job-spec-field-row">
-                  <span className="job-spec-field-label">Place of Work</span>
-                  <span>{placeOfWork ? `${placeOfWork.label}${placeOfWork.address ? ` — ${placeOfWork.address}` : ''}` : '—'}</span>
+                  <span className="job-spec-field-label">Based in </span>
+                  {placeOfWork?.city ? (
+                    <span>{safeValue(placeOfWork.city)}</span>
+                  ) : ''}
+                  {placeOfWork?.country ? (
+                    <span>{safeValue(placeOfWork.country)}</span>
+                  ) : ''}
+                  {placeOfWork?.address ? (
+                    <span>{safeValue(placeOfWork.address)}</span>
+                  ) : ''}
                 </div>
               ) : null}
               {jobSpec.RoleTypeId ? (
                 <div className="job-spec-field-row">
                   <span className="job-spec-field-label">Role Type</span>
-                  <span>{roleTypeName}</span>
+                  <span>{safeValue(roleType.Name)}</span>
                 </div>
               ) : null}
               {jobSpec.WorkModelId ? (
                 <div className="job-spec-field-row">
                   <span className="job-spec-field-label">Work Model</span>
-                  <span>{workModelName}</span>
+                  <span>{safeValue(workModel.Name)}</span>
                 </div>
               ) : null}
               {jobSpec.SalaryExpectation ? (
@@ -374,7 +385,7 @@ export default function JobSpecView() {
                   <span>{safeValue(salary)}</span>
                 </div>
               ) : null}
-              {jobSpec.Benefits.length > 0 ? (
+              {jobSpec.Benefits && jobSpec.Benefits.length > 0 ? (
                 <div className="job-spec-field-row">
                   <span className="job-spec-field-label">Benefits</span>
                   <span>{normalizeBenefits(jobSpec.Benefits)}</span>
@@ -382,6 +393,7 @@ export default function JobSpecView() {
               ) : null}
             </div>
           ) : null}
+
           {jobSpec.Description ? (
             <div className="job-spec-section job-spec-description-section">
               <h4 className="section-heading">Description</h4>
@@ -389,35 +401,67 @@ export default function JobSpecView() {
             </div>
           ) : null}
 
-          {jobSpec.Applications.length > 0 && (
+          {jobSpec.Analysis ? (
+            <div className="job-spec-section job-spec-description-section">
+              <h4 className="section-heading">Analysis and recomendations</h4>
+              <p className="job-spec-description">{safeValue(jobSpec.Analysis)}</p>
+            </div>
+          ) : null}
+
+          {jobSpec.Notes ? (
+            <div className="job-spec-section job-spec-description-section">
+              <h4 className="section-heading">Notes</h4>
+              <p className="job-spec-description">{safeValue(jobSpec.Notes)}</p>
+            </div>
+          ) : null}
+
+          {jobSpec.Applications && jobSpec.Applications.length > 0 && (
             <div className={`job-spec-section application-section ${jobSpec.Applications[0].Discarded ? 'discarded' : ''}`}>
               <div className="section-heading-row">
                 <h4 className="section-heading">Application</h4>
                 {jobSpec.Applications[0].Discarded ? <span className="section-status">Discarded</span> : null}
               </div>
+
               {jobSpec.Applications.map((application) => (
                 <div key={application.Id || Math.random()} className="application-item">
                   {application.Applied ? (
                     <div className="job-spec-field-row">
-                      <span className="job-spec-field-label">Applied Date</span>
+                      <span className="job-spec-field-label">Applied on</span>
                       <span>{formatDateOnly(application.Applied)}</span>
                     </div>
                   ) : null}
+
                   {application.Confirmed ? (
                     <div className="job-spec-field-row">
-                      <span className="job-spec-field-label">Confirmed Date</span>
+                      <span className="job-spec-field-label">Confirmed on</span>
                       <span>{formatDateOnly(application.Confirmed)}</span>
                     </div>
                   ) : null}
-                  {application.Notes ? (
-                    <div className="job-spec-field-row">
-                      <span className="job-spec-field-label">Notes</span>
-                      <span className="job-spec-description">{safeValue(application.Notes)}</span>
+
+                  {application.Letter ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <h4 className="section-heading">Application letter</h4>
+                      <p className="job-spec-description">{safeValue(application.Letter)}</p>
                     </div>
                   ) : null}
+
+                  {application.CV ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <h4 className="section-heading">Resume sent</h4>
+                      <p className="job-spec-description">{safeValue(application.CV)}</p>
+                    </div>
+                  ) : null}
+
+                  {application.Notes ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <h4 className="section-heading">Notes</h4>
+                      <p className="job-spec-description">{safeValue(application.Notes)}</p>
+                    </div>
+                  ) : null}
+
                   {application.Discarded ? (
                     <div className="job-spec-field-row">
-                      <span className="job-spec-field-label">Discarded Date</span>
+                      <span className="job-spec-field-label">Discarded on</span>
                       <span>{formatDateOnly(application.Discarded)}</span>
                     </div>
                   ) : null}
@@ -426,54 +470,94 @@ export default function JobSpecView() {
             </div>
           )}
 
-          {interviews.length > 0 && (
+          {jobSpec.Applications && jobSpec.Applications[0].Interviews && jobSpec.Applications[0].Interviews.length > 0 && (
             <div className="job-spec-section interviews-section">
               <div className="section-heading-row">
                 <h4 className="section-heading">Interviews</h4>
               </div>
-              {interviews.map((interview) => (
+
+              {jobSpec.Applications[0].Interviews.map((interview) => (
                 <div key={interview.Id || Math.random()} className="interview-item">
                   {interview.Scheduled ? (
                     <div className="job-spec-field-row">
-                      <span className="job-spec-field-label">Scheduled Date</span>
+                      <span className="job-spec-field-label">Scheduled for</span>
                       <span>{formatDateTime(interview.Scheduled)}</span>
                     </div>
                   ) : null}
-                  {interview.Contact ? (
+
+                  {interview.ContactId && setInContact(lContacts.find((item) => item.Id === interview.ContactId)) ? (
                     <div className="job-spec-note-row contact-row">
-                      <span className="job-spec-note-label">Contact:</span>
+                      <span className="job-spec-note-label">Contact</span>
                       <span>
-                        {interview.Contact.Name || '—'}
-                        {interview.Contact.Email ? (
-                          <a href={`mailto:${interview.Contact.Email}`} className="job-spec-contact-link">
-                            {interview.Contact.Email}
-                          </a>
+
+                        <div>
+                          <div className="job-spec-note-row contact-row">
+                            <span className="job-spec-note-label">Contact </span>
+                            <span>
+                              {inContact?.Name || '—'}
+                            </span>
+                            {inContact?.Details ? (
+                              <span className="job-spec-info-icon" title={inContact.Details}>ℹ️</span>
+                            ) : null}
+                          </div>
+
+                        {inContact?.Email ? (
+                          <div className="job-spec-note-row contact-row">
+                            <span>
+                              <a href={`mailto:${inContact.Email}`} target="_blank" rel="noreferrer" className="job-spec-contact-link" title={`Send email to ${inContact?.Name || 'contact'}`}>
+                                {inContact.Email || '—'}
+                              </a>
+                            </span>
+                          </div>
+                          ) : null}
+
+                        {inContact?.Phone ? (
+                          <div className="job-spec-note-row contact-row">
+                            <span>
+                              {inContact?.Phone ? <span className="job-spec-contact-phone">{inContact.Phone}</span> : null}
+                            </span>
+                          </div>
                         ) : null}
-                        {interview.Contact.Phone ? <span className="job-spec-contact-phone">{interview.Contact.Phone}</span> : null}
+                        </div>
                       </span>
-                      {interview.Contact.Details ? (
-                        <span className="job-spec-info-icon" title={interview.Contact.Details}>ℹ️</span>
-                      ) : null}
                     </div>
                   ) : null}
+
+                  {interview.Description ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <h4 className="section-heading">Expected interview</h4>
+                      <p className="job-spec-description">{safeValue(interview.Description)}</p>
+                    </div>
+                  ) : null}
+
+                  {interview.Analysis ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <h4 className="section-heading">Recomendations</h4>
+                      <p className="job-spec-description">{safeValue(interview.Analysis)}</p>
+                    </div>
+                  ) : null}
+
                   {interview.Notes ? (
-                    <div className="job-spec-field-row">
-                      <span className="job-spec-field-label">Notes</span>
-                      <span className="job-spec-description">{safeValue(interview.Notes)}</span>
+                    <div className="job-spec-section job-spec-description-section">
+                      <h4 className="section-heading">Notes</h4>
+                      <p className="job-spec-description">{safeValue(interview.Notes)}</p>
                     </div>
                   ) : null}
+
                   {interview.Outcome ? (
-                    <div className="job-spec-field-row">
-                      <span className="job-spec-field-label">Outcome</span>
-                      <span className="job-spec-description">{safeValue(interview.Outcome)}</span>
+                    <div className="job-spec-section job-spec-description-section">
+                      <h4 className="section-heading">Outcome</h4>
+                      <p className="job-spec-description">{safeValue(interview.Outcome)}</p>
                     </div>
                   ) : null}
+
                   {interview.Feedback ? (
-                    <div className="job-spec-field-row">
-                      <span className="job-spec-field-label">Feedback</span>
-                      <span className="job-spec-description">{safeValue(interview.Feedback)}</span>
+                    <div className="job-spec-section job-spec-description-section">
+                      <h4 className="section-heading">Feedback</h4>
+                      <p className="job-spec-description">{safeValue(interview.Feedback)}</p>
                     </div>
                   ) : null}
+
                 </div>
               ))}
             </div>

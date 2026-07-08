@@ -75,7 +75,7 @@
 .job-spec-note-label {
   font-weight: 700;
   color: #475569;
-  min-width: 90px;
+  /*min-width: 90px;*/
 }
 
 .job-spec-note-value {

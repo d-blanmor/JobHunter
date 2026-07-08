@@ -106,8 +106,8 @@ export type Interview = {
   ApplicationId: number;
   Scheduled: string;
   ContactId?: number | null;
-  Description?: number | null;
-  Analysis?: number | null;
+  Description?: string | null;
+  Analysis?: string | null;
   Notes?: string | null;
   Outcome?: string | null;
   Feedback?: string | null;

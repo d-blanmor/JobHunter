@@ -105,8 +105,8 @@ export interface InterviewItem {
   ApplicationId: number;
   Scheduled: string;
   ContactId?: number | null;
-  Description?: number | null;
-  Analysis?: number | null;
+  Description?: string | null;
+  Analysis?: string | null;
   Notes?: string | null;
   Outcome?: string | null;
   Feedback?: string | null;
@@ -239,8 +239,8 @@ export interface newInterviewItem {
   ApplicationId: number;
   Scheduled: string;
   ContactId?: number | null;
-  Description?: number | null;
-  Analysis?: number | null;
+  Description?: string | null;
+  Analysis?: string | null;
   Notes?: string | null;
   Outcome?: string | null;
   Feedback?: string | null;

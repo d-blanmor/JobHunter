@@ -1,6 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  Stage,
+  Counts,
+} from '../defs/types';
+import { 
+  titleMap,
+  stageDateLabels,
+} from '../defs/maps';
 import Modal from './Modal';
+import ApplicationModal from '../components/ApplicationModal';
+import InterviewModal from '../components/InterviewModal';
+import OfferModal from '../components/OfferModal';
 import { inStageReceived, inStageApplied, inStageInterview, inStageOffer, inStageDiscarded } from '../api/workflow';
 import { listWorkModels } from '../api/lu_workmodels';
 import { listTags } from '../api/tags';
@@ -11,7 +22,6 @@ import { listAllApplications, getApplication, saveApplication } from '../api/app
 import { listAllInterviews, getInterview, saveInterview } from '../api/interviews';
 import { listAllOffers, getOffer, saveOffer } from '../api/offers';
 import { DEFAULT_PAGE_SIZE } from '../config';
-import { Stage } from '../defs/types';
 
 type StageItem = {
   Id: number;
@@ -39,14 +49,6 @@ type Props = {
   title: string;
   open: boolean;
   onClose: () => void;
-};
-
-const stageDateLabels: Record<Stage, string> = {
-  received: 'Recieved',
-  applied: 'Applied',
-  interview: 'Next Interview',
-  offers: 'Offered',
-  discarded: 'Discarded',
 };
 
 const PAGE_SIZE = DEFAULT_PAGE_SIZE;
@@ -144,9 +146,14 @@ function loadStageSpecs(stage: Stage) {
 
 export default function StageModal({ stage, title, open, onClose }: Props) {
   const navigate = useNavigate();
+  const [stageDateLabel, setStageDateLabel] = useState<string> (stageDateLabels[stage]);
   const [items, setItems] = useState<StageItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [modalOpenApplication, setModalOpenApplication] = useState(false);
+  const [modalOpenInterview, setModalOpenInterview] = useState(false);
+  const [modalOpenOffer, setModalOpenOffer] = useState(false);
 
   const [dateFrom, setDateFrom] = useState('');
   const [searchPosition, setSearchPosition] = useState('');
@@ -156,30 +163,13 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
   const [selectedTagIds, setSelectedTagIds] = useState<number[]>([]);
   const [page, setPage] = useState(1);
 
+  const [selectedJobSpecId, setSelectedJobSpecId] = useState<number | null>(null);
+  const [selectedApplicationId, setSelectedApplicationId] = useState<number | null>(null);
   const [roleTypes, setRoleTypes] = useState<any[]>([]);
   const [workModels, setWorkModels] = useState<any[]>([]);
   const [tags, setTags] = useState<any[]>([]);
-  const [contacts, setContacts] = useState<any[]>([]);
-  const [contactFormOpen, setContactFormOpen] = useState(false);
-  const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [contactNotes, setContactNotes] = useState('');
-  const [contactFormError, setContactFormError] = useState<string | null>(null);
-  const [contactCreating, setContactCreating] = useState(false);
+
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
-  const [interviewFormOpen, setInterviewFormOpen] = useState(false);
-  const [activeApplicationId, setActiveApplicationId] = useState<number | null>(null);
-  const [interviewSchedule, setInterviewSchedule] = useState('');
-  const [interviewContactId, setInterviewContactId] = useState<number | null>(null);
-  const [interviewNotes, setInterviewNotes] = useState('');
-  const [interviewFormError, setInterviewFormError] = useState<string | null>(null);
-  const [offerFormOpen, setOfferFormOpen] = useState(false);
-  const [offerOfferedDate, setOfferOfferedDate] = useState('');
-  const [offerSalary, setOfferSalary] = useState('');
-  const [offerNotes, setOfferNotes] = useState('');
-  const [offerFormError, setOfferFormError] = useState<string | null>(null);
-  const [offerCreating, setOfferCreating] = useState(false);
 
   const loadStageData = async () => {
     let mounted = true;
@@ -204,7 +194,6 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       setRoleTypes(roleTypeData);
       setWorkModels(workModelData);
       setTags(tagData);
-      setContacts(contactData);
 
       const stageJobSpecs = await loadStageSpecs(stage);
       const apps = ['applied', 'interview', 'offers', 'discarded'].includes(stage)
@@ -261,26 +250,6 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     setPage(1);
   }, [dateFrom, searchPosition, searchCompany, selectedRoleTypeIds.join(','), selectedWorkModelIds.join(','), selectedTagIds.join(',')]);
 
-  const stageDateLabel = stageDateLabels[stage];
-
-  const handleCreateApplication = async (jobSpecId: number) => {
-    setError(null);
-    setActionLoadingId(jobSpecId);
-
-    try {
-      await saveApplication({
-        JobSpecId: jobSpecId,
-        Applied: new Date().toISOString(),
-        IsActive: true,
-      });
-      await loadStageData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create application');
-    } finally {
-      setActionLoadingId(null);
-    }
-  };
-
   const handleSoftDeleteJobSpec = async (jobSpecId: number) => {
     if (!window.confirm('Are you sure you want to soft delete this Job Spec?')) return;
     setError(null);
@@ -293,74 +262,6 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       setError(err instanceof Error ? err.message : 'Failed to delete job spec');
     } finally {
       setActionLoadingId(null);
-    }
-  };
-
-  const openInterviewForm = (applicationId: number) => {
-    setActiveApplicationId(applicationId);
-    setInterviewSchedule('');
-    setInterviewContactId(null);
-    setInterviewNotes('');
-    setInterviewFormError(null);
-    setInterviewFormOpen(true);
-  };
-
-  const openContactForm = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setContactName('');
-    setContactEmail('');
-    setContactPhone('');
-    setContactNotes('');
-    setContactFormError(null);
-//    setContactFormOpen(true);
-  };
-
-  const openOfferForm = (applicationId: number) => {
-    setActiveApplicationId(applicationId);
-    // default offered date to today in YYYY-MM-DD
-    setOfferOfferedDate(new Date().toISOString().slice(0, 10));
-    setOfferSalary('');
-    setOfferNotes('');
-    setOfferFormError(null);
-    setOfferFormOpen(true);
-    setInterviewFormOpen(false);
-  };
-
-  const closeOfferForm = () => {
-    setOfferFormOpen(false);
-    setActiveApplicationId(null);
-    setOfferOfferedDate('');
-    setOfferSalary('');
-    setOfferNotes('');
-    setOfferFormError(null);
-    setOfferCreating(false);
-  };
-
-  const handleCreateOffer = async () => {
-    if (!activeApplicationId) {
-      setOfferFormError('No application selected.');
-      return;
-    }
-    if (!offerOfferedDate) {
-      setOfferFormError('Offered date is required.');
-      return;
-    }
-    setOfferFormError(null);
-    setOfferCreating(true);
-    try {
-      await saveOffer({
-        ApplicationId: activeApplicationId,
-        Offered: new Date(offerOfferedDate).toISOString(),
-        Salary: offerSalary || null,
-        Notes: offerNotes || null,
-        IsActive: true,
-      });
-      closeOfferForm();
-      await loadStageData();
-    } catch (err) {
-      setOfferFormError(err instanceof Error ? err.message : 'Failed to create offer');
-    } finally {
-      setOfferCreating(false);
     }
   };
 
@@ -470,85 +371,21 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
     }
   };
 
-  const closeContactForm = () => {
-    setContactFormOpen(false);
-    setContactName('');
-    setContactEmail('');
-    setContactPhone('');
-    setContactNotes('');
-    setContactFormError(null);
-    setContactCreating(false);
-  };
-
-  const handleCreateContact = async () => {
-    if (!contactName.trim()) {
-      setContactFormError('Name is required');
-      return;
+  const closeModalForm = async (nextStage?: Stage) => {
+    setSelectedJobSpecId(null);
+    setSelectedApplicationId(null);
+    setModalOpenApplication(false);
+    setModalOpenInterview(false);
+    setModalOpenOffer(false);
+    
+    if (nextStage) {
+      stage = nextStage;
+      title = titleMap[stage];
+      setStageDateLabel(stageDateLabels[stage])
+      StageModal.apply;
     }
-    setContactFormError(null);
-    setContactCreating(true);
-    try {
-      const payload = {
-        Name: contactName.trim(),
-        Email: contactEmail.trim() || null,
-        Phone: contactPhone.trim() || null,
-        Details: contactNotes.trim() || null,
-        IsActive: true,
-      };
-      const created = await saveContact(payload);
-      const newContact = created ?? payload;
-      setContacts((prev) => [newContact, ...prev]);
-      const newId = newContact.Id ?? newContact.id ?? null;
-      if (newId) setInterviewContactId(Number(newId));
-      // Close contact form then ensure the interview form remains open so user can continue creating the interview.
-      closeContactForm();
-      setInterviewFormOpen(true);
-    } catch (err) {
-      setContactFormError(err instanceof Error ? err.message : 'Failed to create contact');
-    } finally {
-      setContactCreating(false);
-    }
-  };
-
-  const closeInterviewForm = () => {
-    setInterviewFormOpen(false);
-    setActiveApplicationId(null);
-    setInterviewSchedule('');
-    setInterviewContactId(null);
-    setInterviewNotes('');
-    setInterviewFormError(null);
-  };
-
-  const handleCreateInterview = async () => {
-    if (!activeApplicationId) {
-      setInterviewFormError('No application selected.');
-      return;
-    }
-    if (!interviewSchedule) {
-      setInterviewFormError('Schedule date is required.');
-      return;
-    }
-
-    setError(null);
-    setInterviewFormError(null);
-    setActionLoadingId(activeApplicationId);
-
-    try {
-      await saveInterview({
-        ApplicationId: activeApplicationId,
-        Scheduled: new Date(interviewSchedule).toISOString(),
-        ContactId: interviewContactId,
-        Notes: interviewNotes,
-        IsActive: true,
-      });
-      closeInterviewForm();
-      await loadStageData();
-    } catch (err) {
-      setInterviewFormError(err instanceof Error ? err.message : 'Failed to create interview');
-    } finally {
-      setActionLoadingId(null);
-    }
-  };
+    await loadStageData();
+  }
 
   const handleSoftDeleteApplication = async (applicationId: number) => {
     if (!window.confirm('Are you sure you want to soft delete this application?')) return;
@@ -777,9 +614,13 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                         type="button"
                         className={`stage-action-button${actionLoadingId === item.Id ? ' disabled' : ''}`}
                         title="Create application for this job spec"
+
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (actionLoadingId !== item.Id) handleCreateApplication(item.Id);
+                          if (actionLoadingId !== item.Id) {
+                            setSelectedJobSpecId(Number(item.Id));
+                            setModalOpenApplication(true);
+                          }
                         }}
                         disabled={actionLoadingId === item.Id}
                       >
@@ -821,7 +662,8 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                         onClick={(e) => {
                           e.stopPropagation();
                           if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
-                            openInterviewForm(item.ApplicationId);
+                            setSelectedApplicationId(Number(item.ApplicationId));
+                            setModalOpenInterview(true);
                           }
                         }}
                         disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
@@ -866,7 +708,8 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                         onClick={(e) => {
                           e.stopPropagation();
                           if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
-                            openInterviewForm(item.ApplicationId);
+                            setSelectedApplicationId(Number(item.ApplicationId));
+                            setModalOpenInterview(true);
                           }
                         }}
                         disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
@@ -880,7 +723,8 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                         onClick={(e) => {
                           e.stopPropagation();
                           if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
-                            openOfferForm(item.ApplicationId);
+                            setSelectedApplicationId(Number(item.ApplicationId));
+                            setModalOpenOffer(true);
                           }
                         }}
                         disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
@@ -971,138 +815,6 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
               </div>
             ))}
           </div>
-
-          {contactFormOpen && (
-            <div className="stage-modal-popup-overlay contact-popup">
-              <div className="stage-modal-popup">
-                <h4>Create Contact</h4>
-                {contactFormError && <p className="error">{contactFormError}</p>}
-                <div className="modal-field">
-                  <label>Name</label>
-                  <input value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Full name" />
-                </div>
-                <div className="modal-field">
-                  <label>Email</label>
-                  <input value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="Email address" />
-                </div>
-                <div className="modal-field">
-                  <label>Phone</label>
-                  <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} placeholder="Phone number" />
-                </div>
-                <div className="modal-field">
-                  <label>Notes</label>
-                  <textarea value={contactNotes} onChange={(e) => setContactNotes(e.target.value)} rows={4} />
-                </div>
-                <div className="modal-actions">
-                  <button className="button secondary-button" type="button" onClick={closeContactForm}>
-                    Cancel
-                  </button>
-                  <button className="button primary-button" type="button" onClick={handleCreateContact} disabled={contactCreating}>
-                    Create
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {offerFormOpen && (
-            <div className="stage-modal-popup-overlay">
-              <div className="stage-modal-popup">
-                <h4>Create Offer</h4>
-                {offerFormError && <p className="error">{offerFormError}</p>}
-                <div className="modal-field">
-                  <label>Offered date</label>
-                  <input
-                    type="date"
-                    value={offerOfferedDate}
-                    onChange={(e) => setOfferOfferedDate(e.target.value)}
-                  />
-                </div>
-                <div className="modal-field">
-                  <label>Salary</label>
-                  <input value={offerSalary} onChange={(e) => setOfferSalary(e.target.value)} placeholder="Salary amount" />
-                </div>
-                <div className="modal-field">
-                  <label>Notes</label>
-                  <textarea value={offerNotes} onChange={(e) => setOfferNotes(e.target.value)} rows={4} />
-                </div>
-                <div className="modal-actions">
-                  <button className="button secondary-button" type="button" onClick={closeOfferForm}>
-                    Cancel
-                  </button>
-                  <button className="button primary-button" type="button" onClick={handleCreateOffer} disabled={offerCreating}>
-                    OK
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {interviewFormOpen && (
-            <div className="stage-modal-popup-overlay">
-              <div className="stage-modal-popup">
-                <h4>Create Interview</h4>
-                {interviewFormError && <p className="error">{interviewFormError}</p>}
-                <div className="modal-field">
-                  <label>Schedule Date</label>
-                  <input
-                    type="date"
-                    value={interviewSchedule}
-                    onChange={(event) => setInterviewSchedule(event.target.value)}
-                  />
-                </div>
-                <div className="modal-field">
-                  <label>Contact</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={(e) => e.stopPropagation()}>
-                    <select
-                      value={interviewContactId ?? ''}
-                      onChange={(event) => setInterviewContactId(event.target.value ? Number(event.target.value) : null)}
-                    >
-                      <option value="">No contact</option>
-                      {contacts.map((contact) => (
-                        <option key={contact.Id ?? contact.id} value={contact.Id ?? contact.id}>
-                          {contact.Name || contact.name || contact.Title || contact.Email || contact.EmailAddress || 'Unnamed contact'}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      type="button"
-                      className="stage-action-button"
-                      title="Create new contact"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openContactForm(e);
-                      }}
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                <div className="modal-field">
-                  <label>Notes</label>
-                  <textarea
-                    value={interviewNotes}
-                    onChange={(event) => setInterviewNotes(event.target.value)}
-                    placeholder="Interview notes"
-                    rows={4}
-                  />
-                </div>
-                <div className="modal-actions">
-                  <button className="button secondary-button" type="button" onClick={closeInterviewForm}>
-                    Cancel
-                  </button>
-                  <button
-                    className="button primary-button"
-                    type="button"
-                    onClick={handleCreateInterview}
-                    disabled={actionLoadingId === activeApplicationId}
-                  >
-                    OK
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
           <div className="stage-pagination">
             <button className="button secondary-button" onClick={() => handlePageChange(1)} disabled={page === 1}>
               First
@@ -1125,6 +837,43 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       <div className="modal-actions" style={{ justifyContent: 'center' }}>
         <button className="button secondary-button" onClick={onClose}>Close</button>
       </div>
+
+      {modalOpenApplication && (
+        <ApplicationModal
+          applicationId={null}
+          jobSpecId={selectedJobSpecId}
+          title = "Create new Application"
+          onClose={() => closeModalForm()}
+          onSuccess={async () => {
+            closeModalForm('applied');
+          }}
+        />
+      )}
+
+      {modalOpenInterview && (
+        <InterviewModal
+          interviewId={null}
+          applicationId={selectedApplicationId}
+          title = "Create new Interview"
+          onClose={() => closeModalForm()}
+          onSuccess={async () => {
+            closeModalForm('interview');
+          }}
+        />
+      )}
+
+      {modalOpenOffer && (
+        <OfferModal
+          offerId={null}
+          applicationId={selectedApplicationId}
+          title = "Create new Offer"
+          onClose={() => closeModalForm()}
+          onSuccess={async () => {
+            closeModalForm('offers');
+          }}
+        />
+      )}
+
     </Modal>
   );
 }

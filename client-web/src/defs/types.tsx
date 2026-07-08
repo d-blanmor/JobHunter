@@ -1,5 +1,13 @@
 export type Stage = 'received' | 'applied' | 'interview' | 'offers' | 'discarded';
 
+export type Counts = {
+  received: number;
+  applied: number;
+  interview: number;
+  offers: number;
+  discarded: number;
+};
+
 export type Tag = {
   Id: number;
   Name: string;

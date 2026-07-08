@@ -1,5 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { 
+  Stage,
+  Counts,
+} from '../defs/types';
+import { titleMap } from '../defs/maps';
 import StageModal from '../components/StageModal';
 import {
   inStageReceived,
@@ -12,16 +17,6 @@ import {
 import SourceModal from '../components/SourceModal';
 import { listSources } from '../api/sources';
 import { SourceItem } from '../defs/interfaces';
-
-type Stage = 'received' | 'applied' | 'interview' | 'offers' | 'discarded';
-
-type Counts = {
-  received: number;
-  applied: number;
-  interview: number;
-  offers: number;
-  discarded: number;
-};
 
 export async function getJobSpecCounts(): Promise<Counts> {
   try {
@@ -97,6 +92,20 @@ export default function HomePage() {
   }, []);
 
   /* ---- Portal list fetch utility ---------------------------------------- */
+  const loadCounts = async (mounted: boolean = true) => {
+    setLoading(true);
+    try {
+      const counters = await getJobSpecCounts();
+      if (mounted) setCounts(counters);
+    } catch (err) {
+      if (mounted)
+        setError(err instanceof Error ? err.message : 'Failed to load counts');
+    } finally {
+      if (mounted) setLoading(false);
+    }
+  };
+
+  /* ---- Portal list fetch utility ---------------------------------------- */
   const fetchSources = async (mounted: boolean = true) => {
     setSourcesLoading(true);
     try {
@@ -127,14 +136,6 @@ export default function HomePage() {
 
   const closeModal = () => {
     setModalStage(null);
-  };
-
-  const titleMap: Record<Stage, string> = {
-    received: 'Received Job Specs',
-    applied: 'Applied Job Specs',
-    interview: 'Interview Job Specs',
-    offers: 'Offer Job Specs',
-    discarded: 'Discarded Job Specs',
   };
 
   return (
@@ -297,13 +298,17 @@ export default function HomePage() {
           stage={modalStage}
           title={titleMap[modalStage]}
           open={true}
-          onClose={closeModal}
+          onClose={async () => {
+            await loadCounts();
+            closeModal()
+          }}
         />
       )}
 
       {modalOpen && (
         <SourceModal
           sourceId={currentId}
+          title='New Source Portal'
           onClose={() => setModalOpen(false)}
           onSuccess={async () => {
             await fetchSources(true); // refresh portal list after modal close

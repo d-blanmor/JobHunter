@@ -167,23 +167,23 @@ export default function JobSpecView() {
         jobSpec.Tags = jsTags;
         setApplications(Array.isArray(applications) ? applications : []);
         jobSpec.Applications = applications;
-        setInterviews(Array.isArray(interviews) ? interviews : []);
-        jobSpec.Applications[0].Interviews = interviews;
-        setOffers(Array.isArray(offers) ? offers : []);
-        jobSpec.Applications[0].Offers = offers;
+        if (jobSpec.Applications && jobSpec.Applications.len > 0) {
+          setInterviews(Array.isArray(interviews) ? interviews : []);
+          jobSpec.Applications[0].Interviews = interviews;
+          setOffers(Array.isArray(offers) ? offers : []);
+          jobSpec.Applications[0].Offers = offers;
+          // Get benefits for each offer if needed
+          if (Array.isArray(jobSpec.Applications) && jobSpec.Applications.length > 0) {
+            if (Array.isArray(jobSpec.Applications[0].Offers) && jobSpec.Applications[0].Offers.length > 0) {
+              for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
+                const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].id)).catch(() => []));
 
-        // Get benefits for each offer if needed
-        if (Array.isArray(jobSpec.Applications) && jobSpec.Applications.length > 0) {
-          if (Array.isArray(jobSpec.Applications[0].Offers) && jobSpec.Applications[0].Offers.length > 0) {
-            for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
-              const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].id)).catch(() => []));
-
-              setOfBenefits(Array.isArray(ofBenefits) ? ofBenefits : []);
-              jobSpec.Applications[0].Offers[i].Benefits = ofBenefits;
+                setOfBenefits(Array.isArray(ofBenefits) ? ofBenefits : []);
+                jobSpec.Applications[0].Offers[i].Benefits = ofBenefits;
+              }
             }
           }
         }
-
         setSources(Array.isArray(luSources) ? luSources : []);
         setPlacesOfWork(Array.isArray(luPlacesOfWork) ? luPlacesOfWork : []);
         setWorkModels(Array.isArray(luWorkModels) ? luWorkModels : []);
@@ -470,7 +470,7 @@ export default function JobSpecView() {
             </div>
           )}
 
-          {jobSpec.Applications && jobSpec.Applications[0].Interviews && jobSpec.Applications[0].Interviews.length > 0 && (
+          {jobSpec.Applications && jobSpec.Applications[0] && jobSpec.Applications[0].Interviews && jobSpec.Applications[0].Interviews.length > 0 && (
             <div className="job-spec-section interviews-section">
               <div className="section-heading-row">
                 <h4 className="section-heading">Interviews</h4>
@@ -525,7 +525,7 @@ export default function JobSpecView() {
 
                   {interview.Description ? (
                     <div className="job-spec-section job-spec-description-section">
-                      <h4 className="section-heading">Expected interview</h4>
+                      <h4 className="section-heading">Description</h4>
                       <p className="job-spec-description">{safeValue(interview.Description)}</p>
                     </div>
                   ) : null}

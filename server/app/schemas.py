@@ -78,8 +78,8 @@ class InterviewBase(BaseModel):
     ApplicationId: int
     Scheduled: Optional[datetime] = None
     ContactId: Optional[int] = None
-    Description: Optional[int] = None
-    Analysis: Optional[int] = None
+    Description: Optional[str] = None
+    Analysis: Optional[str] = None
     Notes: Optional[str] = None
     Outcome: Optional[str] = None
     Feedback: Optional[str] = None

@@ -248,8 +248,8 @@ class rolesInterview(SQLModel, table=True):
         default=None, 
         foreign_key="roles_contacts.Id"
     )
-    Description: Optional[int] = None
-    Analysis: Optional[int] = None
+    Description: Optional[str] = None
+    Analysis: Optional[str] = None
     Notes: Optional[str] = None
     Outcome: Optional[str] = None
     Feedback: Optional[str] = None

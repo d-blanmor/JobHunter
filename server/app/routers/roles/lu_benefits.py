@@ -13,11 +13,6 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/roles/lookup/benefits", response_model=list[StandardLookupBase])
 def list_benefits(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[StandardLookupBase]:
-    #statement = select(rolesLuBenefit)
-    #if active_only:
-    #    statement = statement.where(rolesLuBenefit.IsActive == True)
-    #statement = statement.order_by(rolesLuBenefit.Order)
-    #return session.exec(statement).all()
     return _get_entity_or_404(session, rolesLuBenefit, None, active_only)
 
 @router.get(conf_pathname()+"/v1/roles/lookup/benefits/{benefit_id}", response_model=StandardLookupBase)

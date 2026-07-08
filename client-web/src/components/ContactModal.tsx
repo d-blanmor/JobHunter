@@ -1,29 +1,31 @@
 import { useEffect, useState } from 'react';
-import Modal from './Modal'; // your existing modal component
-import { getSource, listMainSources, saveSource } from '../api/sources';
-import { newSourceItem, SourceItem } from '../defs/interfaces';
+import Modal from './Modal';
+import { getContact, saveContact } from '../api/contacts';
+import { listSources } from '../api/sources';
+import { newContactItem, ContactItem } from '../defs/interfaces';
 
 type Props = {
   /** id of the source to edit; null or undefined means create new */
-  sourceId?: number | null;
+  contactId?: number | null;
   title: string;
   onClose: () => void;
   onSuccess?: () => void;      // called after successful submit
 };
 
-export default function SourceModal({ sourceId, title, onClose, onSuccess = () => {}, }: Props) {
+export default function SourceModal({ contactId, title, onClose, onSuccess = () => {}, }: Props) {
   /* ---------- State --------------------------------------------------- */
-  const [isLoading, setIsLoading] = useState<boolean>(!!sourceId);
+  const [isLoading, setIsLoading] = useState<boolean>(!!contactId);
   const [error, setError] = useState<string | null>(null);
 
   // form fields – initialise to empty values
-  const [mainSources, setMainSources] = useState<any[]>([]);
   const [name, setName] = useState('');
-  const [parentId, setParentId] = useState<number | null>(null);
-  const [portalURL, setPortalURL] = useState<string | ''>('');
-  const [icon, setIcon] = useState<Blob | null>(null);
+  const [email, setEmail] = useState<string | ''>('');
+  const [phone, setPhone] = useState<string | ''>('');
   const [details, setDetails] = useState<string | ''>('');
-  const [order, setOrder] = useState<number | 0>(0);
+  const [sourceId, setSourceId] = useState<number | null>(null);
+  
+  const [sources, setSources] = useState<any[]>([]);
+  
   /* ---------- Load data for editing ----------------------------------- */
   useEffect(() => {
     let mounted = true;
@@ -32,24 +34,22 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
       setIsLoading(true);
       try {
         const [
-          lMainSources,
+          lSources,
         ] = await Promise.all([
-          listMainSources(),
+          listSources(),
         ]);
         if (!mounted) return;
-        const mainSources = Array.isArray(lMainSources) ? lMainSources : (lMainSources?.data ?? [])
-        setMainSources(mainSources);
+        setSources(lSources);
 
-        if (sourceId) { 
+        if (contactId) { 
           // load the Source to be editted
-          const src: SourceItem | undefined = await getSource(sourceId);
+          const src: ContactItem | undefined = await getContact(contactId);
           if (mounted && src) {
             setName(src.Name || '');
-            setParentId(src.ParentId || null);
-            setPortalURL(src.PortalURL || '');
-            setIcon(src.Icon || null);
+            setEmail(src.Email || '');
+            setPhone(src.Phone || '');
             setDetails(src.Details || '');
-            setOrder(src.Order || 0);
+            setSourceId(src.SourceId || null);
           }
         }
       } catch (err) {
@@ -64,7 +64,7 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
     return () => {
       mounted = false;
     };
-  }, [sourceId]);
+  }, [contactId]);
 
   const handleSubmit = async () => {
     setError(null);
@@ -74,84 +74,90 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
       return;
     }
 
-    const payload: newSourceItem = {
+    const payload: newContactItem = {
       Id: null,
       Name: name.trim(),
-      ParentId: Number(parentId) || undefined,
-      PortalURL: portalURL.trim() || undefined,
-      Icon: null,
-      Details: details.trim() || undefined,
+      Email: email.trim(),
+      Phone: phone.trim(),
+      Details: details.trim(),
+      SourceId: Number(sourceId) || undefined,
       IsActive: true,
-      Order: 0,
     };
-    if (sourceId) payload.Id = Number(sourceId);
+    if (contactId) payload.Id = Number(contactId);
 
     try {
-      await saveSource(payload);
+      await saveContact(payload);
       onSuccess();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save source');
+      setError(err instanceof Error ? err.message : 'Failed to save contact');
     }
   };
 
   const handleCancel = () => {
-    //setSourceFormOpen(false);
-    setMainSources([]);
     setName('');
-    setParentId(null);
-    setPortalURL('');
-    setIcon(null);
+    setEmail('');
+    setPhone('');
     setDetails('');
-    setOrder(0);
+    setSourceId(null);
+
     onClose();
   };
 
 
   /* ---------- Render --------------------------------------------------- */
   return (
-    <Modal  title={title} onClose={onClose}>
+    <Modal title={title} onClose={onClose}>
       {error && <p className="error">{error}</p>}
 
-      {(isLoading || !sourceId) && sourceId
+      {(isLoading || !contactId) && contactId
         ? <p>Loading…</p>
         : (
         <div>
-          <div className="modal-field mandatory-field">
+          <div className="modal-field">
             <input 
+              required
               value={name}
-              placeholder="Portal name"
+              placeholder="Contact name"
               onChange={(e) => setName(e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <select style={{ flex: 1 }} 
-              value={parentId ?? ''} 
-              onChange={(e) => setParentId(e.target.value ? Number(e.target.value) : null)}>
-              <option value="">No parent portal selected</option>
-              {mainSources.map((mainSource) => (
-                <option key={mainSource.Id} value={mainSource.Id}>
-                  {mainSource.Name}
-                </option>
-              ))}
-            </select>
+            <input 
+              value={email}
+              type="Email address"
+              placeholder="contact@example.int"
+              onChange={(e) => setEmail(e.target.value)} />
           </div>
 
           <div className="modal-field">
             <input 
-              value={portalURL}
-              type="url"
-              placeholder="https://example.int/jobs"
-              onChange={(e) => setPortalURL(e.target.value)} />
+              value={phone}
+              type="Phone number"
+              placeholder="+353 (0) 00 000 0000"
+              onChange={(e) => setPhone(e.target.value)} />
           </div>
 
           <div className="modal-field">
             <textarea
-              placeholder="Description of the Source"
+              placeholder="Description of the contact"
               rows={3}
               value={details}
               onChange={(e) => setDetails(e.target.value)}
             />
+          </div>
+
+          <div className="modal-field">
+            <select style={{ flex: 1 }} 
+              value={sourceId ?? ''} 
+              onChange={(e) => setSourceId(e.target.value ? Number(e.target.value) : null)}>
+              <option value="">No source portal selected</option>
+              {sources.map((source) => (
+                <option key={source.Id} value={source.Id}>
+                  {source.Name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="modal-actions">

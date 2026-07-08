@@ -15,6 +15,12 @@ export async function getContact(id: number) {
   return res.json();
 }
 
+export async function getContactsBySource(sourceId: number) {
+  const res = await fetch(`${API_BASE}/roles/contacts/by-source/${sourceId}`);
+  if (!res.ok) throw new Error(`Failed to load contacts: ${res.status}`);
+  return res.json();
+}
+
 export async function saveContact(payload: any) {
   const res = await fetch(`${API_BASE}/roles/contacts`, {
     method: 'POST',

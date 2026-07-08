@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../components/Modal';
+import SourceModal from '../components/SourceModal';
+import ContactModal from '../components/ContactModal';
+import PlaceOfWorkModal from '../components/PlaceOfWorkModal'
 
 import { listLocations } from '../api/lu_locations';
 import { listRoleTypes } from '../api/lu_roletypes';
@@ -17,6 +20,10 @@ export default function JobSpecCreate() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [modalOpenSource, setModalOpenSource] = useState(false);
+  const [modalOpenPlaceOfWork, setModalOpenPlaceOfWork] = useState(false);
+  const [modalOpenContact, setModalOpenContact] = useState(false);
+  
   const [position, setPosition] = useState('');
   const [company, setCompany] = useState('');
   const [link, setLink] = useState('');
@@ -24,20 +31,13 @@ export default function JobSpecCreate() {
   const [contactId, setContactId] = useState<number | null>(null);
   const [salaryExpectation, setSalaryExpectation] = useState('');
   const [description, setDescription] = useState('');
-  const [sourceId, setSourceId] = useState<number | ''>('');
   const [workModelId, setWorkModelId] = useState<number | ''>('');
   const [roleTypeId, setRoleTypeId] = useState<number | ''>('');
   const [placeOfWorkId, setPlaceOfWorkId] = useState<number | ''>('');
 
   const [contacts, setContacts] = useState<any[]>([]);
-  const [contactFormOpen, setContactFormOpen] = useState(false);
-  const [contactName, setContactName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [contactPhone, setContactPhone] = useState('');
-  const [contactNotes, setContactNotes] = useState('');
-  const [contactFormError, setContactFormError] = useState<string | null>(null);
-  const [contactCreating, setContactCreating] = useState(false);
   
+  const [sourceId, setSourceId] = useState<number | ''>('');
   const [sources, setSources] = useState<any[]>([]);
   const [workModels, setWorkModels] = useState<any[]>([]);
   const [roleTypes, setRoleTypes] = useState<any[]>([]);
@@ -81,12 +81,12 @@ export default function JobSpecCreate() {
         const contacts = Array.isArray(lContacts) ? lContacts : (lContacts?.data ?? []);
         setContacts(contacts);
 
-        let contactData: any[] = [];
-        try {
-          contactData = await listContacts();
-        } catch (contactErr) {
-          console.warn('[StageModal] failed to load contacts', contactErr);
-        }
+        //let contactData: any[] = [];
+        //try {
+        //  contactData = await listContacts();
+        //} catch (contactErr) {
+        //  console.warn('[StageModal] failed to load contacts', contactErr);
+        //}
 
       } catch (err: any) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -103,10 +103,10 @@ export default function JobSpecCreate() {
     navigate('/');
   };
 
-  const [showSourceModal, setShowSourceModal] = useState(false);
+  //const [showSourceModal, setShowSourceModal] = useState(false);
   const [newSourceName, setNewSourceName] = useState('');
 
-  const [showPlaceModal, setShowPlaceModal] = useState(false);
+//  const [showPlaceModal, setShowPlaceModal] = useState(false);
   const [newPlaceLocationId, setNewPlaceLocationId] = useState<number | ''>('');
   const [newPlaceAddress, setNewPlaceAddress] = useState('');
 
@@ -123,7 +123,7 @@ export default function JobSpecCreate() {
       const created = await saveSource({ Name: newSourceName.trim(), IsActive: true });
       setSources((prev) => [...prev, created]);
       setSourceId(created.Id);
-      setShowSourceModal(false);
+      //setShowSourceModal(false);
       setNewSourceName('');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -132,6 +132,7 @@ export default function JobSpecCreate() {
     }
   };
 
+  /*
   const handleCreatePlace = async () => {
     if (!newPlaceLocationId) return;
     try {
@@ -193,7 +194,7 @@ export default function JobSpecCreate() {
     setContactFormError(null);
     setContactCreating(false);
   };
-
+  */
   const handleSubmit = async () => {
     setError(null);
     if (!position.trim()) {
@@ -230,6 +231,48 @@ export default function JobSpecCreate() {
 
   };
 
+  const fetchSources = async (mounted: boolean = true) => {
+    try {
+      const data = await listSources();
+      if (mounted && Array.isArray(data)) setSources(data);
+    } catch (err) {
+      if (mounted)
+        setError(
+          err instanceof Error ? err.message : 'Failed to load portals',
+        );
+    } finally {
+      //if (mounted) setSourcesLoading(false);
+    }
+  };
+
+  const fetchContacts = async (mounted: boolean = true) => {
+    try {
+      const data = await listContacts();
+      if (mounted && Array.isArray(data)) setContacts(data);
+    } catch (err) {
+      if (mounted)
+        setError(
+          err instanceof Error ? err.message : 'Failed to load contacts',
+        );
+    } finally {
+      //if (mounted) setContactsLoading(false);
+    }
+  };
+
+  const fetchPlacesOfWork = async (mounted: boolean = true) => {
+    try {
+      const data = await listPlacesOfWork();
+      if (mounted && Array.isArray(data)) setPlacesOfWork(data);
+    } catch (err) {
+      if (mounted)
+        setError(
+          err instanceof Error ? err.message : 'Failed to load places of work',
+        );
+    } finally {
+      //if (mounted) setPlacesOfWorkLoading(false);
+    }
+  };
+
   return (
     <section className="page job-spec-create">
       <h2>Create Job Spec</h2>
@@ -238,46 +281,56 @@ export default function JobSpecCreate() {
       {!loading && (
         <div>
           <div className="modal-field">
-            <label>Position *</label>
-            <input value={position} onChange={(e) => setPosition(e.target.value)} />
+            <input 
+              required
+              value={position} 
+              placeholder="Position"
+              onChange={(e) => setPosition(e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <label>Company</label>
-            <input value={company} onChange={(e) => setCompany(e.target.value)} />
+            <input 
+              value={company} 
+              placeholder="Company"
+              onChange={(e) => setCompany(e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <label>Source</label>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <select style={{ flex: 1 }} value={sourceId} onChange={(e) => setSourceId(e.target.value ? Number(e.target.value) : '')}>
-                <option value="">—</option>
+                <option value="">No source selected</option>
                 {sources.map((s) => (
                   <option key={s.Id} value={s.Id}>{s.Name}</option>
                 ))}
               </select>
-              <button className="button small" onClick={() => setShowSourceModal(true)}>+</button>
+              <button 
+                className="button small" 
+                onClick={() => {
+                  setSourceId('');
+                  setModalOpenSource(true);
+                }}>+</button>
             </div>
           </div>
 
           <div className="modal-field">
-            <label>URL</label>
-            <input value={link} onChange={(e) => setLink(e.target.value)} />
+            <input 
+              value={link} 
+              placeholder="URL to the job offer"
+              onChange={(e) => setLink(e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <label>Publish Date</label>
             <input
               type="date"
+              placeholder="Publish Date"
               value={published}
-              onChange={(event) => setPublished(event.target.value)}
+              onChange={(e) => setPublished(e.target.value)}
             />
           </div>
 
           <div className="modal-field">
-            <label>Work model</label>
             <select value={workModelId} onChange={(e) => setWorkModelId(e.target.value ? Number(e.target.value) : '')}>
-              <option value="">—</option>
+              <option value="">No work model selected</option>
               {workModels.map((w) => (
                 <option key={w.Id} value={w.Id}>{w.Name}</option>
               ))}
@@ -285,9 +338,8 @@ export default function JobSpecCreate() {
           </div>
 
           <div className="modal-field">
-            <label>Role type</label>
             <select value={roleTypeId} onChange={(e) => setRoleTypeId(e.target.value ? Number(e.target.value) : '')}>
-              <option value="">—</option>
+              <option value="">No role type selected</option>
               {roleTypes.map((r) => (
                 <option key={r.Id} value={r.Id}>{r.Name}</option>
               ))}
@@ -295,15 +347,16 @@ export default function JobSpecCreate() {
           </div>
 
           <div className="modal-field">
-            <label>Salary Expectation</label>
-            <input value={salaryExpectation} onChange={(e) => setSalaryExpectation(e.target.value)} />
+            <input 
+              value={salaryExpectation} 
+              placeholder="Salary range"
+              onChange={(e) => setSalaryExpectation(e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <label>Place of work</label>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <select style={{ flex: 1 }} value={placeOfWorkId} onChange={(e) => setPlaceOfWorkId(e.target.value ? Number(e.target.value) : '')}>
-                <option value="">—</option>
+                <option value="">No place of work selected</option>
                 {placesOfWork.map((p) => {
                   const loc = locations.find((l) => l.Id === p.LocationId);
                   const label = p.Address && p.Address.trim()
@@ -316,18 +369,25 @@ export default function JobSpecCreate() {
                   );
                 })}
               </select>
-              <button className="button small" onClick={() => setShowPlaceModal(true)}>+</button>
+              <button
+                type="button"
+                className="button small"
+                title="Create new place of work"
+                onClick={() => {
+                  setPlaceOfWorkId('');
+                  setModalOpenPlaceOfWork(true);
+                }}>+</button>
+
             </div>
           </div>
 
           <div className="modal-field">
-            <label>Contact</label>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={(e) => e.stopPropagation()}>
               <select
                 value={contactId ?? ''}
-                onChange={(event) => setContactId(event.target.value ? Number(event.target.value) : null)}
+                onChange={(e) => setContactId(e.target.value ? Number(e.target.value) : null)}
               >
-                <option value="">No contact</option>
+                <option value="">No contact selected</option>
                 {contacts.map((contact) => (
                   <option key={contact.Id ?? contact.id} value={contact.Id ?? contact.id}>
                     {contact.Name || contact.name || contact.Title || contact.Email || contact.EmailAddress || 'Unnamed contact'}
@@ -338,18 +398,18 @@ export default function JobSpecCreate() {
                 type="button"
                 className="button small"
                 title="Create new contact"
-                onClick={(e) => {
-                  setShowContactModal(true);
-                }}
-              >
-                +
-              </button>
+                onClick={() => {
+                  setContactId(null);
+                  setModalOpenContact(true);
+                }}>+</button>
             </div>
           </div>
 
           <div className="modal-field">
-            <label>Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+            <textarea 
+              value={description} 
+              placeholder="Description of the role" 
+              onChange={(e) => setDescription(e.target.value)} />
           </div>
 
           <div className="modal-actions">
@@ -359,64 +419,43 @@ export default function JobSpecCreate() {
         </div>
       )}
 
-      {showSourceModal && (
-        <Modal title="Create Source" onClose={() => setShowSourceModal(false)}>
-          <div className="modal-field">
-            <label>Name *</label>
-            <input value={newSourceName} onChange={(e) => setNewSourceName(e.target.value)} />
-          </div>
-          <div className="modal-actions">
-            <button className="button" onClick={handleCreateSource}>OK</button>
-            <button className="button secondary-button" onClick={() => setShowSourceModal(false)}>Cancel</button>
-          </div>
-        </Modal>
+      {modalOpenSource && (
+        <SourceModal
+          sourceId={null}
+          title = "Create new Source"
+          onClose={() => setModalOpenSource(false)}
+          onSuccess={async () => {
+            await fetchSources(true); // refresh portal list after modal close
+            setModalOpenSource(false);
+            setSourceId(sourceId);
+          }}
+        />
       )}
 
-      {showPlaceModal && (
-        <Modal title="Create Place of Work" onClose={() => setShowPlaceModal(false)}>
-          <div className="modal-field">
-            <label>Location *</label>
-            <select value={newPlaceLocationId} onChange={(e) => setNewPlaceLocationId(e.target.value ? Number(e.target.value) : '')}>
-              <option value="">—</option>
-              {locations.map((l) => (
-                <option key={l.Id} value={l.Id}>{l.Country}{l.City ? ` - ${l.City}` : ''}</option>
-              ))}
-            </select>
-          </div>
-          <div className="modal-field">
-            <label>Address</label>
-            <input value={newPlaceAddress} onChange={(e) => setNewPlaceAddress(e.target.value)} />
-          </div>
-          <div className="modal-actions">
-            <button className="button" onClick={handleCreatePlace}>OK</button>
-            <button className="button secondary-button" onClick={() => setShowPlaceModal(false)}>Cancel</button>
-          </div>
-        </Modal>
+      {modalOpenPlaceOfWork && (
+        <PlaceOfWorkModal
+          placeOfWorkId={null}
+          title = "Create new Place of Work"
+          onClose={() => setModalOpenPlaceOfWork(false)}
+          onSuccess={async () => {
+            await fetchPlacesOfWork(true); // refresh portal list after modal close
+            setModalOpenPlaceOfWork(false);
+            setPlaceOfWorkId(placeOfWorkId);
+          }}
+        />
       )}
 
-      {showContactModal && (
-        <Modal title="Create Contact" onClose={() => setShowContactModal(false)}>
-          <div className="modal-field">
-            <label>Name</label>
-            <input value={newContactName} onChange={(e) => setNewContactName(e.target.value)} />
-          </div>
-          <div className="modal-field">
-            <label>Email</label>
-            <input value={newContactEmail} onChange={(e) => setNewContactEmail(e.target.value)} />
-          </div>
-          <div className="modal-field">
-            <label>Phone</label>
-            <input value={newContactPhone} onChange={(e) => setNewContactPhone(e.target.value)} />
-          </div>
-          <div className="modal-field">
-            <label>Details</label>
-            <input value={newContactNotes} onChange={(e) => setNewContactNotes(e.target.value)} />
-          </div>
-          <div className="modal-actions">
-            <button className="button" onClick={handleCreateContact}>OK</button>
-            <button className="button secondary-button" onClick={() => closeContactForm()}>Cancel</button>
-          </div>
-        </Modal>
+      {modalOpenContact && (
+        <ContactModal
+          contactId={null}
+          title = "Create new Contact"
+          onClose={() => setModalOpenContact(false)}
+          onSuccess={async () => {
+            await fetchContacts(true); // refresh portal list after modal close
+            setModalOpenContact(false);
+            setContactId(contactId);
+          }}
+        />
       )}
 
     </section>

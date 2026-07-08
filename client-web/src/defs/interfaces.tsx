@@ -39,23 +39,17 @@ export interface luBenefitItem {
 export interface SourceItem {
   Id: number;
   Name: string;
+  ParentId?: number | null;
   PortalURL?: string | null;
+  Icon?: Blob | null;
   Details?: string | null;
   IsActive: boolean | true;
-}
-
-export interface LocationItemItem {
-  Id: number;
-  Country: string;
-  City?: string;
-  IsActive: boolean;
   Order: number;
 }
 
 export interface PlaceOfWorkItem {
   Id: number;
   LocationId: number;
-  Location: Location;
   Address?: string | null;
   IsActive: boolean | true;
 }
@@ -66,39 +60,40 @@ export interface ContactItem {
   Email?: string | null;
   Phone?: string | null;
   Details?: string | null;
+  SourceId?: number | null;
   IsActive: boolean | true;
 }
 
 export interface JobSpecItem {
   Id: number;
   Position: string;
-  Created: string | null;
   Company?: string | null;
   SourceId?: number | null;
-  Source?: string | null;
   Link?: string | null;
-  Description?: string | null;
   PlaceOfWorkId?: number | null;
-  PlaceOfWork?: string | null;
   WorkModelId?: number | null;
-  WorkModel?: string | null;
   RoleTypeId?: number | null;
-  RoleType?: string | null;
   SalaryExpectation?: string | null;
   ContactId?: number | null;
-  Contact?: ContactItem | null;
+  Description?: string | null;
+  Analysis?: string | null;
+  Notes?: string | null;
   Published?: string | null;
-  Applications: ApplicationItem[] | [];
-  Benefits: luBenefitItem[] | [];
-  Tags: TagItem[] | [];
+  Created: string | null;
+  Applications?: ApplicationItem[] | [];
+  Benefits?: luBenefitItem[] | [];
+  Tags?: TagItem[] | [];
   IsActive: boolean | true;
 }
 
 export interface ApplicationItem {
   Id: number;
+  JobSpecId: number;
   Applied: string;
   Confirmed?: string | null;
   Discarded?: string | null;
+  Letter?: string | null;
+  CV?: string | null;
   Notes?: string | null;
   Interviews?: InterviewItem[] | null;
   Offers?: OfferItem[] | null;
@@ -110,7 +105,8 @@ export interface InterviewItem {
   ApplicationId: number;
   Scheduled: string;
   ContactId?: number | null;
-  Contact?: ContactItem | null;
+  Description?: number | null;
+  Analysis?: number | null;
   Notes?: string | null;
   Outcome?: string | null;
   Feedback?: string | null;
@@ -122,21 +118,30 @@ export interface OfferItem {
   ApplicationId: number;
   Offered: string;
   Salary?: string | null;
+  Description?: string | null;
   Notes?: string | null;
   Benefits?: luBenefitItem[] | null;
   IsActive: boolean | true;
 }
 
+export interface AppSettingItem {
+  Key: string;
+  Value?: string | null;
+  Notes?: string | null;
+  IsActive: boolean | true;
+}
+
 // Deffinition for new entities
+
 export interface newTagItem {
   Id?: number | null;
-  Name: string;
+  Name?: string;
   Context?: string | null;
   IsActive: boolean | true;
   Order: number | null;
 }
 
-export interface newLuLocationItem {
+export interface newluLocationItem {
   Id?: number | null;
   Country: string;
   City?: string | null;
@@ -144,21 +149,21 @@ export interface newLuLocationItem {
   Order: number | null;
 }
 
-export interface newLuRoleTypeItem {
+export interface newluRoleTypeItem {
   Id?: number | null;
   Name: string;
   IsActive: boolean | true;
   Order: number | null;
 }
 
-export interface newLuWorkModelItem {
+export interface newluWorkModelItem {
   Id?: number | null;
   Name: string;
   IsActive: boolean | true;
   Order: number | null;
 }
 
-export interface newLuBenefitItem {
+export interface newluBenefitItem {
   Id?: number | null;
   Name: string;
   IsActive: boolean | true;
@@ -168,16 +173,11 @@ export interface newLuBenefitItem {
 export interface newSourceItem {
   Id?: number | null;
   Name: string;
+  ParentId?: number | null;
   PortalURL?: string | null;
+  Icon?: Blob | null;
   Details?: string | null;
   IsActive: boolean | true;
-}
-
-export interface newLocationItemItem {
-  Id?: number | null;
-  Country: string;
-  City?: string;
-  IsActive: boolean;
   Order: number;
 }
 
@@ -194,32 +194,43 @@ export interface newContactItem {
   Email?: string | null;
   Phone?: string | null;
   Details?: string | null;
-  IsActive: boolean | true;
-}
-
-export interface newApplicationItem {
-  Id?: number | null;
-  Applied: string;
-  Confirmed?: string | null;
-  Discarded?: string | null;
-  Notes?: string | null;
+  SourceId?: number | null;
   IsActive: boolean | true;
 }
 
 export interface newJobSpecItem {
   Id?: number | null;
   Position: string;
-  Created: string | null;
   Company?: string | null;
   SourceId?: number | null;
   Link?: string | null;
-  Description?: string | null;
   PlaceOfWorkId?: number | null;
   WorkModelId?: number | null;
   RoleTypeId?: number | null;
   SalaryExpectation?: string | null;
   ContactId?: number | null;
+  Description?: string | null;
+  Analysis?: string | null;
+  Notes?: string | null;
   Published?: string | null;
+  Created: string | null;
+  Applications?: ApplicationItem[] | [];
+  Benefits?: luBenefitItem[] | [];
+  Tags?: TagItem[] | [];
+  IsActive: boolean | true;
+}
+
+export interface newApplicationItem {
+  Id?: number | null;
+  JobSpecId: number;
+  Applied: string;
+  Confirmed?: string | null;
+  Discarded?: string | null;
+  Letter?: string | null;
+  CV?: string | null;
+  Notes?: string | null;
+  Interviews?: InterviewItem[] | null;
+  Offers?: OfferItem[] | null;
   IsActive: boolean | true;
 }
 
@@ -228,6 +239,8 @@ export interface newInterviewItem {
   ApplicationId: number;
   Scheduled: string;
   ContactId?: number | null;
+  Description?: number | null;
+  Analysis?: number | null;
   Notes?: string | null;
   Outcome?: string | null;
   Feedback?: string | null;
@@ -239,7 +252,15 @@ export interface newOfferItem {
   ApplicationId: number;
   Offered: string;
   Salary?: string | null;
+  Description?: string | null;
   Notes?: string | null;
   Benefits?: luBenefitItem[] | null;
+  IsActive: boolean | true;
+}
+
+export interface newAppSettingsItem {
+  Key?: string | null;
+  Value?: string | null;
+  Notes?: string | null;
   IsActive: boolean | true;
 }

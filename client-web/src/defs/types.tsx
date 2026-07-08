@@ -40,23 +40,17 @@ export type luBenefit = {
 export type Source = {
   Id: number;
   Name: string;
+  ParentId?: number | null;
   PortalURL?: string | null;
+  Icon?: Blob | null;
   Details?: string | null;
   IsActive: boolean | true;
-}
-
-export interface LocationItem {
-  Id: number;
-  Country: string;
-  City?: string;
-  IsActive: boolean;
   Order: number;
 }
 
 export type PlaceOfWork = {
   Id: number;
   LocationId: number;
-  Location: Location;
   Address?: string | null;
   IsActive: boolean | true;
 }
@@ -67,42 +61,43 @@ export type Contact = {
   Email?: string | null;
   Phone?: string | null;
   Details?: string | null;
-  IsActive: boolean | true;
-}
-
-export type Application = {
-  Id: number;
-  Applied: string;
-  Confirmed?: string | null;
-  Discarded?: string | null;
-  Notes?: string | null;
-  Interviews?: Interview[] | null;
-  Offers?: Offer[] | null;
+  SourceId?: number | null;
   IsActive: boolean | true;
 }
 
 export type JobSpec = {
   Id: number;
   Position: string;
-  Created: string | null;
   Company?: string | null;
   SourceId?: number | null;
-  Source?: string | null;
   Link?: string | null;
-  Description?: string | null;
   PlaceOfWorkId?: number | null;
-  PlaceOfWork?: string | null;
   WorkModelId?: number | null;
-  WorkModel?: string | null;
   RoleTypeId?: number | null;
-  RoleType?: string | null;
   SalaryExpectation?: string | null;
   ContactId?: number | null;
-  Contact?: Contact | null;
+  Description?: string | null;
+  Analysis?: string | null;
+  Notes?: string | null;
   Published?: string | null;
-  Applications?: Application[] | null;
-  Benefits?: luBenefit[] | null;
-  Tags?: Tag[] | null;
+  Created: string | null;
+  Applications?: Application[] | [];
+  Benefits?: luBenefit[] | [];
+  Tags?: Tag[] | [];
+  IsActive: boolean | true;
+}
+
+export type Application = {
+  Id: number;
+  JobSpecId: number;
+  Applied: string;
+  Confirmed?: string | null;
+  Discarded?: string | null;
+  Letter?: string | null;
+  CV?: string | null;
+  Notes?: string | null;
+  Interviews?: Interview[] | null;
+  Offers?: Offer[] | null;
   IsActive: boolean | true;
 }
 
@@ -111,7 +106,8 @@ export type Interview = {
   ApplicationId: number;
   Scheduled: string;
   ContactId?: number | null;
-  Contact?: Contact | null;
+  Description?: number | null;
+  Analysis?: number | null;
   Notes?: string | null;
   Outcome?: string | null;
   Feedback?: string | null;
@@ -123,7 +119,15 @@ export type Offer = {
   ApplicationId: number;
   Offered: string;
   Salary?: string | null;
+  Description?: string | null;
   Notes?: string | null;
   Benefits?: luBenefit[] | null;
+  IsActive: boolean | true;
+}
+
+export type AppSetting = {
+  Key: string;
+  Value?: string | null;
+  Notes?: string | null;
   IsActive: boolean | true;
 }

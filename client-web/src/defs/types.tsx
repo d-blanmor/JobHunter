@@ -139,3 +139,19 @@ export type AppSetting = {
   Notes?: string | null;
   IsActive: boolean | true;
 }
+
+export type wfStageItem = {
+  JobSpecId: number;
+  ApplicationId?: number | null;
+  InterviewId?: number | null;
+  OfferId?: number | null;
+  Position: string;
+  Company?: string | null;
+  RoleTypeId?: number | null;
+  WorkModelId?: number | null;
+  Created: string;
+  Applied?: string | null;
+  Discarded?: string | null;
+  Scheduled?: string | null;
+  Offered?: string | null;
+}

@@ -4,6 +4,8 @@ import {
   Stage,
   Counts,
 } from '../defs/types';
+//import { wfStageItem } from '../defs/interfaces';
+import { wfStageItem } from '../defs/types';
 import { 
   titleMap,
   stageDateLabels,
@@ -22,27 +24,6 @@ import { listAllApplications, getApplication, saveApplication } from '../api/app
 import { listAllInterviews, getInterview, saveInterview } from '../api/interviews';
 import { listAllOffers, getOffer, saveOffer } from '../api/offers';
 import { DEFAULT_PAGE_SIZE } from '../config';
-
-type StageItem = {
-  Id: number;
-  Position: string;
-  Company: string;
-  RoleTypeId: number | null;
-  WorkModelId: number | null;
-  Created: string | null;
-  applicationDate: string | null;
-  interviewDate: string | null;
-  offerDate: string | null;
-  discardedDate: string | null;
-  ApplicationId: number | null;
-  Application: any | null;
-  InterviewId?: number | null;
-  Interview?: any | null;
-  OfferId?: number | null;
-  Offer?: any | null;
-  tagIds: number[];
-  tagNames: string[];
-};
 
 type Props = {
   stage: Stage;
@@ -71,15 +52,17 @@ function parseDate(value?: string | null) {
 }
 
 function buildJobSpecItem(
-  spec: any,
-  stage: Stage,
-  applications: any[],
-  interviews: any[],
-  offers: any[],
-  tagsMap: Map<number, string>,
-  jobSpecTagIds: number[],
+  spec: wfStageItem
+  //,
+  //stage: Stage,
+  //applications: any[],
+  //interviews: any[],
+  //offers: any[],
+  //tagsMap: Map<number, string>,
+  //jobSpecTagIds: number[],
 ) {
-  const applicationByJobSpec = applications.filter((app) => app.JobSpecId === spec.Id);
+/*
+  const applicationByJobSpec = applications.filter((app) => app.JobSpecId === spec.JobSpecId);
   const latestApplication = applicationByJobSpec.reduce((best, app) => {
     const next = parseDate(app.Applied);
     const current = best ? parseDate(best.Applied) : null;
@@ -88,44 +71,41 @@ function buildJobSpecItem(
     return next > current ? app : best;
   }, applicationByJobSpec[0] as any | undefined);
 
-  const applicationIds = applicationByJobSpec.map((app) => app.Id);
-  const interviewItems = interviews.filter((item) => applicationIds.includes(item.ApplicationId));
+  const applicationIds = applicationByJobSpec.map((app) => spec.JobSpecId);
+  const interviewItems = interviews.filter((item) => applicationIds.includes(spec.ApplicationId));
   const latestInterview = interviewItems.reduce((best, item) => {
-    const next = parseDate(item.Scheduled);
+    const next = parseDate(spec.Scheduled);
     const current = best ? parseDate(best.Scheduled) : null;
     if (!current) return item;
     if (!next) return best;
     return next > current ? item : best;
   }, interviewItems[0] as any | undefined);
 
-  const offerItems = offers.filter((item) => applicationIds.includes(item.ApplicationId));
+  const offerItems = offers.filter((item) => applicationIds.includes(spec.ApplicationId));
   const latestOffer = offerItems.reduce((best, item) => {
-    const next = parseDate(item.Offered);
+    const next = parseDate(spec.Offered);
     const current = best ? parseDate(best.Offered) : null;
     if (!current) return item;
     if (!next) return best;
     return next > current ? item : best;
   }, offerItems[0] as any | undefined);
-
+*/
   return {
-    Id: spec.Id,
+    JobspecId: spec.JobSpecId,
+    ApplicationId: spec.ApplicationId ?? null,
+    InterviewId: spec.InterviewId ?? null,
+    OfferId: spec.OfferId ?? null,
     Position: spec.Position ?? '',
     Company: spec.Company ?? '',
     RoleTypeId: spec.RoleTypeId ?? null,
     WorkModelId: spec.WorkModelId ?? null,
     Created: spec.Created ?? null,
-    applicationDate: latestApplication?.Applied ?? null,
-    interviewDate: latestInterview?.Scheduled ?? null,
-    InterviewId: latestInterview?.Id ?? null,
-    Interview: latestInterview ?? null,
-    offerDate: latestOffer?.Offered ?? null,
-    OfferId: latestOffer?.Id ?? null,
-    Offer: latestOffer ?? null,
-    discardedDate: latestApplication?.Discarded ?? null,
-    ApplicationId: latestApplication?.Id ?? null,
-    Application: latestApplication ?? null,
-    tagIds: jobSpecTagIds,
-    tagNames: jobSpecTagIds.map((id) => tagsMap.get(id) ?? 'Unknown'),
+    Applied: spec.Applied ?? null,
+    Discarded: spec.Discarded ?? null,
+    Scheduled: spec.Scheduled ?? null,
+    Offered: spec.Offered ?? null,
+    //tagIds: jobSpecTagIds,
+    //tagNames: jobSpecTagIds.map((id) => tagsMap.get(id) ?? 'Unknown'),
   };
 }
 
@@ -147,7 +127,7 @@ function loadStageSpecs(stage: Stage) {
 export default function StageModal({ stage, title, open, onClose }: Props) {
   const navigate = useNavigate();
   const [stageDateLabel, setStageDateLabel] = useState<string> (stageDateLabels[stage]);
-  const [items, setItems] = useState<StageItem[]>([]);
+  const [items, setItems] = useState<wfStageItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -196,6 +176,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       setTags(tagData);
 
       const stageJobSpecs = await loadStageSpecs(stage);
+      /*
       const apps = ['applied', 'interview', 'offers', 'discarded'].includes(stage)
         ? await listAllApplications()
         : [];
@@ -208,9 +189,9 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       const jobSpecTags = await Promise.all(
         stageJobSpecs.map(async (spec: any) => {
           try {
-            const relations = await getJobSpecTags(spec.Id);
+            const relations = await getJobSpecTags(spec.JobSpecId);
             return {
-              id: spec.Id,
+              id: spec.JobSpecId,
               tagIds: Array.isArray(relations)
                 ? relations
                     .map((relation: any) => relation.TagId)
@@ -218,20 +199,22 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                 : [],
             };
           } catch (tagErr) {
-            console.warn('[StageModal] failed loading tags for job spec', spec.Id, tagErr);
-            return { id: spec.Id, tagIds: [] };
+            console.warn('[StageModal] failed loading tags for job spec', spec.JobSpecId, tagErr);
+            return { id: spec.JobSpecId, tagIds: [] };
           }
         }),
       );
+      */
 
       if (!mounted) return;
-
       const itemsWithMeta = stageJobSpecs.map((spec: any) => {
-        const specTags = jobSpecTags.find((relation) => relation.id === spec.Id);
-        return buildJobSpecItem(spec, stage, apps, interviews, offers, tagMap, specTags?.tagIds ?? []);
+        //const specTags = jobSpecTags.find((relation) => relation.id === spec.JobSpecId);
+        //return buildJobSpecItem(spec, stage, apps, interviews, offers, tagMap, specTags?.tagIds ?? []);
+        return buildJobSpecItem(spec);
       });
 
-      setItems(itemsWithMeta);
+      setItems(stageJobSpecs);
+      //setItems(itemsWithMeta);
     } catch (err) {
       if (!mounted) return;
       setError(err instanceof Error ? err.message : 'Failed to load stage items');
@@ -423,12 +406,12 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
         stage === 'received'
           ? item.Created
           : stage === 'applied'
-          ? item.applicationDate
+          ? item.Applied
           : stage === 'interview'
-          ? item.interviewDate
+          ? item.Scheduled
           : stage === 'offers'
-          ? item.offerDate
-          : item.discardedDate;
+          ? item.Offered
+          : item.Discarded;
 
       if (dateThreshold) {
         const parsed = parseDate(fieldDateValue);
@@ -440,7 +423,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       if (searchPosition && !item.Position.toLowerCase().includes(searchPosition.toLowerCase())) {
         return false;
       }
-      if (searchCompany && !item.Company.toLowerCase().includes(searchCompany.toLowerCase())) {
+      if (searchCompany && item.Company && !item.Company.toLowerCase().includes(searchCompany.toLowerCase())) {
         return false;
       }
       if (selectedRoleTypeIds.length > 0 && (!item.RoleTypeId || !selectedRoleTypeIds.includes(item.RoleTypeId))) {
@@ -449,9 +432,9 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       if (selectedWorkModelIds.length > 0 && (!item.WorkModelId || !selectedWorkModelIds.includes(item.WorkModelId))) {
         return false;
       }
-      if (selectedTagIds.length > 0 && !selectedTagIds.some((tagId) => item.tagIds.includes(tagId))) {
-        return false;
-      }
+      //if (selectedTagIds.length > 0 && !selectedTagIds.some((tagId) => item.tagIds.includes(tagId))) {
+      //  return false;
+      //}
       return true;
     });
   }, [items, dateFrom, searchPosition, searchCompany, selectedRoleTypeIds, selectedWorkModelIds, selectedTagIds, stage]);
@@ -563,18 +546,18 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
               </div>
             )}
             {pagedItems.map((item) => (
-              <div key={item.Id} className="stage-row stage-row-clickable" onClick={() => handleRowClick(item.Id)}>
+              <div key={item.JobSpecId} className="stage-row stage-row-clickable" onClick={() => handleRowClick(item.JobSpecId)}>
                 <div className="stage-cell stage-cell-date">
                   {formatShortDate(
                     stage === 'received'
                       ? item.Created
                       : stage === 'applied'
-                      ? item.applicationDate
+                      ? item.Applied
                       : stage === 'interview'
-                      ? item.interviewDate
+                      ? item.Scheduled
                       : stage === 'offers'
-                      ? item.offerDate
-                      : item.discardedDate,
+                      ? item.Offered
+                      : item.Discarded,
                   )}
                 </div>
                 <div className="stage-cell stage-cell-job-position">
@@ -596,45 +579,51 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                     <span className="job-position-empty">—</span>
                   )}
                 </div>
-                <div className="stage-cell">{getRoleTypeLabel(item.RoleTypeId)}</div>
-                <div className="stage-cell">{getWorkModelLabel(item.WorkModelId)}</div>
                 <div className="stage-cell">
-                  {item.tagNames.length > 0 ? (
-                    <span className="tag-icon" title={item.tagNames.join(', ')}>
-                      🏷️
-                    </span>
+                  {item.RoleTypeId ? (
+                    getRoleTypeLabel(item.RoleTypeId)
                   ) : (
                     '—'
                   )}
+                </div>
+                <div className="stage-cell">
+                  {item.WorkModelId ? (
+                    getWorkModelLabel(item.WorkModelId)
+                  ) : (
+                    '—'
+                  )}
+                </div>
+                <div className="stage-cell">
+                  🏷️
                 </div>
                 <div className="stage-cell stage-cell-actions">
                   {stage === 'received' ? (
                     <div className="stage-row-actions">
                       <button
                         type="button"
-                        className={`stage-action-button${actionLoadingId === item.Id ? ' disabled' : ''}`}
+                        className={`stage-action-button${actionLoadingId === item.JobSpecId ? ' disabled' : ''}`}
                         title="Create application for this job spec"
 
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (actionLoadingId !== item.Id) {
-                            setSelectedJobSpecId(Number(item.Id));
+                          if (actionLoadingId !== item.JobSpecId) {
+                            setSelectedJobSpecId(Number(item.JobSpecId));
                             setModalOpenApplication(true);
                           }
                         }}
-                        disabled={actionLoadingId === item.Id}
+                        disabled={actionLoadingId === item.JobSpecId}
                       >
                         →
                       </button>
                       <button
                         type="button"
-                        className={`stage-action-button stage-action-button-delete${actionLoadingId === item.Id ? ' disabled' : ''}`}
+                        className={`stage-action-button stage-action-button-delete${actionLoadingId === item.JobSpecId ? ' disabled' : ''}`}
                         title="Soft delete this job spec"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (actionLoadingId !== item.Id) handleSoftDeleteJobSpec(item.Id);
+                          if (actionLoadingId !== item.JobSpecId) handleSoftDeleteJobSpec(item.JobSpecId);
                         }}
-                        disabled={actionLoadingId === item.Id}
+                        disabled={actionLoadingId === item.JobSpecId}
                       >
                         ✖
                       </button>

@@ -121,6 +121,10 @@ export default function HomePage() {
     }
   };
 
+  const navigateToNewJobSpec = () => {
+    navigate('/job-specs/new');
+  };
+
   /* ---- Fetch portal list on mount -------------------------------------- */
   useEffect(() => {
     let mounted = true;
@@ -143,9 +147,12 @@ export default function HomePage() {
       {/* ----------------------------------------------------------------- */}
       <div className="page-header-row">
         <h2>Job specs</h2>
-        <Link className="button" to="/job-specs/new">
-          Add new Job Spec
-        </Link>
+          <button 
+            type="button"
+            className="action-button"
+            onClick={navigateToNewJobSpec}>
+            Add new Job Spec
+          </button>
       </div>
 
       {loading && <p>Loading summary...</p>}
@@ -154,85 +161,131 @@ export default function HomePage() {
       {!loading && !error && (
         <div className="status-grid-container">
           <div className="status-row">
-            <div
-              className="status-box status-box-clickable"
-              role="button"
-              tabIndex={0}
-              onClick={() => openModalFor('received')}
-            >
-              <div className="status-title">Received</div>
-              <div className="status-value">{counts.received}</div>
-            </div>
+            {counts.received > 0 ? (
+              <div
+                className="status-box status-box-received status-box-clickable"
+                role="button"
+                tabIndex={0}
+                onClick={() => openModalFor('received')}
+              >
+                <div className="status-title status-title-received">Received</div>
+                <div className="status-value status-value-received">{counts.received}</div>
+              </div>
+            ) : (
+              <div
+                className="status-box status-box-received status-box-clickable"
+                role="button"
+                tabIndex={0}
+                onClick={() => openModalFor('received')}
+              >
+                <div className="status-title status-title-received">Received</div>
+                <div className="status-value status-value-received">{counts.received}</div>
+              </div>
+            )}
             <div className="status-arrow">→</div>
-            <div
-              className="status-box status-box-clickable"
-              role="button"
-              tabIndex={0}
-              onClick={() => openModalFor('applied')}
-            >
-              <div className="status-title">Applied</div>
-              <div className="status-value">{counts.applied}</div>
-            </div>
+            {counts.applied > 0 ? (
+              <div
+                className="status-box status-box-applied status-box-clickable"
+                role="button"
+                tabIndex={0}
+                onClick={() => openModalFor('applied')}
+              >
+                <div className="status-title status-title-applied">Applied</div>
+                <div className="status-value status-value-applied">{counts.applied}</div>
+              </div>
+            ) : (
+              <div
+                className="status-box status-box-applied status-box-clickable"
+                role="button"
+                tabIndex={0}
+              >
+                <div className="status-title status-title-applied">Applied</div>
+                <div className="status-value status-value-applied">{counts.applied}</div>
+              </div>
+            )}
             <div className="status-arrow">→</div>
-            <div
-              className="status-box status-box-clickable"
-              role="button"
-              tabIndex={0}
-              onClick={() => openModalFor('interview')}
-            >
-              <div className="status-title">Interview</div>
-              <div className="status-value">{counts.interview}</div>
-            </div>
+            {counts.interview > 0 ? (
+              <div
+                className="status-box status-box-interview status-box-clickable"
+                role="button"
+                tabIndex={0}
+                onClick={() => openModalFor('interview')}
+              >
+                <div className="status-title status-title-interview">Interview</div>
+                <div className="status-value status-value-interview">{counts.interview}</div>
+              </div>
+            ) : (
+              <div
+                className="status-box status-box-interview status-box-clickable"
+                role="button"
+                tabIndex={0}
+              >
+                <div className="status-title status-title-interview">Interview</div>
+                <div className="status-value status-value-interview">{counts.interview}</div>
+              </div>
+            )}
             <div className="status-arrow">→</div>
-            <div
-              className="status-box status-box-clickable"
-              role="button"
-              tabIndex={0}
-              onClick={() => openModalFor('offers')}
-            >
-              <div className="status-title">Offers</div>
-              <div className="status-value">{counts.offers}</div>
-            </div>
+            {counts.offers > 0 ? (
+              <div
+                className="status-box status-box-offer status-box-clickable"
+                role="button"
+                tabIndex={0}
+                onClick={() => openModalFor('offers')}
+              >
+                <div className="status-title status-title-offer">Offers</div>
+                <div className="status-value status-value-offer">{counts.offers}</div>
+              </div>
+            ) : (
+              <div
+                className="status-box status-box-offer status-box-clickable"
+                role="button"
+                tabIndex={0}
+              >
+                <div className="status-title status-title-offered">Offers</div>
+                <div className="status-value status-value-offered">{counts.offers}</div>
+              </div>
+            )}
           </div>
-
-          <div className="discarded-row">
-            <div
-              className="status-box status-box-discarded status-box-clickable"
-              role="button"
-              tabIndex={0}
-              onClick={() => openModalFor('discarded')}
-            >
-              <div className="status-title">Discarded</div>
-              <div className="status-value">{counts.discarded}</div>
+          
+          {counts.discarded > 0 ? (
+            <div className="discarded-row">
+              <div
+                className="status-box status-box-discarded status-box-clickable"
+                role="button"
+                tabIndex={0}
+                onClick={() => openModalFor('discarded')}
+              >
+                <div className="status-title status-title-discarded">Discarded</div>
+                <div className="status-value status-value-discarded">{counts.discarded}</div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="discarded-row">
+              <div
+                className="status-box status-box-discarded status-box-clickable"
+                role="button"
+                tabIndex={0}
+              >
+                <div className="status-title status-title-discarded">Discarded</div>
+                <div className="status-value status-value-discarded">{counts.discarded}</div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* ----------------------------------------------------------------- */}
-      <div
-        className="page-header-row"
-        style={{ marginTop: '2rem' }}
-      >
+      <div className="page-header-row">
         <h2>Job Seeking Portals</h2>
-
-        <div
-          className="status-box status-box-discarded status-box-clickable"
-          style={{
-            marginRight: '.5rem',
-            background: 'none',
-            border: 0,
-            cursor: 'pointer',
-          }}
-          role="button"
-          tabIndex={0}
+        <button 
+          type="button"
+          className="action-button"
           onClick={() => {
             setCurrentId(null);
             setModalOpen(true);
-          }}
-        >
+            }}>
           Add new Portal
-        </div>
+        </button>
       </div>
 
       {sourcesLoading && <p>Loading portals...</p>}

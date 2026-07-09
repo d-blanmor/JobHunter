@@ -1,10 +1,5 @@
 import { API_BASE } from '../config';
 
-//async function parseJsonResponse(res: Response) {
-//  const text = await res.text();
-//  return text ? JSON.parse(text) : null;
-//}
-
 export async function listAllApplications(IsActve: boolean = true) {
   const res = await fetch(`${API_BASE}/roles/applications?active_only=${IsActve}`);
   if (!res.ok) throw new Error('Failed to load applications');

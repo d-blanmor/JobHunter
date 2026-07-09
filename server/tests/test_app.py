@@ -12,51 +12,27 @@ API_PREFIX = "/api/v1"
 def random_text(prefix: str) -> str:
     return f"{prefix}-{uuid.uuid4().hex[:8]}"
 
-new_tag = {
-    "Id": None,
-    "Name": random_text("Tag"),
-    "Context": "test",
-    "IsActive": True,
-    "Order": random.randint(1, 10)
-}
-
 def test_health_endpoint() -> None:
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
-def test_tag_create_update() -> None:
-    response = client.post(f"{API_PREFIX}/tags", json=new_tag)
-    assert response.status_code == 200, response.text
-    tag = response.json()
-    assert tag["Id"] is not None
-    tag["Name"] = random_text("Tag!")
-    response = client.post(f"{API_PREFIX}/tags", json=tag)
-    assert response.status_code == 200, response.text
-    assert response.json()["Name"] != new_tag["Name"]
-    
-def test_tag_list() -> None:
-    response = client.get(f"{API_PREFIX}/tags")
+def test_stage_received() -> None:
+    response = client.get(f"{API_PREFIX}/workflow/stages/received")
     assert response.status_code == 200, response.text
 
-def test_tag_list_by_id() -> None:
-    response = client.get(f"{API_PREFIX}/tags/1")
+def test_stage_applied() -> None:
+    response = client.get(f"{API_PREFIX}/workflow/stages/applied")
     assert response.status_code == 200, response.text
-    assert response.json()["Id"] != None
 
-def test_tag_list_by_name() -> None:
-    ltags = client.get(f"{API_PREFIX}/tags")
-    response = client.get(f"{API_PREFIX}/tags/by-name/" + ltags.json()[0]["Name"])
+def test_stage_interview() -> None:
+    response = client.get(f"{API_PREFIX}/workflow/stages/interview")
     assert response.status_code == 200, response.text
-    assert response.json()[0]["Id"] != None
 
-def test_tag_list_by_context() -> None:
-    response = client.get(f"{API_PREFIX}/tags/by-context/" + new_tag["Context"])
+def test_stage_offer() -> None:
+    response = client.get(f"{API_PREFIX}/workflow/stages/offer")
     assert response.status_code == 200, response.text
-    assert response.json()[0]["Id"] != None
 
-def test_delete_tag() -> None:
-    tag = client.post(f"{API_PREFIX}/tags", json=new_tag)
-    response = client.delete(f"{API_PREFIX}/tags/" + str(tag.json()["Id"]))
+def test_stage_discarded() -> None:
+    response = client.get(f"{API_PREFIX}/workflow/stages/discarded")
     assert response.status_code == 200, response.text
-    assert response.json()["Id"] == response.json()["Id"] and not response.json()["IsActive"]

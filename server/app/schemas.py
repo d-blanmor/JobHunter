@@ -3,7 +3,6 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-
 class TagBase(BaseModel):
     Id: Optional[int] = None
     Name: str
@@ -116,3 +115,18 @@ class appSettingBase(BaseModel):
     Value: Optional[str] = None
     Notes: Optional[str] = None
     IsActive: bool = True
+
+class vwWorkflowBase(BaseModel):
+    JobSpecId: int
+    ApplicationId: Optional[int] = None
+    InterviewId: Optional[int] = None
+    OfferId: Optional[int] = None
+    Position: str
+    Company: Optional[str] = None
+    RoleTypeId: Optional[int] = None
+    WorkModelId: Optional[int] = None
+    Created: datetime
+    Applied: Optional[datetime] = None
+    Discarded: Optional[datetime] = None
+    Scheduled: Optional[datetime] = None
+    Offered: Optional[datetime] = None

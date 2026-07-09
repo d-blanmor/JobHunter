@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import Field, SQLModel, Relationship, select
 
 class tag (SQLModel, table=True):
     __tablename__ = "tags"
@@ -281,3 +281,74 @@ class appSetting(SQLModel, table=True):
     Value: Optional[str] = None
     Notes: Optional[str] = None
     IsActive: bool = True
+
+class vwWorkflow(SQLModel, table=False):
+    __tablename__ = "vwWorkflow"
+    JobSpecId: int = Field(primary_key=True)
+    ApplicationId: Optional[int] = None
+    InterviewId: Optional[int] = None
+    OfferId: Optional[int] = None
+    Position: str
+    Company: Optional[str] = None
+    RoleTypeId: Optional[int] = None
+    WorkModelId: Optional[int] = None
+    Created: datetime
+    Applied: Optional[datetime] = None
+    Discarded: Optional[datetime] = None
+    Scheduled: Optional[datetime] = None
+    Offered: Optional[datetime] = None
+    
+# View definitions
+# --------------------------------------------------------------------------- #
+# Simple placeholder model (no table)
+# --------------------------------------------------------------------------- #
+class wf_stages(SQLModel):
+    """Placeholder for the view – no __table__ attribute."""
+    pass
+
+# --------------------------------------------------------------------------- #
+# Helper that actually creates the view when the app starts
+# --------------------------------------------------------------------------- #
+from sqlalchemy import text, Engine
+from sqlmodel import SQLModel
+
+def _create_vwWorkflow_view(engine: Engine) -> None:
+    """Create `vwWorkflow` view if it does not yet exist."""
+    # NOTE: This statement is ANSI‑SQL and uses IF NOT EXISTS,
+    # which works in SQLite and most other DB backends.
+    create_view_sql = """
+        CREATE VIEW IF NOT EXISTS vwWorkflow AS
+        SELECT
+            roles_job_specs."Id" AS "JobSpecId",
+            roles_applications."Id" AS "ApplicationId",
+            roles_interviews."Id" AS "InterviewId",
+            roles_offers."Id" AS "OfferId",
+            roles_job_specs."Position",
+            roles_job_specs."Company",
+            roles_job_specs."RoleTypeId",
+            roles_job_specs."WorkModelId",
+            roles_job_specs."Created",
+            roles_applications."Applied",
+            roles_applications."Discarded",
+            roles_interviews."Scheduled",
+            roles_offers."Offered"
+        FROM   roles_job_specs
+        LEFT OUTER JOIN roles_applications
+          ON   roles_job_specs."Id" = roles_applications."JobSpecId" AND roles_applications."IsActive" = 1
+        LEFT OUTER JOIN roles_interviews
+          ON   roles_applications."Id" = roles_interviews."ApplicationId" AND roles_interviews."IsActive" = 1
+        LEFT OUTER JOIN roles_offers
+          ON   roles_applications."Id" = roles_offers."ApplicationId" AND roles_offers."IsActive" = 1
+        WHERE roles_job_specs."IsActive" = 1;
+    """
+    with engine.connect() as conn:
+        conn.execute(text(create_view_sql))
+        conn.commit()
+
+def init_models(engine: Engine) -> None:
+    """Create tables and the view in one place."""
+    # Create all SQLAlchemy tables that have a __table__ attribute.
+    SQLModel.metadata.create_all(engine)
+
+    # Then create the view, but only if it doesn't exist yet.
+    _create_vwWorkflow_view(engine)

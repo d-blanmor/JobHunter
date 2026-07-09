@@ -4,7 +4,8 @@ from collections.abc import Generator
 
 from sqlmodel import Session, SQLModel, create_engine, select
 
-from app.models import rolesLuLocation, rolesLuRoleType, rolesLuWorkModel, rolesLuBenefit, rolesSource
+#from app.models import rolesLuLocation, rolesLuRoleType, rolesLuWorkModel, rolesLuBenefit, rolesSource
+import app.models as models
 
 if(conf_dbtype() == "sqlite"):
     DATABASE_URL = f"sqlite:///{conf_db()}"
@@ -14,42 +15,42 @@ else:
 engine = create_engine(DATABASE_URL, echo=False)
 
 def init_db() -> None:
-    SQLModel.metadata.create_all(engine)
+    models.init_models(engine)
     with Session(engine) as session:
-        if session.exec(select(rolesLuLocation)).first() is None:
-            location = rolesLuLocation(Country="Ireland", City="", IsActive=True, Order=1)
+        if session.exec(select(models.rolesLuLocation)).first() is None:
+            location = models.rolesLuLocation(Country="Ireland", City="", IsActive=True, Order=1)
             session.add(location)
             session.flush()
 
-            roleType = rolesLuRoleType(Name="Permanent", IsActive=True, Order=1)
+            roleType = models.rolesLuRoleType(Name="Permanent", IsActive=True, Order=1)
             session.add(roleType)
-            roleType = rolesLuRoleType(Name="Contract", IsActive=True, Order=2)
+            roleType = models.rolesLuRoleType(Name="Contract", IsActive=True, Order=2)
             session.add(roleType)
-            roleType = rolesLuRoleType(Name="Full-Time", IsActive=True, Order=3)
+            roleType = models.rolesLuRoleType(Name="Full-Time", IsActive=True, Order=3)
             session.add(roleType)
             session.flush()
 
-            workModel = rolesLuWorkModel(Name="On site", IsActive=True, Order=1)
+            workModel = models.rolesLuWorkModel(Name="On site", IsActive=True, Order=1)
             session.add(workModel)
-            workModel = rolesLuWorkModel(Name="Remote", IsActive=True, Order=2)
+            workModel = models.rolesLuWorkModel(Name="Remote", IsActive=True, Order=2)
             session.add(workModel)
-            workModel = rolesLuWorkModel(Name="Hybrid", IsActive=True, Order=3)
+            workModel = models.rolesLuWorkModel(Name="Hybrid", IsActive=True, Order=3)
             session.add(workModel)
             session.flush()
 
-            benefit = rolesLuBenefit(Name="Health Insurance", IsActive=True, Order=1)
+            benefit = models.rolesLuBenefit(Name="Health Insurance", IsActive=True, Order=1)
             session.add(benefit)
-            benefit = rolesLuBenefit(Name="Pension Plan", IsActive=True, Order=2)
+            benefit = models.rolesLuBenefit(Name="Pension Plan", IsActive=True, Order=2)
             session.add(benefit)
-            benefit = rolesLuBenefit(Name="Bonus", IsActive=True, Order=3)
+            benefit = models.rolesLuBenefit(Name="Bonus", IsActive=True, Order=3)
             session.add(benefit)
-            benefit = rolesLuBenefit(Name="Vacation", IsActive=True, Order=4)
+            benefit = models.rolesLuBenefit(Name="Vacation", IsActive=True, Order=4)
             session.add(benefit)
-            benefit = rolesLuBenefit(Name="Commuting allowance", IsActive=True, Order=5)
+            benefit = models.rolesLuBenefit(Name="Commuting allowance", IsActive=True, Order=5)
             session.add(benefit)
             session.flush()
 
-            benefit = rolesSource(Name="Internal Reference", Details="A contact reference on their company.", IsActive=True)
+            benefit = models.rolesSource(Name="Internal Reference", Details="A contact reference on their company.", IsActive=True)
             session.add(benefit)
             session.flush()
 

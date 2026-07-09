@@ -338,102 +338,44 @@ def _get_offers_by_job_spec(session: Session, job_spec_id: int) -> list[OfferBas
 
 #####################
 #  Workflow logic
-from app.schemas import JobSpecBase
-from app.models import rolesJobSpec, rolesApplication, rolesInterview, rolesOffer
+from app.schemas import vwWorkflowBase
+from app.models import vwWorkflow
 
-def _workflow_get_received(session: Session) -> list[JobSpecBase]:
-    statement = select(rolesJobSpec).distinct()
-    statement = statement.join(
-                    rolesApplication, 
-                    rolesApplication.JobSpecId == rolesJobSpec.Id and rolesApplication.IsActive == True, 
-                    isouter=True
-                )
-    statement = statement.where(rolesJobSpec.IsActive == True)      # Only non deleted JobSpecs
-    statement = statement.where(rolesApplication.Id == None)        # JobSpec has not been applied
-    statement = statement.order_by(rolesJobSpec.Created.desc())
+def _workflow_get_received(session: Session) -> list[vwWorkflowBase]:
+    statement = select(vwWorkflow)
+    statement = statement.where(vwWorkflow.ApplicationId == None)   # JobSpec has not been applied
+    statement = statement.order_by(vwWorkflow.Created.desc())
     return session.exec(statement).all()
 
-def _workflow_get_applied(session: Session) -> list[JobSpecBase]:
-    statement = select(rolesJobSpec).distinct()
-    statement = statement.join(
-                    rolesApplication, 
-                    rolesApplication.JobSpecId == rolesJobSpec.Id and rolesApplication.IsActive == True, 
-                    isouter=True
-                )
-    statement = statement.join(
-                    rolesInterview, 
-                    rolesInterview.ApplicationId == rolesApplication.Id and rolesInterview.IsActive == True, 
-                    isouter=True
-                )
-    statement = statement.join(
-                    rolesOffer, 
-                    rolesOffer.ApplicationId == rolesApplication.Id and rolesOffer.IsActive == True, 
-                    isouter=True
-                )
-    statement = statement.where(rolesJobSpec.IsActive == True)      # Only non deleted JobSpecs
-    statement = statement.where(rolesApplication.Id != None)        # Jobspec has been applied
-    statement = statement.where(rolesInterview.Id == None)          # Application has no interviews
-    statement = statement.where(rolesOffer.Id == None)              # Application has no offer
-    statement = statement.where(rolesApplication.Discarded == None) # Application has not been discarded
-    statement = statement.order_by(rolesJobSpec.Created.desc())
+def _workflow_get_applied(session: Session) -> list[vwWorkflowBase]:
+    statement = select(vwWorkflow)
+    statement = statement.where(vwWorkflow.ApplicationId != None)   # JobSpec has been applied
+    statement = statement.where(vwWorkflow.InterviewId == None)     # Application has no interviews
+    statement = statement.where(vwWorkflow.OfferId == None)         # Application has no offers
+    statement = statement.where(vwWorkflow.Discarded == None)       # Application has not been discarded
+    statement = statement.order_by(vwWorkflow.Created.desc())
     return session.exec(statement).all()
 
-def _workflow_get_interview(session: Session) -> list[JobSpecBase]:
-    statement = select(rolesJobSpec).distinct()
-    statement = statement.join(
-                    rolesApplication, 
-                    rolesApplication.JobSpecId == rolesJobSpec.Id and rolesApplication.IsActive == True, 
-                    isouter=True
-                )
-    statement = statement.join(
-                    rolesInterview, 
-                    rolesInterview.ApplicationId == rolesApplication.Id and rolesInterview.IsActive == True, 
-                    isouter=True
-                )
-    statement = statement.join(
-                    rolesOffer, 
-                    rolesOffer.ApplicationId == rolesApplication.Id and rolesOffer.IsActive == True, 
-                    isouter=True
-                )
-    statement = statement.where(rolesJobSpec.IsActive == True)      # Only non deleted JobSpecs
-    statement = statement.where(rolesApplication.Id != None)        # Jobspec has an Application
-    statement = statement.where(rolesInterview.Id != None)          # There is at least one Interview
-    statement = statement.where(rolesOffer.Id == None)              # Application has no offer
-    statement = statement.where(rolesApplication.Discarded == None) # The application is not discarded
-    statement = statement.order_by(rolesJobSpec.Created.desc())
+def _workflow_get_interview(session: Session) -> list[vwWorkflowBase]:
+    statement = select(vwWorkflow)
+    statement = statement.where(vwWorkflow.ApplicationId != None)   # JobSpec has been applied
+    statement = statement.where(vwWorkflow.InterviewId != None)     # Application has at least one interviews
+    statement = statement.where(vwWorkflow.OfferId == None)         # Application has no offers
+    statement = statement.where(vwWorkflow.Discarded == None)       # Application has not been discarded
+    statement = statement.order_by(vwWorkflow.Created.desc())
     return session.exec(statement).all()
 
-def _workflow_get_offer(session: Session) -> list[JobSpecBase]:
-    statement = select(rolesJobSpec).distinct()
-    statement = statement.join(
-                    rolesApplication, 
-                    rolesApplication.JobSpecId == rolesJobSpec.Id and rolesApplication.IsActive == True, 
-                    isouter=True
-                )
-    statement = statement.join(
-                    rolesOffer, 
-                    rolesOffer.ApplicationId == rolesApplication.Id and rolesOffer.IsActive == True, 
-                    isouter=True
-                )
-    statement = statement.where(rolesJobSpec.IsActive == True)      # JobSpec not deleted
-    statement = statement.where(rolesOffer.Id != None)              # Application has an offer
-    statement = statement.order_by(rolesJobSpec.Created.desc())
+def _workflow_get_offer(session: Session) -> list[vwWorkflowBase]:
+    statement = select(vwWorkflow)
+    statement = statement.where(vwWorkflow.ApplicationId != None)   # JobSpec has been applied
+    statement = statement.where(vwWorkflow.OfferId != None)         # Application has at least one offer
+    statement = statement.where(vwWorkflow.Discarded == None)       # Application has not been discarded
+    statement = statement.order_by(vwWorkflow.Created.desc())
     return session.exec(statement).all()
 
-def _workflow_get_discarded(session: Session) -> list[JobSpecBase]:
-    statement = select(rolesJobSpec).distinct()
-    statement = statement.join(
-                    rolesApplication, 
-                    rolesApplication.JobSpecId == rolesJobSpec.Id and rolesApplication.IsActive == True, 
-                    isouter=True
-                )
-    statement = statement.join(
-                    rolesInterview, 
-                    rolesInterview.ApplicationId == rolesApplication.Id, 
-                    isouter=True
-                )
-    statement = statement.where(rolesJobSpec.IsActive == True)      # Only non deleted JobSpecs
-    statement = statement.where(rolesApplication.Id != None)        # Jobspec has an Application
-    statement = statement.where(rolesApplication.Discarded != None) # The application is discarded
-    statement = statement.order_by(rolesJobSpec.Created.desc())
+def _workflow_get_discarded(session: Session) -> list[vwWorkflowBase]:
+    statement = select(vwWorkflow)
+    statement = statement.where(vwWorkflow.ApplicationId != None)   # JobSpec has been applied
+    statement = statement.where(vwWorkflow.Discarded != None)       # Application is discarded
+    statement = statement.order_by(vwWorkflow.Created.desc())
     return session.exec(statement).all()

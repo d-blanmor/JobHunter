@@ -142,7 +142,6 @@ def test_RoleType_create_update() -> None:
     assert response.status_code == 200, response.text
     assert response.json()["Name"] != new_RoleType["Name"]
 
-
 def test_jobspec_create_update() -> None:
     API_COMMAND = "/roles/job-specs"
     response = client.post(f"{API_PREFIX}{API_COMMAND}", json=new_JobSpec)

@@ -3,10 +3,30 @@
   /* --- THEME VARIABLES (SYSTEM) --- */
   /* Light Skin Variables (Default): Explicitly defined for robustness */
   --color-brand-primary: #1d4ed8;
+  --color-brand-primary-received: #1d4ed8;
+  --color-brand-primary-applied: #1d4ed8;
+  --color-brand-primary-interview: #1d4ed8;
+  --color-brand-primary-offered: #1d4ed8;
+  --color-brand-primary-discarded: #1d4ed8;
   --color-brand-secondary: #3b82f6;
+  --color-button: white;
+  --color-background-button: #2563eb;
   --color-text-default: #111827;
   --color-text-muted: #475569;
+  --color-text-muted-received: #475569;
+  --color-text-muted-applied: #475569;
+  --color-text-muted-interview: #475569;
+  --color-text-muted-offered: #475569;
+  --color-text-muted-discarded: #475569;
   --color-background-page: #ffffff;
+  --color-background-box: #ffffff;
+  --color-background-box-received: #a8bcff;
+  --color-background-box-applied: #8eb0f0;
+  --color-background-box-interview: #81cdcf;
+  --color-background-box-offer: #9efae3;
+  --color-background-box-discarded: #f0bdad;
+  --color-arrow: #2a4f88;
+  --color-background-arrow: #ffffff;
   --color-background-main: #f5f7fb;
   --color-border-default: #e5e7eb;
   /* --- WORKFLOW STAGE COLORS (LIGHT SKIN) --- */
@@ -20,17 +40,41 @@
 
 /* DARK MODE EXAMPLE */
 [data-skin="dark"] {
+  --color-brand-primary: #1d4ed8;
+  --color-brand-primary-received: #1d4ed8;
+  --color-brand-primary-applied: #1d4ed8;
+  --color-brand-primary-interview: #1d4ed8;
+  --color-brand-primary-offered: #1d4ed8;
+  --color-brand-primary-discarded: #1d4ed8;
+  --color-brand-secondary: #3b82f6;
+  --color-button: rgb(167, 167, 167);
+  --color-background-button: #1d47a1;
   --color-text-default: #f3f4f6;
   --color-text-muted: #9ca3af;
+  --color-text-muted-received: #2253f7;
+  --color-text-muted-applied: #0c4bbe;
+  --color-text-muted-interview: #066e72;
+  --color-text-muted-offered: #09664f;
+  --color-text-muted-discarded: #3d0e00;
   --color-background-page: #1f2937;
+  --color-background-box: #1f2937;
+  --color-background-box-received: #a8bcff;
+  --color-background-box-applied: #8eb0f0;
+  --color-background-box-interview: #81cdcf;
+  --color-background-box-offer: #9efae3;
+  --color-background-box-discarded: #f0bdad;
+  --color-arrow: #a3c1f8;
+  --color-background-arrow: #1f2937;
   --color-background-main: #111827;
   --color-border-default: #374151;
-}
+  /* --- WORKFLOW STAGE COLORS (LIGHT SKIN) --- */
+  --stage-received-bg: #d1fae5;
+  --stage-applied-bg: #a7f3d0;
+  --stage-interview-bg: #6ee7b3;
+  --stage-offers-bg: #4ade80;
+  /* --- END STAGE COLORS --- */
+  --color-scheme: dark;
 
-/* OCEAN/CUSTOM SKIN EXAMPLE */
-[data-skin="ocean"] {
-  --color-brand-primary: #0ea5e9;
-  --color-text-default: #1f2937;
 }
 
 body {
@@ -89,13 +133,129 @@ select {
   width: 100%;
   justify-content: center;
 }
-.status-grid-container {display:flex;flex-direction:column;gap:24px;margin-bottom:3rem}
-.status-row{display:flex;align-items:stretch;gap:16px}
-.status-arrow{font-size:2rem;line-height:1}
-.status-box{flex-grow:1;min-width:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:24px;border-radius:16px;background:var(--color-background-page);box-shadow:0 8px 20px rgba(0,0,0,0.05)}
-.status-title{font-size:1rem;color:var(--color-text-muted);margin-bottom:8px}
-.status-value{font-size:3rem;font-weight:700;color:var(--color-brand-primary)}
-.source-list{padding:1rem 0}
-.source-item{padding:8px 0;border-bottom:1px solid var(--color-border-default)}
-.source-item:last-child{border-bottom:none}
-.top-nav{display:flex;align-items:center;gap:8px}
+.status-grid-container {
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+  margin-bottom:3rem
+}
+.status-row {
+  display:flex;
+  align-items:stretch;
+  gap:16px
+}
+.status-arrow {
+  font-size: 2rem;
+  line-height: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 24px;
+  color: var(--color-arrow);
+  background: var(--color-background-arrow);
+}
+.status-box {
+  flex-grow: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--color-background-box);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+.status-box-received {
+  background: var(--color-background-box-received);
+}
+.status-box-applied {
+  background: var(--color-background-box-applied);
+}
+.status-box-interview {
+  background: var(--color-background-box-interview);
+}
+.status-box-offer {
+  background: var(--color-background-box-offer);
+}
+.status-box-discarded {
+  background: var(--color-background-box-discarded);
+  width: 100x;
+  margin-left: 825px;
+}
+.status-title {
+  font-size:1rem;
+  color:var(--color-text-muted);
+  margin-bottom:8px
+}
+.status-title-received {
+  color:var(--color-text-muted-received);
+}
+.status-title-applied {
+  color:var(--color-text-muted-applied);
+}
+.status-title-interview {
+  color:var(--color-text-muted-interview);
+}
+.status-title-offered {
+  color:var(--color-text-muted-offered);
+}
+.status-title-discarded {
+  color:var(--color-text-muted-discarded);
+}
+.status-value {
+  font-size:3rem;
+  font-weight:700;
+  color:var(--color-brand-primary)
+}
+.status-value-received {
+  color:var(--color-brand-primary-received)
+}
+.status-value-applied {
+  color:var(--color-brand-primary-applied)
+}
+.status-value-interview {
+  color:var(--color-brand-primary-interview)
+}
+.status-value-offered {
+  color:var(--color-brand-primary-offered)
+}
+.status-value-discarded {
+  color:var(--color-brand-primary-discarded)
+}
+.source-list {
+  padding:1rem 0
+}
+.source-item {
+  padding:8px 0;
+  border-bottom:1px solid var(--color-border-default)
+}
+.source-item:last-child {
+  border-bottom:none
+}
+.top-nav {
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+
+.action-button {
+  background: var(--color-background-button);
+  color: var(--color-button);
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+
+.action-button:hover:not(.disabled) {
+  background: var(--color-background-button);
+}
+
+.action-button:hover {
+  background: var(--color-background-button);
+}
+

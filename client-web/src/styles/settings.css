@@ -65,6 +65,10 @@
   transform: translateY(-1px);
 }
 
+.lookup-action-button:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
 .cell-empty{
   width: 200px;
 }
@@ -75,10 +79,6 @@
   align-items: center;
 }
 
-
-.lookup-action-button:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
 
 /* Specific colours if you want to differentiate actions */
 .lookup-action-up,

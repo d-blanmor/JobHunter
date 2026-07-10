@@ -2,13 +2,13 @@
 :root {
   /* --- THEME VARIABLES (SYSTEM) --- */
   /* Light Skin Variables (Default): Explicitly defined for robustness */
-  --color-brand-primary: #1d4ed8;
-  --color-brand-primary-received: #1d4ed8;
-  --color-brand-primary-applied: #1d4ed8;
-  --color-brand-primary-interview: #1d4ed8;
-  --color-brand-primary-offered: #1d4ed8;
-  --color-brand-primary-discarded: #1d4ed8;
-  --color-brand-secondary: #3b82f6;
+  --color-brand-primary: #5c5f64;
+  --color-brand-primary-received: #5c5f64;
+  --color-brand-primary-applied: #8a8a8a;
+  --color-brand-primary-interview: #5c5f64;
+  --color-brand-primary-offered: #5c5f64;
+  --color-brand-primary-discarded: #5c5f64;
+  --color-brand-secondary: #9ba1aa;
   --color-button: white;
   --color-background-button: #2563eb;
   --color-text-default: #111827;
@@ -40,14 +40,14 @@
 
 /* DARK MODE EXAMPLE */
 [data-skin="dark"] {
-  --color-brand-primary: #1d4ed8;
-  --color-brand-primary-received: #1d4ed8;
-  --color-brand-primary-applied: #1d4ed8;
-  --color-brand-primary-interview: #1d4ed8;
-  --color-brand-primary-offered: #1d4ed8;
-  --color-brand-primary-discarded: #1d4ed8;
-  --color-brand-secondary: #3b82f6;
-  --color-button: rgb(167, 167, 167);
+  --color-brand-primary: #6e8ad8;
+  --color-brand-primary-received: #6e8ad8;
+  --color-brand-primary-applied: #6e8ad8;
+  --color-brand-primary-interview: #6e8ad8;
+  --color-brand-primary-offered: #6e8ad8;
+  --color-brand-primary-discarded: #6e8ad8;
+  --color-brand-secondary: #6e8ad8;
+  --color-button: #A7A7A7;
   --color-background-button: #1d47a1;
   --color-text-default: #f3f4f6;
   --color-text-muted: #9ca3af;
@@ -109,7 +109,12 @@ select {
 .app-header h1 {
   margin: 0;
   font-size: 2rem;
+  color: var(--color-brand-primary);
 }
+.app-header p {
+  color: var(--color-brand-secondary);
+}
+
 .page {
   background: var(--color-background-page);
   border-radius: 18px;

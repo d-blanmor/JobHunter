@@ -15,34 +15,33 @@ import { FaSun, FaMoon } from 'react-icons/fa';
 
 function App() {
 /* State to manage the current skin theme (e.g., 'light', 'dark') */
-    const [currentSkin, setCurrentSkin] = useState<'light' | 'dark'>(() => {
-  const match = document.cookie.match(/(^|;\s*)app-skin=([^;]+)/);
-  if (match && (match[2] === 'light' || match[2] === 'dark')) return match[2] as 'light' | 'dark';
-  return 'light';
-});
+  const [currentSkin, setCurrentSkin] = useState<'light' | 'dark'>(() => {
+    const match = document.cookie.match(/(^|;\s*)app-skin=([^;]+)/);
+    if (match && (match[2] === 'light' || match[2] === 'dark')) return match[2] as 'light' | 'dark';
+    return 'light';
+  });
 
   // Apply the selected skin via data attribute on the top-level shell div.
   // Read cookie on mount
-   useEffect(() => {
-     const match = document.cookie.match(/(^|;\s*)app-skin=([^;]+)/);
-     if (match && (match[2] === 'light' || match[2] === 'dark'))
-       setCurrentSkin(match[2] as 'light' | 'dark');
-   }, []);
+  useEffect(() => {
+    const match = document.cookie.match(/(^|;\s*)app-skin=([^;]+)/);
+    if (match && (match[2] === 'light' || match[2] === 'dark'))
+      setCurrentSkin(match[2] as 'light' | 'dark');
+  }, []);
 
    // Update cookie when skin changes
-   useEffect(() => {
-     document.cookie = `app-skin=${currentSkin}; path=/; max-age=31536000`;
-   }, [currentSkin]);
+  useEffect(() => {
+    document.cookie = `app-skin=${currentSkin}; path=/; max-age=31536000`;
+  }, [currentSkin]);
 
    // Apply the selected skin via data attribute on the top-level shell div.
-   useEffect(() => {
-
+  useEffect(() => {
     document.body.setAttribute('data-skin', currentSkin);
   }, [currentSkin]);
 
   /* Placeholder for theme switching function - this would be triggered by a UI element */
   const handleSkinChange = (skin: 'light' | 'dark' ) => {
-      setCurrentSkin(skin);
+    setCurrentSkin(skin);
   };
 
   return (
@@ -55,29 +54,27 @@ function App() {
           <p>Track and manage your job applications.</p>
         </div>
         <nav className="top-nav">
-          <Link to="/">Home</Link>
-          <Link to="/contacts">Contacts</Link>
-          {/* CORRECTED: Link targets the dedicated settings index page */}
-          <Link to="/settings">Settings</Link>
-            {/* Skin Selector Example: A button/dropdown here */}
-            <button
-  aria-label={currentSkin === "light" ? "Switch to dark mode" : "Switch to light mode"}
-  onClick={() => handleSkinChange(currentSkin === 'light' ? 'dark' : 'light')}
-  style={{
-    marginLeft: 'auto',
-    background: 'transparent',
-    border: 'none',
-    cursor: 'pointer',
-    color: 'inherit',
-    fontSize: '1.5rem',
-    padding: 0
-  }}>
-  {currentSkin === 'light' ? (
-    <FaMoon aria-hidden="true" />
-  ) : (
-    <FaSun aria-hidden="true" />
-  )}
-</button>
+          <Link className="action-button" to="/">Home</Link>
+          <Link className="action-button" to="/contacts">Contacts</Link>
+          <Link className="action-button"to="/settings">Settings</Link>
+          <button
+            aria-label={currentSkin === "light" ? "Switch to dark mode" : "Switch to light mode"}
+            onClick={() => handleSkinChange(currentSkin === 'light' ? 'dark' : 'light')}
+            style={{
+              marginLeft: 'auto',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'inherit',
+              fontSize: '1.5rem',
+              padding: 0
+            }}>
+            {currentSkin === 'light' ? (
+              <FaMoon aria-hidden="true" />
+            ) : (
+              <FaSun aria-hidden="true" />
+            )}
+          </button>
         </nav>
       </header>
 

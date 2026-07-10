@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, unstable_useBlocker } from 'react-router-dom';
 import Modal from '../components/Modal';
 import SourceModal from '../components/SourceModal';
 import ContactModal from '../components/ContactModal';
@@ -44,6 +44,19 @@ export default function JobSpecCreate() {
   const [roleTypes, setRoleTypes] = useState<any[]>([]);
   const [placesOfWork, setPlacesOfWork] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
+  const [isDirty, setIsDirty] = useState<boolean>(false);
+
+  useEffect(() => {
+    function handelOnBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault();
+      alert(event.returnValue);
+      return (event.returnValue = '');
+    }
+    window.addEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
+    return () => {
+      if (isDirty) window.removeEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -237,6 +250,11 @@ export default function JobSpecCreate() {
 
   };
 
+  const handlePositionEdit = (value: string) => {
+    setIsDirty(true);
+    setPosition(value);
+  }
+
   const fetchSources = async (mounted: boolean = true) => {
     try {
       const data = await listSources();
@@ -291,7 +309,7 @@ export default function JobSpecCreate() {
               required
               value={position} 
               placeholder="Position"
-              onChange={(e) => setPosition(e.target.value)} />
+              onChange={(e) => handlePositionEdit(e.target.value)} />
           </div>
 
           <div className="modal-field">

@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { FaSearch } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { 
   Stage,
@@ -61,6 +62,8 @@ export default function HomePage() {
 
   /* ---- Portal (source) state -------------------------------------------- */
   const [sources, setSources] = useState<SourceItem[]>([]);
+  const [filter, setFilter] = useState('');
+  const filteredSources = sources.filter((s)=> s.Name.toLowerCase().includes(filter.toLowerCase()));
   const [sourcesLoading, setSourcesLoading] = useState(true);
   const [sourcesError, setSourcesError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -114,7 +117,7 @@ export default function HomePage() {
     } catch (err) {
       if (mounted)
         setSourcesError(
-          err instanceof Error ? err.message : 'Failed to load portals',
+          err instanceof Error ? err.message : 'Failed to load portals'
         );
     } finally {
       if (mounted) setSourcesLoading(false);
@@ -144,7 +147,6 @@ export default function HomePage() {
 
   return (
     <section className="page">
-      {/* ----------------------------------------------------------------- */}
       <div className="page-header-row">
         <h2>Job specs</h2>
           <button 
@@ -166,8 +168,7 @@ export default function HomePage() {
                 className="status-box status-box-received status-box-clickable"
                 role="button"
                 tabIndex={0}
-                onClick={() => openModalFor('received')}
-              >
+                onClick={() => openModalFor('received')}>
                 <div className="status-title status-title-received">Received</div>
                 <div className="status-value status-value-received">{counts.received}</div>
               </div>
@@ -176,8 +177,7 @@ export default function HomePage() {
                 className="status-box status-box-received status-box-clickable"
                 role="button"
                 tabIndex={0}
-                onClick={() => openModalFor('received')}
-              >
+                onClick={() => openModalFor('received')}>
                 <div className="status-title status-title-received">Received</div>
                 <div className="status-value status-value-received">{counts.received}</div>
               </div>
@@ -188,8 +188,7 @@ export default function HomePage() {
                 className="status-box status-box-applied status-box-clickable"
                 role="button"
                 tabIndex={0}
-                onClick={() => openModalFor('applied')}
-              >
+                onClick={() => openModalFor('applied')}>
                 <div className="status-title status-title-applied">Applied</div>
                 <div className="status-value status-value-applied">{counts.applied}</div>
               </div>
@@ -197,8 +196,7 @@ export default function HomePage() {
               <div
                 className="status-box status-box-applied status-box-clickable"
                 role="button"
-                tabIndex={0}
-              >
+                tabIndex={0}>
                 <div className="status-title status-title-applied">Applied</div>
                 <div className="status-value status-value-applied">{counts.applied}</div>
               </div>
@@ -209,8 +207,7 @@ export default function HomePage() {
                 className="status-box status-box-interview status-box-clickable"
                 role="button"
                 tabIndex={0}
-                onClick={() => openModalFor('interview')}
-              >
+                onClick={() => openModalFor('interview')}>
                 <div className="status-title status-title-interview">Interview</div>
                 <div className="status-value status-value-interview">{counts.interview}</div>
               </div>
@@ -218,8 +215,7 @@ export default function HomePage() {
               <div
                 className="status-box status-box-interview status-box-clickable"
                 role="button"
-                tabIndex={0}
-              >
+                tabIndex={0}>
                 <div className="status-title status-title-interview">Interview</div>
                 <div className="status-value status-value-interview">{counts.interview}</div>
               </div>
@@ -230,8 +226,7 @@ export default function HomePage() {
                 className="status-box status-box-offer status-box-clickable"
                 role="button"
                 tabIndex={0}
-                onClick={() => openModalFor('offers')}
-              >
+                onClick={() => openModalFor('offers')}>
                 <div className="status-title status-title-offer">Offers</div>
                 <div className="status-value status-value-offer">{counts.offers}</div>
               </div>
@@ -239,8 +234,7 @@ export default function HomePage() {
               <div
                 className="status-box status-box-offer status-box-clickable"
                 role="button"
-                tabIndex={0}
-              >
+                tabIndex={0}>
                 <div className="status-title status-title-offered">Offers</div>
                 <div className="status-value status-value-offered">{counts.offers}</div>
               </div>
@@ -253,8 +247,7 @@ export default function HomePage() {
                 className="status-box status-box-discarded status-box-clickable"
                 role="button"
                 tabIndex={0}
-                onClick={() => openModalFor('discarded')}
-              >
+                onClick={() => openModalFor('discarded')}>
                 <div className="status-title status-title-discarded">Discarded</div>
                 <div className="status-value status-value-discarded">{counts.discarded}</div>
               </div>
@@ -264,8 +257,7 @@ export default function HomePage() {
               <div
                 className="status-box status-box-discarded status-box-clickable"
                 role="button"
-                tabIndex={0}
-              >
+                tabIndex={0}>
                 <div className="status-title status-title-discarded">Discarded</div>
                 <div className="status-value status-value-discarded">{counts.discarded}</div>
               </div>
@@ -274,30 +266,44 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ----------------------------------------------------------------- */}
       <div className="page-header-row">
-        <h2>Job Seeking Portals</h2>
-        <button 
-          type="button"
-          className="action-button"
-          onClick={() => {
-            setCurrentId(null);
-            setModalOpen(true);
-            }}>
-          Add new Portal
-        </button>
+        <span className="modal-field">
+          <h2>Job Seeking Portals</h2>
+        </span>
+        <span className="modal-field">
+          <input
+            type="text"
+            placeholder="Filter portals..."
+            value={filter}
+            onChange={(e)=>setFilter(e.currentTarget.value)}
+            style={{marginLeft:'1rem', marginRight:'1rem'}}
+          />
+        </span>
+        <span className="modal-field">
+          <FaSearch aria-hidden="true" />
+        </span>
+        <span className="modal-field">
+          <button 
+            type="button"
+            className="action-button"
+            onClick={() => {
+              setCurrentId(null);
+              setModalOpen(true);
+              }}>
+            Add new Portal
+          </button>
+        </span>
       </div>
 
       {sourcesLoading && <p>Loading portals...</p>}
       {sourcesError && <p className="error">{sourcesError}</p>}
       {!sourcesLoading &&
         !sourcesError &&
-        sources.length > 0 && (
+        filteredSources.length > 0 && (
           <ul
             className="source-list"
-            style={{ listStyle: 'none', padding: 0 }}
-          >
-            {sources.map((src) => (
+            style={{ listStyle: 'none', padding: 0 }}>
+            {filteredSources.map((src) => (
               <li
                 key={src.Id}
                 className="source-item"
@@ -305,8 +311,7 @@ export default function HomePage() {
                   display: 'flex',
                   alignItems: 'center',
                   marginBottom: '.5rem',
-                }}
-              >
+                }}>
                 {src.PortalURL ? (
                 <a
                   href={src.PortalURL || '#'}
@@ -316,8 +321,7 @@ export default function HomePage() {
                     marginRight: 'auto',
                     textDecoration: 'none',
                     color: '#0066cc',
-                  }}
-                >
+                  }}>
                   {src.Name}
                 </a>
                 ) : (
@@ -335,8 +339,7 @@ export default function HomePage() {
                 {src.Details && (
                   <span
                     className="source-details"
-                    style={{ marginLeft: '1rem', color: '#666', fontSize: '.85rem' }}
-                  >
+                    style={{ marginLeft: '1rem', color: '#666', fontSize: '.85rem' }}>
                     {src.Details}
                   </span>
                 )}
@@ -345,7 +348,6 @@ export default function HomePage() {
           </ul>
         )}
 
-      {/* ----------------------------------------------------------------- */}
       {modalStage && (
         <StageModal
           stage={modalStage}

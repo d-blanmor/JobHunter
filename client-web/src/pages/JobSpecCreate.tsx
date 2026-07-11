@@ -13,7 +13,10 @@ import { listSources, saveSource } from '../api/sources';
 import { listContacts } from '../api/contacts';
 import { saveJobSpec } from '../api/jobSpecs';
 
-import { newJobSpecItem } from '../defs/interfaces';
+import { 
+  newJobSpecItem,
+  PlaceOfWorkItem,
+} from '../defs/interfaces';
 
 export default function JobSpecCreate() {
   const navigate = useNavigate();
@@ -93,9 +96,11 @@ export default function JobSpecCreate() {
         setLocations(locations);
         const contacts = Array.isArray(lContacts) ? lContacts : (lContacts?.data ?? []);
         setContacts(contacts);
-      } catch (err: any) {
+      } 
+      catch (err: any) {
         setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
+      } 
+      finally {
         if (mounted) setLoading(false);
       }
     }
@@ -112,35 +117,6 @@ export default function JobSpecCreate() {
     navigate('/');
     setIsDirty(false);
     return;
-  };
-
-  const [newSourceName, setNewSourceName] = useState('');
-
-  const [newPlaceLocationId, setNewPlaceLocationId] = useState<number | ''>('');
-  const [newPlaceAddress, setNewPlaceAddress] = useState('');
-
-  const [showContactModal, setShowContactModal] = useState(false);
-  const [newContactName, setNewContactName] = useState('');
-  const [newContactEmail, setNewContactEmail] = useState('');
-  const [newContactPhone, setNewContactPhone] = useState('');
-  const [newContactNotes, setNewContactNotes] = useState('');
-
-  const handleCreateSource = async () => {
-    if (!newSourceName.trim()) return;
-    try {
-      setLoading(true);
-      const created = await saveSource({ Name: newSourceName.trim(), IsActive: true });
-      setSources((prev) => [...prev, created]);
-      setSourceId(created.Id);
-      //setShowSourceModal(false);
-      setNewSourceName('');
-    } 
-    catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } 
-    finally {
-      setLoading(false);
-    }
   };
 
   const handleSubmit = async () => {
@@ -167,6 +143,7 @@ export default function JobSpecCreate() {
       Created: new Date().toISOString(),
       IsActive: true,
     };
+
     try {
       if (published) payload.Published = new Date(published).toISOString();
     } 
@@ -225,9 +202,7 @@ export default function JobSpecCreate() {
     else if (field.toLowerCase() == 'notes') {
       setNotes(value);
     }
-
   }
-
 
   const fetchSources = async (mounted: boolean = true) => {
     try {
@@ -270,6 +245,28 @@ export default function JobSpecCreate() {
     } 
     finally {}
   };
+
+  const placeOfWorkLabel = (placeOfWork?: PlaceOfWorkItem | null, placeOfWorkId?: number | null) => {
+    var locationLabel = null;
+
+    if (!placeOfWork && placeOfWorkId) placeOfWork = placesOfWork.find((item) => item.Id === placeOfWorkId);
+    if (placeOfWork) {
+      const location = placeOfWork ? locations.find((item) => item.Id === placeOfWork.LocationId) : null;
+      
+      if (placeOfWork) {
+        if (location) {
+          locationLabel = location.Country;
+          if (location.City && location.City != '') {
+            locationLabel = locationLabel + ` - ${location.City?.trim()}`;
+          }
+        }
+        if (placeOfWork?.Address && placeOfWork.Address.trim() != ''){
+          locationLabel = locationLabel + ` (${placeOfWork.Address?.trim()})`;
+        }
+      }
+    }
+    return locationLabel;
+  }
 
   return (
     <section className="page job-spec-create">
@@ -365,14 +362,8 @@ export default function JobSpecCreate() {
                       onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
                 <option value="">No place of work selected</option>
                 {placesOfWork.map((p) => {
-                  const loc = locations.find((l) => l.Id === p.LocationId);
-                  const label = p.Address && p.Address.trim()
-                    ? p.Address
-                    : loc
-                      ? `${loc.Country}${loc.City ? ` - ${loc.City}` : ''}`
-                      : `Place ${p.Id}`;
                   return (
-                    <option key={p.Id} value={p.Id}>{label}</option>
+                    <option key={p.Id} value={p.Id}>{placeOfWorkLabel(p)}</option>
                   );
                 })}
               </select>

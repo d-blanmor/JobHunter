@@ -110,7 +110,7 @@ export default function SourceModal({ placeOfWorkId, title, onClose, onSuccess =
               <option value="">No location selected</option>
               {locations.map((location) => (
                 <option key={location.Id} value={location.Id}>
-                  {location.Name}
+                  {location.Country} {(location.City ? ' - ' + location.City : '')}
                 </option>
               ))}
             </select>

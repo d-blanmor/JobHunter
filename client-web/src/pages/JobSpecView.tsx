@@ -5,11 +5,12 @@ import { getJobSpec, getJobSpecBenefits, getJobSpecTags } from '../api/jobSpecs'
 import { getApplicationsByJobSpec } from '../api/applications';
 import { getInterviewByJobSpec } from '../api/interviews';
 import { getOfferByJobSpec, getOfferBenefits } from '../api/offers';
+import { listPlacesOfWork } from '../api/place_of_work';
 
 import { listWorkModels } from '../api/lu_workmodels';
 import { listRoleTypes } from '../api/lu_roletypes';
 import { listBenefits } from '../api/lu_benefits';
-import { listPlacesOfWork } from '../api/place_of_work';
+import { listLocations } from '../api/lu_locations';
 import { listSources } from '../api/sources';
 import { listContacts } from '../api/contacts';
 import { listTags } from '../api/tags';
@@ -20,7 +21,8 @@ import {
   InterviewItem,
   OfferItem,
   SourceItem, 
-  PlaceOfWorkItem, 
+  PlaceOfWorkItem,
+  luLocationItem, 
   luWorkModelItem,
   luRoleTypeItem,
   ContactItem, 
@@ -36,7 +38,6 @@ function formatDate(value?: string | null) {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  //return date.toLocaleString();
   return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 }
 
@@ -58,31 +59,19 @@ function safeValue(value: any) {
   return value === null || value === undefined || value === '' ? '—' : value;
 }
 
-function getSource(spec: any, sources: SourceItem[]) {
+function getSourceItem(spec: any, sources: SourceItem[]) {
   return sources.find((item) => item.Id === spec.SourceId) || null;
 }
 
-function getPlaceOfWork(spec: any, places: any[]) {
-  const place = places.find((item) => item.Id === spec.PlaceOfWorkId);
-  if (!place) return null;
-  const location = place.Location || place.location || null;
-  return {
-    address: place.Address || '—',
-    country: location?.Country || place.Country || '—',
-    city: location?.City || place.City || '',
-    label: `${location?.Country || place.Country || ''}${location?.City || place.City ? `, ${location?.City || place.City}` : ''}`.replace(/^, /, '') || place.Address || '—',
-  };
-}
-
-function getWorkModel(spec: any, models: any[]) {
+function getWorkModelItem(spec: any, models: any[]) {
   return models.find((item) => item.Id === spec.WorkModelId) || null;
 };
 
-function getRoleType(spec: any, roleTypes: any[]) {
+function getRoleTypeItem(spec: any, roleTypes: any[]) {
   return roleTypes.find((item) => item.Id === spec.RoleTypeId) || null;
 }
 
-function getContact(contactId: any, contacts: any[]) {
+function getContactItem(contactId: any, contacts: any[]) {
   const contact = contacts.find((item) => item.Id === contactId);
   if (!contact) return null;
   return contact;
@@ -102,14 +91,12 @@ export default function JobSpecView() {
   const [jobSpec, setSpec] = useState<JobSpecItem | null>(null);
   const [jsBenefits, setJsBenefits] = useState<luBenefitItem[]>([]);
   const [jsTags, setJSTags] = useState<TagItem[]>([]);
-  const [applications, setApplications] = useState<ApplicationItem[]>([]);
-  const [interviews, setInterviews] = useState<InterviewItem[]>([]);
-  const [offers, setOffers] = useState<OfferItem[]>([]);
-  const [ofBenefits, setOfBenefits] = useState<luBenefitItem[]>([]);
   const [inContact, setInContact] = useState< any > (null);
+  const [placeOfWork, setPlaceOfWork] = useState<PlaceOfWorkItem | null>(null);
   // Lookups
-  const [lSources, setSources] = useState<SourceItem[]>([]);
   const [lPlacesOfWork, setPlacesOfWork] = useState<PlaceOfWorkItem[]>([]);
+  const [lSources, setSources] = useState<SourceItem[]>([]);
+  const [lLocations, setLocations] = useState<luLocationItem[]>([]);
   const [lWorkModels, setWorkModels] = useState<luWorkModelItem[]>([]);
   const [lRoleTypes, setRoleTypes] = useState<luRoleTypeItem[]>([]);
   const [lContacts, setContacts] = useState<ContactItem[]>([]);
@@ -135,8 +122,9 @@ export default function JobSpecView() {
           applications, 
           interviews, 
           offers,
+          placesOfWork,
           luSources, 
-          luPlacesOfWork, 
+          luLocations,
           luWorkModels, 
           luRoleTypes, 
           luContacts,
@@ -149,8 +137,9 @@ export default function JobSpecView() {
           getApplicationsByJobSpec(Number(id)).catch(() => []),
           getInterviewByJobSpec(Number(id)).catch(() => []),
           getOfferByJobSpec(Number(id)).catch(() => []),
-          listSources().catch(() => []),
           listPlacesOfWork().catch(() => []),
+          listSources().catch(() => []),
+          listLocations().catch(() => []),
           listWorkModels().catch(() => []),
           listRoleTypes().catch(() => []),
           listContacts().catch(() => []),
@@ -162,39 +151,39 @@ export default function JobSpecView() {
 
         setSpec(jobSpec);
         setJsBenefits(jsBenefits || []);
+        jobSpec.PlacesOfWork = placeOfWorkLabel(null, jobSpec.PlaceOfWorkId);
         jobSpec.Benefits = jsBenefits;
         setJSTags(jsTags || []);
         jobSpec.Tags = jsTags;
-        setApplications(Array.isArray(applications) ? applications : []);
         jobSpec.Applications = applications;
         if (jobSpec.Applications && jobSpec.Applications.length > 0) {
-          setInterviews(Array.isArray(interviews) ? interviews : []);
           jobSpec.Applications[0].Interviews = interviews;
-          setOffers(Array.isArray(offers) ? offers : []);
           jobSpec.Applications[0].Offers = offers;
-          // Get benefits for each offer if needed
           if (Array.isArray(jobSpec.Applications) && jobSpec.Applications.length > 0) {
             if (Array.isArray(jobSpec.Applications[0].Offers) && jobSpec.Applications[0].Offers.length > 0) {
               for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
                 const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].id)).catch(() => []));
 
-                setOfBenefits(Array.isArray(ofBenefits) ? ofBenefits : []);
                 jobSpec.Applications[0].Offers[i].Benefits = ofBenefits;
               }
             }
           }
         }
+        
+        setPlacesOfWork(Array.isArray(placesOfWork) ? placesOfWork : []);
         setSources(Array.isArray(luSources) ? luSources : []);
-        setPlacesOfWork(Array.isArray(luPlacesOfWork) ? luPlacesOfWork : []);
+        setLocations(Array.isArray(luLocations) ? luLocations : []);
         setWorkModels(Array.isArray(luWorkModels) ? luWorkModels : []);
         setRoleTypes(Array.isArray(luRoleTypes) ? luRoleTypes : []);
         setContacts(Array.isArray(luContacts) ? luContacts : []);
         setBenefits(Array.isArray(luBenefits) ? luBenefits : []);
         setTags(Array.isArray(luTags) ? luTags : []);
-      } catch (err) {
+      } 
+      catch (err) {
         if (!mounted) return;
         setError(err instanceof Error ? err.message : 'Failed to load job spec');
-      } finally {
+      } 
+      finally {
         if (!mounted) return;
         setLoading(false);
       }
@@ -206,34 +195,34 @@ export default function JobSpecView() {
     };
   }, [id]);
 
-  const source = useMemo(() => (jobSpec ? getSource(jobSpec, lSources) : null), [jobSpec, lSources]);
-  const placeOfWork = useMemo(() => (jobSpec ? getPlaceOfWork(jobSpec, lPlacesOfWork) : null), [jobSpec, lPlacesOfWork]);
-  const roleType = useMemo(() =>  (jobSpec ? getRoleType(jobSpec, lRoleTypes) : null), [jobSpec]);
-  const workModel = useMemo(() => (jobSpec ? getWorkModel(jobSpec, lWorkModels) : null), [jobSpec,lWorkModels]);
-  const contact = useMemo(() => (jobSpec ? getContact(jobSpec.ContactId, lContacts) : null), [jobSpec]);
+  const source = useMemo(() => (jobSpec ? getSourceItem(jobSpec, lSources) : null), [jobSpec, lSources]);
+  const roleType = useMemo(() =>  (jobSpec ? getRoleTypeItem(jobSpec, lRoleTypes) : null), [jobSpec]);
+  const workModel = useMemo(() => (jobSpec ? getWorkModelItem(jobSpec, lWorkModels) : null), [jobSpec,lWorkModels]);
+  const contact = useMemo(() => (jobSpec ? getContactItem(jobSpec.ContactId, lContacts) : null), [jobSpec]);
   // TODO: Get assigned benefits in jsBenefits to jobspec
   // TODO: Get assigned tags in jsTags to jobspec
   
-  const sourceName = useMemo(() => {
-    if (!jobSpec?.SourceId) return '—';
-    const found = lSources.find((item) => item.Id === jobSpec.SourceId);
-    return found?.Name || '—';
-  }, [jobSpec, lSources]);
-  const workModelName = useMemo(() => {
-    if (!jobSpec?.WorkModelId) return '—';
-    const found = lWorkModels.find((item) => item.Id === jobSpec.WorkModelId);
-    return found?.Name || '—';
-  }, [jobSpec, lWorkModels]);
-  const roleTypeName = useMemo(() => {
-    if (!jobSpec?.RoleTypeId) return '—';
-    const found = lRoleTypes.find((item) => item.Id === jobSpec.RoleTypeId);
-    return found?.Name || '—';
-  }, [jobSpec, lRoleTypes]);
-  const contactName = useMemo(() => {
-    if (!jobSpec?.ContactId) return '—';
-    const found = lContacts.find((item) => item.Id === jobSpec.ContactId);
-    return found?.Name || '—';
-  }, [jobSpec, lContacts]);
+  const placeOfWorkLabel = (placeOfWork?: PlaceOfWorkItem | null, placeOfWorkId?: number | null) => {
+    var locationLabel = null;
+
+    if (!placeOfWork && placeOfWorkId) placeOfWork = lPlacesOfWork.find((item) => item.Id === placeOfWorkId);
+    if (placeOfWork) {
+      const location = placeOfWork ? lLocations.find((item) => item.Id === placeOfWork.LocationId) : null;
+      
+      if (placeOfWork) {
+        if (location) {
+          locationLabel = location.Country;
+          if (location.City && location.City != '') {
+            locationLabel = locationLabel + ` - ${location.City?.trim()}`;
+          }
+        }
+        if (placeOfWork?.Address && placeOfWork.Address.trim() != ''){
+          locationLabel = locationLabel + ` (${placeOfWork.Address?.trim()})`;
+        }
+      }
+    }
+    return locationLabel;
+  }
 
   const salary = jobSpec?.SalaryExpectation ||  '—';
   const benefits = normalizeBenefits(jobSpec?.Benefits ?? jobSpec?.Benefits);
@@ -355,15 +344,7 @@ export default function JobSpecView() {
               {jobSpec.PlaceOfWorkId ? (
                 <div className="job-spec-field-row">
                   <span className="job-spec-field-label">Based in </span>
-                  {placeOfWork?.city ? (
-                    <span>{safeValue(placeOfWork.city)}</span>
-                  ) : ''}
-                  {placeOfWork?.country ? (
-                    <span>{safeValue(placeOfWork.country)}</span>
-                  ) : ''}
-                  {placeOfWork?.address ? (
-                    <span>{safeValue(placeOfWork.address)}</span>
-                  ) : ''}
+                  <span>{(placeOfWorkLabel(null, jobSpec.PlaceOfWorkId))}</span>
                 </div>
               ) : null}
               {jobSpec.RoleTypeId && roleType ? (

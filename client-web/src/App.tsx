@@ -1,4 +1,5 @@
 import { useNavigate, Route, Routes, Link } from 'react-router-dom';
+import { FaSun, FaMoon } from 'react-icons/fa';
 import HomePage from './pages/HomePage';
 import SettingsPage from './pages/settings/SettingsPage';
 import LuBenefitsPage from './pages/settings/LuBenefitsPage';
@@ -11,7 +12,6 @@ import JobSpecView from './pages/JobSpecView';
 import Contacts from './pages/Contacts';
 import SourcesPage from './pages/settings/Sources';
 import { useState, useEffect } from 'react';
-import { FaSun, FaMoon } from 'react-icons/fa';
 
 var isBlocked: boolean = false;
 

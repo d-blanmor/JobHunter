@@ -127,7 +127,6 @@ select {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20x;
 }
 .page-subtitle {
   margin: 6px 0 0;

@@ -1,19 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation, unstable_useBlocker } from 'react-router-dom';
-import Modal from '../components/Modal';
+import { useNavigate } from 'react-router-dom';
 import SourceModal from '../components/SourceModal';
 import ContactModal from '../components/ContactModal';
 import PlaceOfWorkModal from '../components/PlaceOfWorkModal'
 
+import { isDirty, setIsDirty } from '../App';
 import { listLocations } from '../api/lu_locations';
 import { listRoleTypes } from '../api/lu_roletypes';
 import { listWorkModels } from '../api/lu_workmodels';
-import { listPlacesOfWork, savePlaceOfWork } from '../api/place_of_work';
+import { listPlacesOfWork } from '../api/place_of_work';
 import { listSources, saveSource } from '../api/sources';
-import { listContacts, saveContact } from '../api/contacts';
+import { listContacts } from '../api/contacts';
 import { saveJobSpec } from '../api/jobSpecs';
 
-import { newJobSpecItem, newPlaceOfWorkItem, newContactItem } from '../defs/interfaces';
+import { newJobSpecItem } from '../defs/interfaces';
 
 export default function JobSpecCreate() {
   const navigate = useNavigate();
@@ -44,8 +44,7 @@ export default function JobSpecCreate() {
   const [roleTypes, setRoleTypes] = useState<any[]>([]);
   const [placesOfWork, setPlacesOfWork] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
-  const [isDirty, setIsDirty] = useState<boolean>(false);
-
+  
   useEffect(() => {
     function handelOnBeforeUnload(event: BeforeUnloadEvent) {
       event.preventDefault();
@@ -54,7 +53,7 @@ export default function JobSpecCreate() {
     }
     window.addEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
     return () => {
-      if (isDirty) window.removeEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
+      if (isDirty()) window.removeEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
     }
   }, []);
 
@@ -94,14 +93,6 @@ export default function JobSpecCreate() {
         setLocations(locations);
         const contacts = Array.isArray(lContacts) ? lContacts : (lContacts?.data ?? []);
         setContacts(contacts);
-
-        //let contactData: any[] = [];
-        //try {
-        //  contactData = await listContacts();
-        //} catch (contactErr) {
-        //  console.warn('[StageModal] failed to load contacts', contactErr);
-        //}
-
       } catch (err: any) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -114,13 +105,17 @@ export default function JobSpecCreate() {
   }, []);
 
   const handleCancel = () => {
+    if (isDirty()) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        return;
+    }
     navigate('/');
+    setIsDirty(false);
+    return;
   };
 
-  //const [showSourceModal, setShowSourceModal] = useState(false);
   const [newSourceName, setNewSourceName] = useState('');
 
-//  const [showPlaceModal, setShowPlaceModal] = useState(false);
   const [newPlaceLocationId, setNewPlaceLocationId] = useState<number | ''>('');
   const [newPlaceAddress, setNewPlaceAddress] = useState('');
 
@@ -139,78 +134,18 @@ export default function JobSpecCreate() {
       setSourceId(created.Id);
       //setShowSourceModal(false);
       setNewSourceName('');
-    } catch (err) {
+    } 
+    catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
+    } 
+    finally {
       setLoading(false);
     }
   };
 
-  /*
-  const handleCreatePlace = async () => {
-    if (!newPlaceLocationId) return;
-    try {
-      setLoading(true);
-      const payload: newPlaceOfWorkItem = { 
-        Id: null,
-        LocationId: Number(newPlaceLocationId), 
-        IsActive: true 
-      };
-      if (newPlaceAddress.trim()) payload.Address = newPlaceAddress.trim();
-      const created = await savePlaceOfWork(payload);
-      setPlacesOfWork((prev) => [...prev, created]);
-      setPlaceOfWorkId(created.Id);
-      setShowPlaceModal(false);
-      setNewPlaceLocationId('');
-      setNewPlaceAddress('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreateContact = async () => {
-    if (!newContactName.trim()) {
-      setContactFormError('Name is required');
-      return;
-    }
-    try {
-      setLoading(true);
-      const payload: newContactItem = {
-        Id: null,
-        Name: newContactName.trim(),
-        Email: newContactEmail.trim() || null,
-        Phone: newContactPhone.trim() || null,
-        Details: newContactNotes.trim() || null,
-        IsActive: true
-      };
-      const created = await saveContact(payload);
-      const newContact = created ?? payload;
-      setContacts((prev) => [newContact, ...prev]);
-      const newId = newContact.Id ?? newContact.id ?? null;
-      if (newId) setContactId(Number(newId));
-      closeContactForm();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const closeContactForm = () => {
-    setShowContactModal(false);
-    setContactFormOpen(false);
-    setContactName('');
-    setContactEmail('');
-    setContactPhone('');
-    setContactNotes('');
-    setContactFormError(null);
-    setContactCreating(false);
-  };
-  */
   const handleSubmit = async () => {
     setError(null);
+    setIsDirty(false);
     if (!position.trim()) {
       setError('Position is required');
       return;
@@ -234,67 +169,106 @@ export default function JobSpecCreate() {
     };
     try {
       if (published) payload.Published = new Date(published).toISOString();
-    } catch(err){
+    } 
+    catch(err) {
       payload.Published = null;
     }
 
-    try {
+    try 
+    {
       setLoading(true);
       await saveJobSpec(payload);
       navigate('/');
-    } catch (err) {
+    } 
+    catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
-    } finally {
+    } 
+    finally {
       setLoading(false);
     }
-
   };
 
-  const handlePositionEdit = (value: string) => {
+  const handleFieldEdit = (field: string, value: string) => {
     setIsDirty(true);
-    setPosition(value);
+    if (field.toLowerCase() == 'position') {
+      setPosition(value);
+    }
+    else if (field.toLowerCase() == 'company') {
+      setCompany(value);
+    }
+    else if (field.toLowerCase() == 'source')
+      setSourceId(value ? Number(value) : '');
+    else if (field.toLowerCase() == 'link') {
+      setLink(value);
+    }
+    else if (field.toLowerCase() == 'published') {
+      setPublished(value);
+    }
+    else if (field.toLowerCase() == 'workmodel') {
+      setWorkModelId(value ? Number(value) : '');
+    }
+    else if (field.toLowerCase() == 'roletype') {
+      setRoleTypeId(value ? Number(value) : '');
+    }
+    else if (field.toLowerCase() == 'salaryexpectation') {
+      setSalaryExpectation(value);
+    }
+    else if (field.toLowerCase() == 'placeofwork') {
+      setPlaceOfWorkId(value ? Number(value) : '');
+    }
+    else if (field.toLowerCase() == 'contact') {
+      setContactId(value ? Number(value) : null);
+    }
+    else if (field.toLowerCase() == 'description') {
+      setDescription(value);
+    }
+    else if (field.toLowerCase() == 'notes') {
+      setNotes(value);
+    }
+
   }
+
 
   const fetchSources = async (mounted: boolean = true) => {
     try {
       const data = await listSources();
       if (mounted && Array.isArray(data)) setSources(data);
-    } catch (err) {
+    } 
+    catch (err) {
       if (mounted)
         setError(
           err instanceof Error ? err.message : 'Failed to load portals',
         );
-    } finally {
-      //if (mounted) setSourcesLoading(false);
-    }
+    } 
+    finally {}
   };
 
   const fetchContacts = async (mounted: boolean = true) => {
     try {
       const data = await listContacts();
       if (mounted && Array.isArray(data)) setContacts(data);
-    } catch (err) {
+    } 
+    catch (err) {
       if (mounted)
         setError(
           err instanceof Error ? err.message : 'Failed to load contacts',
         );
-    } finally {
-      //if (mounted) setContactsLoading(false);
-    }
+    } 
+    finally {}
   };
 
   const fetchPlacesOfWork = async (mounted: boolean = true) => {
     try {
       const data = await listPlacesOfWork();
       if (mounted && Array.isArray(data)) setPlacesOfWork(data);
-    } catch (err) {
+    } 
+    catch (err) {
       if (mounted)
         setError(
           err instanceof Error ? err.message : 'Failed to load places of work',
         );
-    } finally {
-      //if (mounted) setPlacesOfWorkLoading(false);
-    }
+    } 
+    finally {}
   };
 
   return (
@@ -305,23 +279,26 @@ export default function JobSpecCreate() {
       {!loading && (
         <div>
           <div className="modal-field">
-            <input 
+            <input id="Position"
               required
               value={position} 
               placeholder="Position"
-              onChange={(e) => handlePositionEdit(e.target.value)} />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <input 
+            <input id="Company"
               value={company} 
               placeholder="Company"
-              onChange={(e) => setCompany(e.target.value)} />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <select style={{ flex: 1 }} value={sourceId} onChange={(e) => setSourceId(e.target.value ? Number(e.target.value) : '')}>
+              <select id="Source"
+                      style={{ flex: 1 }} 
+                      value={sourceId} 
+                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
                 <option value="">No source selected</option>
                 {sources.map((s) => (
                   <option key={s.Id} value={s.Id}>{s.Name}</option>
@@ -337,23 +314,24 @@ export default function JobSpecCreate() {
           </div>
 
           <div className="modal-field">
-            <input 
+            <input id="link"
               value={link} 
               placeholder="URL to the job offer"
-              onChange={(e) => setLink(e.target.value)} />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <input
+            <input id="Published"
               type="date"
               placeholder="Publish Date"
               value={published}
-              onChange={(e) => setPublished(e.target.value)}
-            />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <select value={workModelId} onChange={(e) => setWorkModelId(e.target.value ? Number(e.target.value) : '')}>
+            <select id="WorkModel"
+                    value={workModelId} 
+                    onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
               <option value="">No work model selected</option>
               {workModels.map((w) => (
                 <option key={w.Id} value={w.Id}>{w.Name}</option>
@@ -362,7 +340,9 @@ export default function JobSpecCreate() {
           </div>
 
           <div className="modal-field">
-            <select value={roleTypeId} onChange={(e) => setRoleTypeId(e.target.value ? Number(e.target.value) : '')}>
+            <select id="RoleType"
+                    value={roleTypeId} 
+                    onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
               <option value="">No role type selected</option>
               {roleTypes.map((r) => (
                 <option key={r.Id} value={r.Id}>{r.Name}</option>
@@ -371,15 +351,18 @@ export default function JobSpecCreate() {
           </div>
 
           <div className="modal-field">
-            <input 
+            <input id="SalaryExpectation"
               value={salaryExpectation} 
               placeholder="Salary range"
-              onChange={(e) => setSalaryExpectation(e.target.value)} />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <select style={{ flex: 1 }} value={placeOfWorkId} onChange={(e) => setPlaceOfWorkId(e.target.value ? Number(e.target.value) : '')}>
+              <select id="PlaceOfWork"
+                      style={{ flex: 1 }} 
+                      value={placeOfWorkId} 
+                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
                 <option value="">No place of work selected</option>
                 {placesOfWork.map((p) => {
                   const loc = locations.find((l) => l.Id === p.LocationId);
@@ -407,10 +390,9 @@ export default function JobSpecCreate() {
 
           <div className="modal-field">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={(e) => e.stopPropagation()}>
-              <select
-                value={contactId ?? ''}
-                onChange={(e) => setContactId(e.target.value ? Number(e.target.value) : null)}
-              >
+              <select id="Contact"
+                      value={contactId ?? ''}
+                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
                 <option value="">No contact selected</option>
                 {contacts.map((contact) => (
                   <option key={contact.Id ?? contact.id} value={contact.Id ?? contact.id}>
@@ -430,17 +412,17 @@ export default function JobSpecCreate() {
           </div>
 
           <div className="modal-field">
-            <textarea 
-              value={description} 
-              placeholder="Description of the role" 
-              onChange={(e) => setDescription(e.target.value)} />
+            <textarea id="Description"
+                      value={description} 
+                      placeholder="Description of the role" 
+                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <textarea 
-              value={notes} 
-              placeholder="Notes about the role" 
-              onChange={(e) => setNotes(e.target.value)} />
+            <textarea id="notes"
+                      value={notes} 
+                      placeholder="Notes about the role" 
+                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-actions">

@@ -1,4 +1,4 @@
-import { Route, Routes, Link } from 'react-router-dom';
+import { useNavigate, Route, Routes, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import SettingsPage from './pages/settings/SettingsPage';
 import LuBenefitsPage from './pages/settings/LuBenefitsPage';
@@ -10,10 +10,17 @@ import JobSpecCreate from './pages/JobSpecCreate';
 import JobSpecView from './pages/JobSpecView';
 import Contacts from './pages/Contacts';
 import SourcesPage from './pages/settings/Sources';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FaSun, FaMoon } from 'react-icons/fa';
 
+var isBlocked: boolean = false;
+
+export const isDirty = () => {return isBlocked};
+export const setIsDirty = (state: boolean) => {isBlocked = state};
+
 function App() {
+  const navigate = useNavigate();
+
 /* State to manage the current skin theme (e.g., 'light', 'dark') */
   const [currentSkin, setCurrentSkin] = useState<'light' | 'dark'>(() => {
     const match = document.cookie.match(/(^|;\s*)app-skin=([^;]+)/);
@@ -44,6 +51,27 @@ function App() {
     setCurrentSkin(skin);
   };
 
+  const handleClick = (url: string) => {
+    if (isDirty()) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        return;
+    }
+    navigate(url);
+    setIsDirty(false);
+    return;
+  };
+
+  const handleOnClick = (event: any) => {
+    if (isBlocked) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        event.preventDefault(); 
+      else {
+        isBlocked = false;
+      }
+    }
+    return;
+  };
+
   return (
     // Pass the skin context/attribute to a wrapper element that encapsulates everything
     <div className="app-shell" data-skin={currentSkin}>
@@ -54,9 +82,15 @@ function App() {
           <p>Track and manage your job applications.</p>
         </div>
         <nav className="top-nav">
-          <Link className="action-button" to="/">Home</Link>
-          <Link className="action-button" to="/contacts">Contacts</Link>
-          <Link className="action-button"to="/settings">Settings</Link>
+          <Link className="action-button" to="/" onClick={(e) => {handleOnClick(e);}}>
+            Home
+          </Link>
+          <Link className="action-button" to="/contacts" onClick={(e) => {handleOnClick(e);}}>
+            Contacts
+          </Link>
+          <Link className="action-button" to="/settings" onClick={(e) => {handleOnClick(e);}}>
+            Settings
+          </Link>
           <button
             aria-label={currentSkin === "light" ? "Switch to dark mode" : "Switch to light mode"}
             onClick={() => handleSkinChange(currentSkin === 'light' ? 'dark' : 'light')}

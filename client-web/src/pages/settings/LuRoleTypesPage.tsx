@@ -79,6 +79,11 @@ export default function LuRoleTypesPage() {
     const updatedRoleType = { ...roletype, Order: targetRoleType.Order };
     const updatedTarget = { ...targetRoleType, Order: roletype.Order };
 
+    if (updatedRoleType.Order === updatedTarget.Order) {
+      if (direction == 'up') updatedTarget.Order++;
+      else updatedRoleType.Order++;
+    }
+
     try {
       setLoading(true);
       await Promise.all([saveRoleType(updatedRoleType), saveRoleType(updatedTarget)]);
@@ -177,6 +182,7 @@ export default function LuRoleTypesPage() {
                         ) : (
                           <div className="action-placeholder" />
                         )}
+                        {roletype.Order}
                         {index < orderedRoleTypes.length - 1 ? (
                           <button
                             type="button"

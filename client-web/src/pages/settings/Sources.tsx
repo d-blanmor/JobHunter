@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
-import Modal from '../../components/Modal';
+import SourceModal from '../../components/SourceModal';
 import { listSources, saveSource, deleteSource  } from '../../api/sources';
 import { SourceItem } from '../../defs/interfaces';
 
@@ -68,13 +68,49 @@ export default function SourcesPage() {
     setIsModalOpen(false);
     setModalError(null);
   };
-/*
+
   const orderedSources = useMemo(
     () => [...sources].sort((a, b) => a.Order - b.Order || a.Id - b.Id),
     [sources],
   );
 
-  const moveSource = async (source: SourceItem, direction: 'up' | 'down') => {
+  const orderedParents = useMemo(
+    () => [...parents].sort((a, b) => a.Order - b.Order || a.Id - b.Id),
+    [parents],
+  );
+
+  const moveParent = async (source: SourceItem, direction: 'up' | 'down') => {
+    const currentIndex = orderedParents.findIndex((item) => item.Id === source.Id);
+    if (currentIndex === -1) {
+      return;
+    }
+
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= orderedParents.length) {
+      return;
+    }
+
+    const targetSource = orderedParents[targetIndex];
+    const updatedSource = { ...source, Order: targetSource.Order };
+    const updatedTarget = { ...targetSource, Order: source.Order };
+
+    if (updatedSource.Order === updatedTarget.Order) {
+      if (direction == 'up') updatedTarget.Order++;
+      else updatedSource.Order++;
+    }
+
+    try {
+      setLoading(true);
+      await Promise.all([saveSource(updatedSource), saveSource(updatedTarget)]);
+      await loadSources();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const moveChild = async (source: SourceItem, direction: 'up' | 'down') => {
     const currentIndex = orderedSources.findIndex((item) => item.Id === source.Id);
     if (currentIndex === -1) {
       return;
@@ -89,6 +125,11 @@ export default function SourcesPage() {
     const updatedSource = { ...source, Order: targetSource.Order };
     const updatedTarget = { ...targetSource, Order: source.Order };
 
+    if (updatedSource.Order === updatedTarget.Order) {
+      if (direction == 'up') updatedTarget.Order++;
+      else updatedSource.Order++;
+    }
+
     try {
       setLoading(true);
       await Promise.all([saveSource(updatedSource), saveSource(updatedTarget)]);
@@ -99,7 +140,7 @@ export default function SourcesPage() {
       setLoading(false);
     }
   };
-*/
+
   const handleDeleteSource = async (source: SourceItem) => {
     try {
       setLoading(true);
@@ -164,130 +205,153 @@ export default function SourcesPage() {
             </Link>
           </div>
 
-          <div className="lookup-table">
-            {sources.length != 0 ? (
-              <ul className="source-list"
-                  style={{ listStyle: 'none', padding: 0 }}>
-                  {parents.map((parent) => (
-                    <li key={parent.Id}
-                        className="source-item">
-                      {children[parent.Id] ? (
-                        <span className="source-expand-span"
-                          style={{
-                            cursor: 'pointer',
-                          }}
-                          onClick={() => setExpanded((prev)=>{
-                              const newSet=new Set(prev);
-                              if(newSet.has(parent.Id))newSet.delete(parent.Id);else newSet.add(parent.Id);
-                              return newSet;
-                            })}>
-                          {(expanded.has(parent.Id) ? '▼' : '▶')}
-                        </span>
-                      ) : (
-                          <span className="source-expand-span-empty">
-                            ▼
+          {orderedSources.length != 0 ? (
+            <div className="lookup-table">
+              {sources.length != 0 ? (
+                <ul className="source-list"
+                    style={{ listStyle: 'none', padding: 0 }}>
+                    {parents.map((parent, index) => (
+                      <li key={parent.Id}
+                          className="source-item">
+                        {children[parent.Id] ? (
+                          <span className="source-expand-span"
+                            style={{
+                              cursor: 'pointer',
+                            }}
+                            onClick={() => setExpanded((prev)=>{
+                                const newSet=new Set(prev);
+                                if(newSet.has(parent.Id))newSet.delete(parent.Id);else newSet.add(parent.Id);
+                                return newSet;
+                              })}>
+                            {(expanded.has(parent.Id) ? '▼' : '▶')}
                           </span>
-                      )}
-                      <span className="source-item">{parent.Name}</span>
-                      <span className="source-item">{parent.PortalURL || '—'}</span>
-                      <span className="source-item">{parent.Details || '—'}</span>
-                      <span className="lookup-action-buttons" 
-                            style={{ display: 'flex', gap: '0.25rem' }}>
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-edit"
-                          onClick={() => openEditModal(parent)}
-                          aria-label="Edit source"
-                        >
-                          &#9999;
-                        </button>
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-delete"
-                          onClick={() => handleDeleteSource(parent)}
-                          aria-label="Delete source"
-                        >
-                          &#10060;
-                        </button>
-                      </span>
-                      {expanded.has(parent.Id) && (
-                        <ul>
-                          {expanded.has(parent.Id) && (children[parent.Id]||[]).map((child) => (
-                            <li key={child.Id}
-                                className="source-item">
-                              <span className="source-item">{child.Name}</span>
-                              <span className="source-item">{child.PortalURL || '—'}</span>
-                              <span className="source-item">{child.Details || '—'} </span>
-                              <span className="lookup-action-buttons" 
-                                    style={{ display: 'flex', gap: '0.25rem' }}>
-                                <button
-                                  type="button"
-                                  className="lookup-action-button lookup-action-edit"
-                                  onClick={() => openEditModal(child)}
-                                  aria-label="Edit source"
-                                >
-                                  &#9999;
-                                </button>
-                                <button
-                                  type="button"
-                                  className="lookup-action-button lookup-action-delete"
-                                  onClick={() => handleDeleteSource(child)}
-                                  aria-label="Delete source"
-                                >
-                                  &#10060;
-                                </button>
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  ))}
-              </ul>
-            ) : ( '' )}
-          </div>
-          {isModalOpen && (
-            <div className="modal-overlay" role="dialog" aria-modal="true">
-              <div className="modal">
-                <h3>{modalMode === 'create' ? 'Create source' : 'Edit source'}</h3>
-                <div className="modal-field">
-                  <label htmlFor="name">Name</label>
-                  <input
-                    id="name"
-                    type="text"
-                    value={formValues.Name}
-                    onChange={(e) => handleFormChange('Name', e.target.value)}
-                  />
-                </div>
-                <div className="modal-field">
-                  <label htmlFor="portalURL">Portal URL</label>
-                  <input
-                    id="portalURL"
-                    type="text"
-                    value={formValues.PortalURL}
-                    onChange={(e) => handleFormChange('PortalURL', e.target.value)}
-                  />
-                </div>
-                <div className="modal-field">
-                  <label htmlFor="details">Details</label>
-                  <textarea
-                    id="details"
-                    rows={3}
-                    value={formValues.Details}
-                    onChange={(e) => handleFormChange('Details', e.target.value)}
-                  />
-                </div>
-                {modalError && <p className="error">{modalError}</p>}
-                <div className="modal-actions">
-                  <button type="button" className="button" onClick={handleModalSubmit}>
-                    OK
-                  </button>
-                  <button type="button" className="button secondary-button" onClick={closeModal}>
-                    Cancel
-                  </button>
-                </div>
-              </div>
+                        ) : (
+                            <span className="source-expand-span-empty">
+                              ▼
+                            </span>
+                        )}
+                        <span className="source-item">{parent.Name}</span>
+                        <span className="source-item">{parent.PortalURL || '—'}</span>
+                        <span className="source-item">{parent.Details || '—'}</span>
+                        <span className="lookup-action-buttons" 
+                              style={{ display: 'flex', gap: '0.25rem' }}>
+                          {index > 0 ? (
+                            <button
+                              type="button"
+                              className="lookup-action-button lookup-action-up"
+                              onClick={() => moveParent(parent, 'up')}
+                              aria-label="Move up"
+                            >
+                              &#11014;
+                            </button>
+                          ) : (
+                            <div className="action-placeholder" />
+                          )}
+                          {parent.Order}
+                          {index < orderedParents.length - 1 ? (
+                            <button
+                              type="button"
+                              className="lookup-action-button lookup-action-down"
+                              onClick={() => moveParent(parent, 'down')}
+                              aria-label="Move down"
+                            >
+                              &#11015;
+                            </button>
+                          ) : (
+                            <div className="action-placeholder" />
+                          )}
+                          <button
+                            type="button"
+                            className="lookup-action-button lookup-action-edit"
+                            onClick={() => openEditModal(parent)}
+                            aria-label="Edit source"
+                          >
+                            &#9999;
+                          </button>
+                          <button
+                            type="button"
+                            className="lookup-action-button lookup-action-delete"
+                            onClick={() => handleDeleteSource(parent)}
+                            aria-label="Delete source"
+                          >
+                            &#10060;
+                          </button>
+                        </span>
+                        {expanded.has(parent.Id) && (
+                          <ul>
+                            {expanded.has(parent.Id) && (children[parent.Id]||[]).map((child, index) => (
+                              <li key={child.Id}
+                                  className="source-item">
+                                <span className="source-item">{child.Name}</span>
+                                <span className="source-item">{child.PortalURL || '—'}</span>
+                                <span className="source-item">{child.Details || '—'} </span>
+                                <span className="lookup-action-buttons" 
+                                      style={{ display: 'flex', gap: '0.25rem' }}>
+
+                                  {index > 0 ? (
+                                    <button
+                                      type="button"
+                                      className="lookup-action-button lookup-action-up"
+                                      onClick={() => moveChild(child, 'up')}
+                                      aria-label="Move up"
+                                    >
+                                      &#11014;
+                                    </button>
+                                  ) : (
+                                    <div className="action-placeholder" />
+                                  )}
+                                  {child.Order}
+                                  {index < orderedSources.length - 1 ? (
+                                    <button
+                                      type="button"
+                                      className="lookup-action-button lookup-action-down"
+                                      onClick={() => moveChild(child, 'down')}
+                                      aria-label="Move down"
+                                    >
+                                      &#11015;
+                                    </button>
+                                  ) : (
+                                    <div className="action-placeholder" />
+                                  )}
+                                  <button
+                                    type="button"
+                                    className="lookup-action-button lookup-action-edit"
+                                    onClick={() => openEditModal(child)}
+                                    aria-label="Edit source"
+                                  >
+                                    &#9999;
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="lookup-action-button lookup-action-delete"
+                                    onClick={() => handleDeleteSource(child)}
+                                    aria-label="Delete source"
+                                  >
+                                    &#10060;
+                                  </button>
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
+                </ul>
+              ) : ( '' )}
             </div>
+          ) : (
+            ''
+          )}
+
+          {isModalOpen && (
+            <SourceModal
+              title='New Source Portal'
+              onClose={() => setIsModalOpen(false)}
+              onSuccess={async () => {
+                await loadSources();
+                setIsModalOpen(false);
+              }}
+            />
           )}
         </>
       )}

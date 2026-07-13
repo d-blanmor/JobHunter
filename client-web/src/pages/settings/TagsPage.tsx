@@ -80,6 +80,11 @@ export default function TagsPage() {
     const updatedTag = { ...tag, Order: targetTag.Order };
     const updatedTarget = { ...targetTag, Order: tag.Order };
 
+    if (updatedTag.Order === updatedTarget.Order) {
+      if (direction == 'up') updatedTarget.Order++;
+      else updatedTag.Order++;
+    }
+
     try {
       setLoading(true);
       await Promise.all([saveTag(updatedTag), saveTag(updatedTarget)]);
@@ -180,6 +185,7 @@ export default function TagsPage() {
                         ) : (
                           <div className="action-placeholder" />
                         )}
+                        {tag.Order}
                         {index < orderedTags.length - 1 ? (
                           <button
                             type="button"

@@ -80,6 +80,11 @@ export default function LocationsPage() {
     const updatedLocation = { ...location, Order: targetLocation.Order };
     const updatedTarget = { ...targetLocation, Order: location.Order };
 
+    if (updatedLocation.Order === updatedTarget.Order) {
+      if (direction == 'up') updatedTarget.Order++;
+      else updatedLocation.Order++;
+    }
+
     try {
       setLoading(true);
       await Promise.all([saveLocation(updatedLocation), saveLocation(updatedTarget)]);
@@ -180,6 +185,7 @@ export default function LocationsPage() {
                         ) : (
                           <div className="action-placeholder" />
                         )}
+                        {location.Order}
                         {index < orderedLocations.length - 1 ? (
                           <button
                             type="button"

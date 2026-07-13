@@ -79,6 +79,11 @@ export default function LuBenefitsPage() {
     const updatedBenefit = { ...benefit, Order: targetBenefit.Order };
     const updatedTarget = { ...targetBenefit, Order: benefit.Order };
 
+    if (updatedBenefit.Order === updatedTarget.Order) {
+      if (direction == 'up') updatedTarget.Order++;
+      else updatedBenefit.Order++;
+    }
+
     try {
       setLoading(true);
       await Promise.all([saveBenefit(updatedBenefit), saveBenefit(updatedTarget)]);
@@ -177,6 +182,7 @@ export default function LuBenefitsPage() {
                         ) : (
                           <div className="action-placeholder" />
                         )}
+                        {benefit.Order}
                         {index < orderedBenefits.length - 1 ? (
                           <button
                             type="button"

@@ -79,6 +79,11 @@ export default function LuWorkModelsPage() {
     const updatedWorkModel = { ...workmodel, Order: targetWorkModel.Order };
     const updatedTarget = { ...targetWorkModel, Order: workmodel.Order };
 
+    if (updatedWorkModel.Order === updatedTarget.Order) {
+      if (direction == 'up') updatedTarget.Order++;
+      else updatedWorkModel.Order++;
+    }
+
     try {
       setLoading(true);
       await Promise.all([saveWorkModel(updatedWorkModel), saveWorkModel(updatedTarget)]);
@@ -177,6 +182,7 @@ export default function LuWorkModelsPage() {
                         ) : (
                           <div className="action-placeholder" />
                         )}
+                        {workmodel.Order}
                         {index < orderedWorkModels.length - 1 ? (
                           <button
                             type="button"

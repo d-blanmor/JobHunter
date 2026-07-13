@@ -62,8 +62,13 @@ export default function HomePage() {
 
   /* ---- Portal (source) state -------------------------------------------- */
   const [sources, setSources] = useState<SourceItem[]>([]);
+  const [parents, setParents] = useState<SourceItem[]>([]);
+  const [children, setChildren] = useState<Record<number, SourceItem[]>>({});
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+
   const [filter, setFilter] = useState('');
   const filteredSources = sources.filter((s)=> s.Name.toLowerCase().includes(filter.toLowerCase()));
+  const filteredParents = parents.filter((s)=> s.Name.toLowerCase().includes(filter.toLowerCase()));
   const [sourcesLoading, setSourcesLoading] = useState(true);
   const [sourcesError, setSourcesError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -112,7 +117,20 @@ export default function HomePage() {
   const fetchSources = async (mounted: boolean = true) => {
     setSourcesLoading(true);
     try {
-      const data = await listSources(); // API defined elsewhere
+      const data = await listSources();
+      if (data != "()") {
+        setSources(data);
+        const parents = data.filter((s: SourceItem) => s.ParentId == null);
+        const childrenMap: Record<number, SourceItem[]> = {};
+        data.forEach((s: SourceItem) => {
+          if (s.ParentId != null) {
+            childrenMap[s.ParentId] = childrenMap[s.ParentId] ?? [];
+            childrenMap[s.ParentId].push(s);
+          }
+        });
+        setParents(parents);
+        setChildren(childrenMap);
+      }
       if (mounted && Array.isArray(data)) setSources(data);
     } catch (err) {
       if (mounted)
@@ -299,49 +317,100 @@ export default function HomePage() {
       {sourcesError && <p className="error">{sourcesError}</p>}
       {!sourcesLoading &&
         !sourcesError &&
-        filteredSources.length > 0 && (
-          <ul
-            className="source-list"
-            style={{ listStyle: 'none', padding: 0 }}>
-            {filteredSources.map((src) => (
-              <li
-                key={src.Id}
-                className="source-item"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '.5rem',
-                }}>
-                {src.PortalURL ? (
-                <a
-                  href={src.PortalURL || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    marginRight: 'auto',
-                    textDecoration: 'none',
-                    color: '#0066cc',
-                  }}>
-                  {src.Name}
-                </a>
+        filteredParents.length > 0 && (
+          <ul className="source-list"
+              style={{ listStyle: 'none', padding: 0 }}>
+            {filteredParents.map((parent) => (
+              <li key={parent.Id}
+                  className="source-item">
+                {children[parent.Id] ? (
+                  <span className="source-expand-span"
+                    style={{
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => setExpanded((prev)=>{
+                        const newSet=new Set(prev);
+                        if(newSet.has(parent.Id))newSet.delete(parent.Id);else newSet.add(parent.Id);
+                        return newSet;
+                      })}>
+                    {(expanded.has(parent.Id) ? '▼' : '▶')}
+                  </span>
+                ) : (
+                  <span className="source-expand-span-empty">
+                    ▼
+                  </span>
+                )}
+
+                {parent.PortalURL ? (
+                  <a
+                    href={parent.PortalURL || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      marginRight: 'auto',
+                      textDecoration: 'none',
+                      color: '#0066cc',
+                    }}>
+                    {parent.Name}
+                  </a>
                 ) : (
                   <span
                     className="source-details"
-                  style={{
-                    marginRight: 'auto',
-                    textDecoration: 'none',
-                    color: '#0066cc',
-                  }}
+                    style={{
+                      marginRight: 'auto',
+                      textDecoration: 'none',
+                      color: '#0066cc',
+                    }}
                   >
-                    {src.Name}
+                    {parent.Name}
                   </span>
                 )}
-                {src.Details && (
+                {parent.Details && (
                   <span
                     className="source-details"
                     style={{ marginLeft: '1rem', color: '#666', fontSize: '.85rem' }}>
-                    {src.Details}
+                    {parent.Details}
                   </span>
+                )}
+                {expanded.has(parent.Id) && (
+                  <ul>
+                    {expanded.has(parent.Id) && (children[parent.Id]||[]).map((child) => (
+                      <li key={child.Id}
+                          className="source-item">
+                        {child.PortalURL ? (
+                          <a
+                            href={child.PortalURL || '#'}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              marginRight: 'auto',
+                              textDecoration: 'none',
+                              color: '#0066cc',
+                            }}>
+                            {child.Name}
+                          </a>
+                        ) : (
+                          <span
+                            className="source-details"
+                            style={{
+                              marginRight: 'auto',
+                              textDecoration: 'none',
+                              color: '#0066cc',
+                            }}
+                          >
+                            {child.Name}
+                          </span>
+                        )}
+                        {child.Details && (
+                          <span
+                            className="source-details"
+                            style={{ marginLeft: '1rem', color: '#666', fontSize: '.85rem' }}>
+                            {child.Details}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </li>
             ))}

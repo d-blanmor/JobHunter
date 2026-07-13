@@ -6,6 +6,10 @@ import { SourceItem } from '../../defs/interfaces';
 
 export default function SourcesPage() {
   const [sources, setSources] = useState<SourceItem[]>([]);
+  const [parents, setParents] = useState<SourceItem[]>([]);
+  const [children, setChildren] = useState<Record<number, SourceItem[]>>({});
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +24,19 @@ export default function SourcesPage() {
     setError(null);
     try {
       const data = await listSources();
-      if (data != "()") setSources(data);
+      if (data != "()") {
+        setSources(data);
+        const parents = data.filter((s: SourceItem) => s.ParentId == null);
+        const childrenMap: Record<number, SourceItem[]> = {};
+        data.forEach((s: SourceItem) => {
+          if (s.ParentId != null) {
+            childrenMap[s.ParentId] = childrenMap[s.ParentId] ?? [];
+            childrenMap[s.ParentId].push(s);
+          }
+        });
+        setParents(parents);
+        setChildren(childrenMap);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -148,20 +164,39 @@ export default function SourcesPage() {
             </Link>
           </div>
 
-          {sources.length != 0 ? (
-            <table className="lookup-table">
-              <tbody>
-                {sources.map((source, index) => (
-                  <tr key={source.Id}>
-                    <td> &#10625; </td>
-                    <td>{source.Name}</td>
-                    <td>{source.PortalURL || '—'}</td>
-                    <td className="cell-actions">
-                      <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
+          <div className="lookup-table">
+            {sources.length != 0 ? (
+              <ul className="source-list"
+                  style={{ listStyle: 'none', padding: 0 }}>
+                  {parents.map((parent) => (
+                    <li key={parent.Id}
+                        className="source-item">
+                      {children[parent.Id] ? (
+                        <span className="source-expand-span"
+                          style={{
+                            cursor: 'pointer',
+                          }}
+                          onClick={() => setExpanded((prev)=>{
+                              const newSet=new Set(prev);
+                              if(newSet.has(parent.Id))newSet.delete(parent.Id);else newSet.add(parent.Id);
+                              return newSet;
+                            })}>
+                          {(expanded.has(parent.Id) ? '▼' : '▶')}
+                        </span>
+                      ) : (
+                          <span className="source-expand-span-empty">
+                            ▼
+                          </span>
+                      )}
+                      <span className="source-item">{parent.Name}</span>
+                      <span className="source-item">{parent.PortalURL || '—'}</span>
+                      <span className="source-item">{parent.Details || '—'}</span>
+                      <span className="lookup-action-buttons" 
+                            style={{ display: 'flex', gap: '0.25rem' }}>
                         <button
                           type="button"
                           className="lookup-action-button lookup-action-edit"
-                          onClick={() => openEditModal(source)}
+                          onClick={() => openEditModal(parent)}
                           aria-label="Edit source"
                         >
                           &#9999;
@@ -169,20 +204,48 @@ export default function SourcesPage() {
                         <button
                           type="button"
                           className="lookup-action-button lookup-action-delete"
-                          onClick={() => handleDeleteSource(source)}
+                          onClick={() => handleDeleteSource(parent)}
                           aria-label="Delete source"
                         >
                           &#10060;
                         </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            ''
-          )}
+                      </span>
+                      {expanded.has(parent.Id) && (
+                        <ul>
+                          {expanded.has(parent.Id) && (children[parent.Id]||[]).map((child) => (
+                            <li key={child.Id}
+                                className="source-item">
+                              <span className="source-item">{child.Name}</span>
+                              <span className="source-item">{child.PortalURL || '—'}</span>
+                              <span className="source-item">{child.Details || '—'} </span>
+                              <span className="lookup-action-buttons" 
+                                    style={{ display: 'flex', gap: '0.25rem' }}>
+                                <button
+                                  type="button"
+                                  className="lookup-action-button lookup-action-edit"
+                                  onClick={() => openEditModal(child)}
+                                  aria-label="Edit source"
+                                >
+                                  &#9999;
+                                </button>
+                                <button
+                                  type="button"
+                                  className="lookup-action-button lookup-action-delete"
+                                  onClick={() => handleDeleteSource(child)}
+                                  aria-label="Delete source"
+                                >
+                                  &#10060;
+                                </button>
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+              </ul>
+            ) : ( '' )}
+          </div>
           {isModalOpen && (
             <div className="modal-overlay" role="dialog" aria-modal="true">
               <div className="modal">

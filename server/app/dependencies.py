@@ -14,6 +14,7 @@ def _get_tag_or_404(session: Session, model: type[Any], tag_id: int | None = Non
             statement = statement.where(model.Name == tag_name)
         if tag_context is not None:
             statement = statement.where(model.Context == tag_context)
+        statement = statement.order_by(model.Order.desc())
         tags = session.exec(statement).all()
     if not tags:
         raise HTTPException(status_code=404, detail=f"{model.__name__} not found")
@@ -69,7 +70,10 @@ def _get_entity_or_404(session: Session, model: type[Any], entity_id: int | None
     else:
         if IsActive:
             statement = statement.where(model.IsActive == True)
-        statement = statement.order_by(model.Id.desc())
+        try:
+            statement = statement.order_by(model.Order.asc())
+        except:
+            statement = statement.order_by(model.Id.desc())
         entities = session.exec(statement).all()
     if not entities:
         raise HTTPException(status_code=404, detail=f"{model.__name__} not found")

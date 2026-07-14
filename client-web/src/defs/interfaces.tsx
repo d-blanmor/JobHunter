@@ -105,6 +105,7 @@ export interface InterviewItem {
   ApplicationId: number;
   Scheduled: string;
   ContactId?: number | null;
+  Contact?: ContactItem | null;
   Description?: string | null;
   Analysis?: string | null;
   Notes?: string | null;

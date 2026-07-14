@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import JobSpecModal from '../components/JobSpecModal';
+import ApplicationModal from '../components/ApplicationModal';
+import InterviewModal from '../components/InterviewModal';
+import OfferModal from '../components/OfferModal';
+
 import { getJobSpec, getJobSpecBenefits, getJobSpecTags } from '../api/jobSpecs';
-import { getApplicationsByJobSpec } from '../api/applications';
+import { getApplicationsByJobSpec, getApplication } from '../api/applications';
 import { getInterviewByJobSpec } from '../api/interviews';
 import { getOfferByJobSpec, getOfferBenefits } from '../api/offers';
 import { listPlacesOfWork } from '../api/place_of_work';
-
 import { listWorkModels } from '../api/lu_workmodels';
 import { listRoleTypes } from '../api/lu_roletypes';
 import { listBenefits } from '../api/lu_benefits';
@@ -16,10 +20,22 @@ import { listContacts } from '../api/contacts';
 import { listTags } from '../api/tags';
 
 import { 
+  formatDate, 
+  formatDateOnly, 
+  formatDateTime, 
+  formatFieldDate, 
+  safeValue,
+  getSourceItem,
+  getWorkModelItem,
+  getRoleTypeItem,
+  getContactItem,
+  normalizeBenefits,
+  getPlaceOfWorkLabel
+  } from '../defs/tools'
+import { 
   JobSpecItem, 
   ApplicationItem,
   InterviewItem,
-  OfferItem,
   SourceItem, 
   PlaceOfWorkItem,
   luLocationItem, 
@@ -30,69 +46,25 @@ import {
   luBenefitItem,
   } from '../defs/interfaces';
 
-function pad(value: number) {
-  return value.toString().padStart(2, '0');
-}
-
-function formatDate(value?: string | null) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
-}
-
-function formatDateOnly(value?: string | null) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
-}
-
-function formatDateTime(value?: string | null) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
-function safeValue(value: any) {
-  return value === null || value === undefined || value === '' ? '—' : value;
-}
-
-function getSourceItem(spec: any, sources: SourceItem[]) {
-  return sources.find((item) => item.Id === spec.SourceId) || null;
-}
-
-function getWorkModelItem(spec: any, models: any[]) {
-  return models.find((item) => item.Id === spec.WorkModelId) || null;
-};
-
-function getRoleTypeItem(spec: any, roleTypes: any[]) {
-  return roleTypes.find((item) => item.Id === spec.RoleTypeId) || null;
-}
-
-function getContactItem(contactId: any, contacts: any[]) {
-  const contact = contacts.find((item) => item.Id === contactId);
-  if (!contact) return null;
-  return contact;
-}
-
-function normalizeBenefits(value: any) {
-  if (!value) return '—';
-  if (Array.isArray(value)) return value.filter(Boolean).join(', ') || '—';
-  if (typeof value === 'string') return value.trim() || '—';
-  return String(value);
-}
-
 export default function JobSpecView() {
   const { id } = useParams();
+
   const navigate = useNavigate();
+
+  const [modalEditJobSpec, setModalEditJobSpec] = useState(false);
+  const [modalEditApplication, setModalEditApplication] = useState(false);
+  const [modalEditInterview, setModalEditInterview] = useState(false);
+  const [modalEditOffer, setModalEditOffer] = useState(false);
+
   // Entities
-  const [jobSpec, setSpec] = useState<JobSpecItem | null>(null);
+  const [jobSpec, setJobSpec] = useState<JobSpecItem | null>(null);
   const [jsBenefits, setJsBenefits] = useState<luBenefitItem[]>([]);
   const [jsTags, setJSTags] = useState<TagItem[]>([]);
   const [inContact, setInContact] = useState< any > (null);
-  const [placeOfWork, setPlaceOfWork] = useState<PlaceOfWorkItem | null>(null);
+  const [applicationId, setApplicationId] = useState<number | null>(null);
+  const [application, setApplication] = useState<ApplicationItem | null>(null);
+  const [interviewId, setInterviewId] = useState<number | null>(null);
+  const [offerId, setOfferId] = useState<number | null>(null);
   // Lookups
   const [lPlacesOfWork, setPlacesOfWork] = useState<PlaceOfWorkItem[]>([]);
   const [lSources, setSources] = useState<SourceItem[]>([]);
@@ -101,7 +73,8 @@ export default function JobSpecView() {
   const [lRoleTypes, setRoleTypes] = useState<luRoleTypeItem[]>([]);
   const [lContacts, setContacts] = useState<ContactItem[]>([]);
   const [lBenefits, setBenefits] = useState<luBenefitItem[]>([]); 
-  const [lTags, setTags] = useState<TagItem[]>([]); 
+  const [lTags, setTags] = useState<TagItem[]>([]);
+  const [placeOfWorkLabel, setPlaceOfWorkLabel] = useState<string | ''>('');
   // Behaviour
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -149,17 +122,37 @@ export default function JobSpecView() {
 
         if (!mounted) return;
 
-        setSpec(jobSpec);
+        setPlacesOfWork(Array.isArray(placesOfWork) ? placesOfWork : []);
+        setSources(Array.isArray(luSources) ? luSources : []);
+        setLocations(Array.isArray(luLocations) ? luLocations : []);
+        setWorkModels(Array.isArray(luWorkModels) ? luWorkModels : []);
+        setRoleTypes(Array.isArray(luRoleTypes) ? luRoleTypes : []);
+        setContacts(Array.isArray(luContacts) ? luContacts : []);
+        setBenefits(Array.isArray(luBenefits) ? luBenefits : []);
+        setTags(Array.isArray(luTags) ? luTags : []);
+
+        setJobSpec(jobSpec);
         setJsBenefits(jsBenefits || []);
-        jobSpec.PlacesOfWork = placeOfWorkLabel(null, jobSpec.PlaceOfWorkId);
+        if (jobSpec.PlaceOfWorkId) setPlaceOfWorkLabel(await getPlaceOfWorkLabel(jobSpec.PlaceOfWorkId));
         jobSpec.Benefits = jsBenefits;
         setJSTags(jsTags || []);
         jobSpec.Tags = jsTags;
         jobSpec.Applications = applications;
+        jobSpec.Applications[0].Interviews = [];
         if (jobSpec.Applications && jobSpec.Applications.length > 0) {
+          setApplicationId(jobSpec.Applications[0].Id);
           jobSpec.Applications[0].Interviews = interviews;
           jobSpec.Applications[0].Offers = offers;
           if (Array.isArray(jobSpec.Applications) && jobSpec.Applications.length > 0) {
+            if (Array.isArray(jobSpec.Applications[0].Interviews) && jobSpec.Applications[0].Interviews.length > 0) {
+              for (let i = 0; i<jobSpec.Applications[0].Interviews.length; i++) {
+                if (jobSpec.Applications[0].Interviews[i].ContactId) {
+                  lContacts.find((contact: ContactItem) => contact.Id === jobSpec.Applications[0].Interviews[i].ContactId);
+                  jobSpec.Applications[0].Interviews[i].Contact = contact;
+                }
+              }
+            }
+
             if (Array.isArray(jobSpec.Applications[0].Offers) && jobSpec.Applications[0].Offers.length > 0) {
               for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
                 const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].id)).catch(() => []));
@@ -169,15 +162,6 @@ export default function JobSpecView() {
             }
           }
         }
-        
-        setPlacesOfWork(Array.isArray(placesOfWork) ? placesOfWork : []);
-        setSources(Array.isArray(luSources) ? luSources : []);
-        setLocations(Array.isArray(luLocations) ? luLocations : []);
-        setWorkModels(Array.isArray(luWorkModels) ? luWorkModels : []);
-        setRoleTypes(Array.isArray(luRoleTypes) ? luRoleTypes : []);
-        setContacts(Array.isArray(luContacts) ? luContacts : []);
-        setBenefits(Array.isArray(luBenefits) ? luBenefits : []);
-        setTags(Array.isArray(luTags) ? luTags : []);
       } 
       catch (err) {
         if (!mounted) return;
@@ -201,31 +185,66 @@ export default function JobSpecView() {
   const contact = useMemo(() => (jobSpec ? getContactItem(jobSpec.ContactId, lContacts) : null), [jobSpec]);
   // TODO: Get assigned benefits in jsBenefits to jobspec
   // TODO: Get assigned tags in jsTags to jobspec
-  
-  const placeOfWorkLabel = (placeOfWork?: PlaceOfWorkItem | null, placeOfWorkId?: number | null) => {
-    var locationLabel = null;
-
-    if (!placeOfWork && placeOfWorkId) placeOfWork = lPlacesOfWork.find((item) => item.Id === placeOfWorkId);
-    if (placeOfWork) {
-      const location = placeOfWork ? lLocations.find((item) => item.Id === placeOfWork.LocationId) : null;
-      
-      if (placeOfWork) {
-        if (location) {
-          locationLabel = location.Country;
-          if (location.City && location.City != '') {
-            locationLabel = locationLabel + ` - ${location.City?.trim()}`;
-          }
-        }
-        if (placeOfWork?.Address && placeOfWork.Address.trim() != ''){
-          locationLabel = locationLabel + ` (${placeOfWork.Address?.trim()})`;
-        }
-      }
-    }
-    return locationLabel;
-  }
 
   const salary = jobSpec?.SalaryExpectation ||  '—';
   const benefits = normalizeBenefits(jobSpec?.Benefits ?? jobSpec?.Benefits);
+
+  const refreshJobSpec = async (mounted: boolean = true) => {
+    try {
+      const [
+        jobSpec, 
+        jsBenefits,
+        jsTags,
+        applications, 
+        interviews, 
+        offers
+      ] = await Promise.all([
+        getJobSpec(Number(id)),
+        getJobSpecBenefits(Number(id)).catch(() => []),
+        getJobSpecTags(Number(id)).catch(() => []),
+        getApplicationsByJobSpec(Number(id)).catch(() => []),
+        getInterviewByJobSpec(Number(id)).catch(() => []),
+        getOfferByJobSpec(Number(id)).catch(() => [])
+      ]);
+      setJobSpec(jobSpec);
+      setJsBenefits(jsBenefits || []);
+      jobSpec.PlacesOfWork = placeOfWorkLabel;
+      jobSpec.Benefits = jsBenefits;
+      setJSTags(jsTags || []);
+      jobSpec.Tags = jsTags;
+      jobSpec.Applications = applications;
+      setInterviewId(null);
+      if (jobSpec.Applications && jobSpec.Applications.length > 0) {
+        setApplicationId(jobSpec.Applications[0].Id);
+        jobSpec.Applications[0].Interviews = interviews;
+        jobSpec.Applications[0].Offers = offers;
+        if (Array.isArray(jobSpec.Applications) && jobSpec.Applications.length > 0) {
+          if (Array.isArray(jobSpec.Applications[0].Interviews) && jobSpec.Applications[0].Interviews.length > 0) {
+            for (let i = 0; i<jobSpec.Applications[0].Interviews.length; i++) {
+              if (jobSpec.Applications[0].Interviews[i].ContactId) {
+                lContacts.find((contact: ContactItem) => contact.Id === jobSpec.Applications[0].Interviews[i].ContactId);
+                jobSpec.Applications[0].Interviews[i].Contact = contact;
+              }
+            }
+          }
+
+          if (Array.isArray(jobSpec.Applications[0].Offers) && jobSpec.Applications[0].Offers.length > 0) {
+            for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
+              const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].id)).catch(() => []));
+              jobSpec.Applications[0].Offers[i].Benefits = ofBenefits;
+            }
+          }
+        }
+      }
+    }
+    catch (err) {
+      if (mounted)
+        setError(
+          err instanceof Error ? err.message : 'Failed to load contacts',
+        );
+    } 
+    finally {}
+  };
 
   return (
     <section className="page">
@@ -344,7 +363,7 @@ export default function JobSpecView() {
               {jobSpec.PlaceOfWorkId ? (
                 <div className="job-spec-field-row">
                   <span className="job-spec-field-label">Based in </span>
-                  <span>{(placeOfWorkLabel(null, jobSpec.PlaceOfWorkId))}</span>
+                  <span>{placeOfWorkLabel}</span>
                 </div>
               ) : null}
               {jobSpec.RoleTypeId && roleType ? (
@@ -394,6 +413,16 @@ export default function JobSpecView() {
               <p className="job-spec-description">{safeValue(jobSpec.Notes)}</p>
             </div>
           ) : null}
+
+          <div className="modal-actions">
+            <button className="button" 
+                onClick={() => {
+                  setModalEditJobSpec(true);
+                }}
+            >
+              Edit JobSpec
+            </button>
+          </div>
 
           {jobSpec.Applications && jobSpec.Applications.length > 0 && (
             <div className={`job-spec-section application-section ${jobSpec.Applications[0].Discarded ? 'discarded' : ''}`}>
@@ -445,6 +474,17 @@ export default function JobSpecView() {
                       <span>{formatDateOnly(application.Discarded)}</span>
                     </div>
                   ) : null}
+                  {application.Id ? (
+                    <div className="modal-actions">
+                      <button className="button" 
+                          onClick={() => {
+                            setModalEditApplication(true);
+                          }}
+                      >
+                        Edit Application
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -464,44 +504,35 @@ export default function JobSpecView() {
                       <span>{formatDateTime(interview.Scheduled)}</span>
                     </div>
                   ) : null}
-
-                  {interview.ContactId && setInContact(lContacts.find((item) => item.Id === interview.ContactId)) ? (
+                  {interview.ContactId ? (
                     <div className="job-spec-note-row contact-row">
-                      <span className="job-spec-note-label">Contact</span>
+                      <span className="job-spec-note-label">Contact </span>
                       <span>
+                        {interview.Contact?.Name || '—'}
+                      </span>
+                      {interview.Contact?.Details ? (
+                        <span className="job-spec-info-icon" title={interview.Contact.Details}>ℹ️</span>
+                      ) : null}
+                    </div>
+                  ) : ''}
 
-                        <div>
-                          <div className="job-spec-note-row contact-row">
-                            <span className="job-spec-note-label">Contact </span>
-                            <span>
-                              {inContact?.Name || '—'}
-                            </span>
-                            {inContact?.Details ? (
-                              <span className="job-spec-info-icon" title={inContact.Details}>ℹ️</span>
-                            ) : null}
-                          </div>
-
-                        {inContact?.Email ? (
-                          <div className="job-spec-note-row contact-row">
-                            <span>
-                              <a href={`mailto:${inContact.Email}`} target="_blank" rel="noreferrer" className="job-spec-contact-link" title={`Send email to ${inContact?.Name || 'contact'}`}>
-                                {inContact.Email || '—'}
-                              </a>
-                            </span>
-                          </div>
-                          ) : null}
-
-                        {inContact?.Phone ? (
-                          <div className="job-spec-note-row contact-row">
-                            <span>
-                              {inContact?.Phone ? <span className="job-spec-contact-phone">{inContact.Phone}</span> : null}
-                            </span>
-                          </div>
-                        ) : null}
-                        </div>
+                  {interview.Contact?.Email ? (
+                    <div className="job-spec-note-row contact-row">
+                      <span>
+                        <a href={`mailto:${interview.Contact.Email}`} target="_blank" rel="noreferrer" className="job-spec-contact-link" title={`Send email to ${interview.Contact?.Name || 'contact'}`}>
+                          {interview.Contact.Email || '—'}
+                        </a>
                       </span>
                     </div>
-                  ) : null}
+                  ) : ''}
+
+                  {interview.Contact?.Phone ? (
+                    <div className="job-spec-note-row contact-row">
+                      <span>
+                        {interview.Contact?.Phone ? <span className="job-spec-contact-phone">{interview.Contact.Phone}</span> : ''}
+                      </span>
+                    </div>
+                  ) : ''}
 
                   {interview.Description ? (
                     <div className="job-spec-section job-spec-description-section">
@@ -538,6 +569,18 @@ export default function JobSpecView() {
                     </div>
                   ) : null}
 
+                  {interview.Id ? (
+                    <div className="modal-actions">
+                      <button className="button" 
+                          onClick={() => {
+                            setInterviewId(interview.Id);
+                            setModalEditInterview(true);
+                          }}
+                      >
+                        Edit Interview
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -574,12 +617,77 @@ export default function JobSpecView() {
                       <span className="job-spec-description">{safeValue(offer.Notes)}</span>
                     </div>
                   ) : null}
+
+                  {offer.Id ? (
+                    <div className="modal-actions">
+                      <button className="button" 
+                          onClick={() => {
+                            setOfferId(offer.Id);
+                            setModalEditOffer(true);
+                          }}
+                      >
+                        Edit Offer
+                      </button>
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>
           )}
         </div>
       )}
+
+      {modalEditJobSpec && (
+        <JobSpecModal
+          jobSpecId={jobSpec?.Id || null}
+          title = "Edit job spec"
+          onClose={() => setModalEditJobSpec(false)}
+          onSuccess={async () => {
+            await refreshJobSpec(true); // refresh portal list after modal close
+            setModalEditJobSpec(false);
+          }}
+        />
+      )}
+
+      {modalEditApplication && (
+        <ApplicationModal
+          applicationId={applicationId}
+          jobSpecId={jobSpec?.Id || null}
+          title = "Edit application"
+          onClose={() => setModalEditApplication(false)}
+          onSuccess={async () => {
+            await refreshJobSpec(true); // refresh portal list after modal close
+            setModalEditApplication(false);
+          }}
+        />
+      )}
+
+      {modalEditInterview && (
+        <InterviewModal
+          interviewId={interviewId}
+          applicationId={applicationId}
+          title = "Edit interview"
+          onClose={() => setModalEditInterview(false)}
+          onSuccess={async () => {
+            await refreshJobSpec(true); // refresh portal list after modal close
+            setModalEditInterview(false);
+          }}
+        />
+      )}
+
+      {modalEditOffer && (
+        <OfferModal
+          offerId={offerId}
+          applicationId={applicationId}
+          title = "Edit offer"
+          onClose={() => setModalEditOffer(false)}
+          onSuccess={async () => {
+            await refreshJobSpec(true); // refresh portal list after modal close
+            setModalEditOffer(false);
+          }}
+        />
+      )}
+
     </section>
   );
 }

@@ -1,36 +1,41 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import Modal from './Modal';
 import SourceModal from '../components/SourceModal';
 import ContactModal from '../components/ContactModal';
 import PlaceOfWorkModal from '../components/PlaceOfWorkModal'
-
-import { isDirty, setIsDirty } from '../App';
 import { listLocations } from '../api/lu_locations';
 import { listRoleTypes } from '../api/lu_roletypes';
 import { listWorkModels } from '../api/lu_workmodels';
 import { listPlacesOfWork } from '../api/place_of_work';
 import { listSources } from '../api/sources';
 import { listContacts } from '../api/contacts';
-import { saveJobSpec } from '../api/jobSpecs';
-import { SourceItem } from '../defs/interfaces';
+import { getJobSpec, saveJobSpec } from '../api/jobSpecs';
+import { newJobSpecItem, SourceItem, PlaceOfWorkItem } from '../defs/interfaces';
+import { formatFieldDate } from '../defs/tools'
+import { isDirty, setIsDirty } from '../App';
 
-import { 
-  newJobSpecItem,
-  PlaceOfWorkItem,
-} from '../defs/interfaces';
+type Props = {
+  /** id of the jobspec to edit; null or undefined means create new */
+  jobSpecId?: number | null;
+  title: string;
+  onClose: () => void;
+  onSuccess?: () => void;      // called after successful submit
+};
 
-export default function JobSpecCreate() {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = () => {}, }: Props) {
+  /* ---------- State --------------------------------------------------- */
+  const [isLoading, setIsLoading] = useState<boolean>(!!jobSpecId);
   const [error, setError] = useState<string | null>(null);
 
   const [modalOpenSource, setModalOpenSource] = useState(false);
   const [modalOpenPlaceOfWork, setModalOpenPlaceOfWork] = useState(false);
   const [modalOpenContact, setModalOpenContact] = useState(false);
-  
+
+  // form fields – initialise to empty values
   // Entities
   const [position, setPosition] = useState('');
   const [company, setCompany] = useState('');
+  const [sourceId, setSourceId] = useState<number | ''>('');
   const [link, setLink] = useState('');
   const [published, setPublished] = useState('');
   const [contactId, setContactId] = useState<number | null>(null);
@@ -41,12 +46,12 @@ export default function JobSpecCreate() {
   const [workModelId, setWorkModelId] = useState<number | ''>('');
   const [roleTypeId, setRoleTypeId] = useState<number | ''>('');
   const [placeOfWorkId, setPlaceOfWorkId] = useState<number | ''>('');
-
+  const [created, setCreated] = useState('');
+  const [isActive, setIsActive] = useState<boolean>(true);
   // Lookups
   const [contacts, setContacts] = useState<any[]>([]);
   
   const [filter, setFilter] = useState('');
-  const [sourceId, setSourceId] = useState<number | ''>('');
   const [sources, setSources] = useState<any[]>([]);
   const [parents, setParents] = useState<SourceItem[]>([]);
   const filteredParents = parents.filter((s)=> s.Name.toLowerCase().includes(filter.toLowerCase()));
@@ -54,24 +59,13 @@ export default function JobSpecCreate() {
   const [roleTypes, setRoleTypes] = useState<any[]>([]);
   const [placesOfWork, setPlacesOfWork] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
-  
-  useEffect(() => {
-    function handelOnBeforeUnload(event: BeforeUnloadEvent) {
-      event.preventDefault();
-      alert(event.returnValue);
-      return (event.returnValue = '');
-    }
-    window.addEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
-    return () => {
-      if (isDirty()) window.removeEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
-    }
-  }, []);
 
+  /* ---------- Load data for editing ----------------------------------- */
   useEffect(() => {
     let mounted = true;
 
     async function load() {
-      setLoading(true);
+      setIsLoading(true);
       try {
         const [
           lSources,
@@ -88,9 +82,6 @@ export default function JobSpecCreate() {
           listLocations(),
           listContacts()
         ]);
-
-        if (!mounted) return;
-
         const sources = Array.isArray(lSources) ? lSources : (lSources?.data ?? []);
         setSources(sources);
         setParents(sources.filter((s: SourceItem) => s.ParentId == null));
@@ -104,74 +95,40 @@ export default function JobSpecCreate() {
         setLocations(locations);
         const contacts = Array.isArray(lContacts) ? lContacts : (lContacts?.data ?? []);
         setContacts(contacts);
-      } 
-      catch (err: any) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } 
-      finally {
-        if (mounted) setLoading(false);
+        if (jobSpecId) { 
+          // load the Application to be editted
+          const src: newJobSpecItem | undefined = await getJobSpec(jobSpecId);
+          if (mounted && src) {
+            if (src.Position) setPosition(src.Position);
+            if (src.Company) setCompany(src.Company);
+            if (src.SourceId) setSourceId(src.SourceId);
+            if (src.Link) setLink(src.Link);
+            if (src.PlaceOfWorkId) setPlaceOfWorkId(src.PlaceOfWorkId);
+            if (src.WorkModelId) setWorkModelId(src.WorkModelId);
+            if (src.RoleTypeId) setRoleTypeId(src.RoleTypeId);
+            if (src.SalaryExpectation) setSalaryExpectation(src.SalaryExpectation);
+            if (src.ContactId) setContactId(src.ContactId);
+            if (src.Description) setDescription(src.Description);
+            if (src.Analysis) setAnalysis(src.Analysis);
+            if (src.Notes) setNotes(src.Notes);
+            if (src.Published) setPublished(src.Published);
+            if (src.Created) setCreated(src.Created);
+            if (src.IsActive) setIsActive(src.IsActive);
+          }
+        }
+      } catch (err) {
+        if (mounted)
+          setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        if (mounted) setIsLoading(false);
       }
     }
 
     load();
-    return () => { mounted = false; };
-  }, []);
-
-  const handleCancel = () => {
-    if (isDirty()) {
-      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
-        return;
-    }
-    navigate('/');
-    setIsDirty(false);
-    return;
-  };
-
-  const handleSubmit = async () => {
-    setError(null);
-    setIsDirty(false);
-    if (!position.trim()) {
-      setError('Position is required');
-      return;
-    }
-    const payload: newJobSpecItem = {
-      Id: null,
-      Position: position.trim(),
-      Company: company.trim() || null,
-      SourceId: Number(sourceId) || null,
-      Link: link.trim() || null,
-      PlaceOfWorkId: Number(placeOfWorkId) || null,
-      WorkModelId: Number(workModelId) || null,
-      RoleTypeId: Number(roleTypeId) || null,
-      SalaryExpectation: salaryExpectation.trim() || null,
-      ContactId: Number(contactId) || null,
-      Description: description.trim() || null,
-      Analysis: analysis.trim() || null,
-      Notes: notes.trim() || null,
-      Created: new Date().toISOString(),
-      IsActive: true,
+    return () => {
+      mounted = false;
     };
-
-    try {
-      if (published) payload.Published = new Date(published).toISOString();
-    } 
-    catch(err) {
-      payload.Published = null;
-    }
-
-    try 
-    {
-      setLoading(true);
-      await saveJobSpec(payload);
-      navigate('/');
-    } 
-    catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
-    } 
-    finally {
-      setLoading(false);
-    }
-  };
+  }, [jobSpecId]);
 
   const handleFieldEdit = (field: string, value: string) => {
     setIsDirty(true);
@@ -181,27 +138,25 @@ export default function JobSpecCreate() {
     else if (field.toLowerCase() == 'company') {
       setCompany(value);
     }
-    else if (field.toLowerCase() == 'source')
+    else if (field.toLowerCase() == 'sourceid') {
       setSourceId(value ? Number(value) : '');
+    }
     else if (field.toLowerCase() == 'link') {
       setLink(value);
     }
-    else if (field.toLowerCase() == 'published') {
-      setPublished(value);
+    else if (field.toLowerCase() == 'placeofworkid') {
+      setPlaceOfWorkId(value ? Number(value) : '');
     }
-    else if (field.toLowerCase() == 'workmodel') {
+    else if (field.toLowerCase() == 'workmodelid') {
       setWorkModelId(value ? Number(value) : '');
     }
-    else if (field.toLowerCase() == 'roletype') {
+    else if (field.toLowerCase() == 'roletypeid') {
       setRoleTypeId(value ? Number(value) : '');
     }
     else if (field.toLowerCase() == 'salaryexpectation') {
       setSalaryExpectation(value);
     }
-    else if (field.toLowerCase() == 'placeofwork') {
-      setPlaceOfWorkId(value ? Number(value) : '');
-    }
-    else if (field.toLowerCase() == 'contact') {
+    else if (field.toLowerCase() == 'contactid') {
       setContactId(value ? Number(value) : null);
     }
     else if (field.toLowerCase() == 'description') {
@@ -213,7 +168,74 @@ export default function JobSpecCreate() {
     else if (field.toLowerCase() == 'notes') {
       setNotes(value);
     }
+    else if (field.toLowerCase() == 'published') {
+      setPublished(value);
+    }
+    else if (field.toLowerCase() == 'created') {
+      setCreated(value);
+    }
+    else if (field.toLowerCase() == 'isactive') {
+      setIsActive(value? Boolean(value) : true);
+    }
   }
+
+  const handleSubmit = async () => {
+    setError(null);
+    // Basic client‑side validation
+    if (!jobSpecId || !position) {
+      if (!jobSpecId) setError('A job spec is required');
+      if (!position) setError('A Postion is required');
+      return;
+    }
+
+    const payload: newJobSpecItem = {
+      Position: position,
+      Company: company,
+      Link: link,
+      SalaryExpectation: salaryExpectation,
+      ContactId: contactId,
+      Description: description,
+      Analysis: analysis,
+      Notes: notes,
+      Published: published,
+      Created: created,
+      IsActive: isActive,
+    };
+    if (jobSpecId) payload.Id = jobSpecId;
+    if (sourceId != '') payload.SourceId = sourceId;
+    if (workModelId != '') payload.WorkModelId = workModelId;
+    if (roleTypeId != '') payload.RoleTypeId = roleTypeId;
+    if (placeOfWorkId != '') payload.PlaceOfWorkId = placeOfWorkId;
+
+    try {
+      await saveJobSpec(payload);
+      setIsDirty(false);
+      onSuccess();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save job spec');
+    }
+  };
+
+  const handleCancel = () => {
+    setPosition('');
+    setCompany('');
+    setSourceId('');
+    setLink('');
+    setPlaceOfWorkId('');
+    setWorkModelId('');
+    setRoleTypeId('');
+    setSalaryExpectation('');
+    setContactId(null);
+    setDescription('');
+    setAnalysis('');
+    setNotes('');
+    setPublished('');
+    setCreated('');
+    setIsActive(true);
+    setIsDirty(false);
+    onClose();
+  };
 
   const fetchSources = async (mounted: boolean = true) => {
     try {
@@ -279,12 +301,12 @@ export default function JobSpecCreate() {
     return locationLabel;
   }
 
+  /* ---------- Render --------------------------------------------------- */
   return (
-    <section className="page job-spec-create">
-      <h2>Create Job Spec</h2>
-      {loading && <p>Loading...</p>}
+    <Modal title={title} onClose={onClose}>
+      {isLoading && <p>Loading…</p>}
       {error && <p className="error">{error}</p>}
-      {!loading && (
+      {!isLoading && (
         <div>
           <div className="modal-field">
             <input id="Position"
@@ -303,7 +325,7 @@ export default function JobSpecCreate() {
 
           <div className="modal-field">
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <select id="Source"
+              <select id="SourceId"
                       style={{ flex: 1 }} 
                       value={sourceId} 
                       onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
@@ -332,12 +354,12 @@ export default function JobSpecCreate() {
             <input id="Published"
               type="date"
               placeholder="Publish Date"
-              value={published}
+              value={formatFieldDate(published)}
               onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <select id="WorkModel"
+            <select id="WorkModelId"
                     value={workModelId} 
                     onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
               <option value="">No work model selected</option>
@@ -348,7 +370,7 @@ export default function JobSpecCreate() {
           </div>
 
           <div className="modal-field">
-            <select id="RoleType"
+            <select id="RoleTypeId"
                     value={roleTypeId} 
                     onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
               <option value="">No role type selected</option>
@@ -367,7 +389,7 @@ export default function JobSpecCreate() {
 
           <div className="modal-field">
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <select id="PlaceOfWork"
+              <select id="PlaceOfWorkId"
                       style={{ flex: 1 }} 
                       value={placeOfWorkId} 
                       onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
@@ -391,7 +413,7 @@ export default function JobSpecCreate() {
 
           <div className="modal-field">
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={(e) => e.stopPropagation()}>
-              <select id="Contact"
+              <select id="ContactId"
                       value={contactId ?? ''}
                       onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
                 <option value="">No contact selected</option>
@@ -442,7 +464,8 @@ export default function JobSpecCreate() {
             <button className="button secondary-button" onClick={handleCancel}>Cancel</button>
           </div>
         </div>
-      )}
+        )
+      }
 
       {modalOpenSource && (
         <SourceModal
@@ -484,6 +507,6 @@ export default function JobSpecCreate() {
         />
       )}
 
-    </section>
+    </Modal>
   );
 }

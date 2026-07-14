@@ -12,10 +12,14 @@
 .modal {
   width: min(100%, 1250px);
   max-width: 94rem;
+  max-height: 85vh;
   background: var(--color-background-page); /* USE VARIABLE */
   border-radius: 18px;
   padding: 24px;
   box-shadow: 0 18px 60px rgba(15, 23, 42, 0.18);
+  overflow-y: auto;
+  display: flex; 
+  flex-direction: column;
   /* Shadow needs to adjust slightly for dark mode visibility */
 }
 

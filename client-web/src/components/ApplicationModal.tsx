@@ -3,6 +3,8 @@ import Modal from './Modal';
 import { getJobSpec } from '../api/jobSpecs';
 import { getApplication, saveApplication} from '../api/applications';
 import { newApplicationItem, ApplicationItem, JobSpecItem } from '../defs/interfaces';
+import { formatFieldDate } from '../defs/tools'
+import { isDirty, setIsDirty } from '../App';
 
 type Props = {
   /** id of the application to edit; null or undefined means create new */
@@ -68,6 +70,28 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
     };
   }, [applicationId, jobSpecId]);
 
+  const handleFieldEdit = (field: string, value: string) => {
+    setIsDirty(true);
+    if (field.toLowerCase() == 'applied') {
+      setApplied(value);
+    }
+    else if (field.toLowerCase() == 'letter') {
+      setLetter(value);
+    }
+    else if (field.toLowerCase() == 'cv') {
+      setCV(value);
+    }
+    else if (field.toLowerCase() == 'notes') {
+      setNotes(value);
+    }
+    else if (field.toLowerCase() == 'confirmed') {
+      setConfirmed(value);
+    }
+    else if (field.toLowerCase() == 'discarded') {
+      setDiscarded(value);
+    }
+  }
+
   const handleSubmit = async () => {
     setError(null);
     // Basic client‑side validation
@@ -91,6 +115,7 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
 
     try {
       await saveApplication(payload);
+      setIsDirty(false);
       onSuccess();
       onClose();
     } catch (err) {
@@ -106,6 +131,7 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
     setCV('');
     setNotes('');
     setJobSpec(null);
+    setIsDirty(false);
     onClose();
   };
 
@@ -129,56 +155,59 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
 
           <div className="modal-field">
             <label>* Applied on</label>
-            <input
+            <input id="applied"
               type="date"
               required
               placeholder="Application Date"
-              value={applied}
-              onChange={(e) => setApplied(e.target.value)}
+              value={formatFieldDate(applied)}
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
             />
           </div>
 
           <div className="modal-field">
-            <textarea 
+            <textarea id="letter"
               value={letter} 
               placeholder="Application letter used" 
-              onChange={(e) => setLetter(e.target.value)} />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+            />
           </div>
 
           <div className="modal-field">
-            <textarea 
+            <textarea id="cv"
               value={cV} 
               placeholder="Resume sent" 
-              onChange={(e) => setCV(e.target.value)} />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+            />
           </div>
 
 
           <div className="modal-field">
-            <textarea 
+            <textarea id="notes"
               value={notes} 
               placeholder="Notes about the application" 
-              onChange={(e) => setNotes(e.target.value)} />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+            />
           </div>
 
           {applicationId ? (
             <div>
               <div className="modal-field">
                 <label>Confirmed on</label>
-                <input
+                <input id="confirmed"
                     type="date"
                     placeholder="Confirmed on"
-                    value={confirmed}
-                    onChange={(e) => setConfirmed(e.target.value)}
+                    value={formatFieldDate(confirmed)}
+                    onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
                 />
               </div>
 
               <div className="modal-field">
                 <label>Discarded on</label>
-                <input
+                <input id="discarded"
                     type="date"
                     placeholder="Discarded on"
-                    value={discarded}
-                    onChange={(e) => setDiscarded(e.target.value)}
+                    value={formatFieldDate(discarded)}
+                    onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
                 />
               </div>
             </div>

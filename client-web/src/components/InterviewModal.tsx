@@ -6,6 +6,8 @@ import { getApplication } from '../api/applications';
 import { getInterview, saveInterview} from '../api/interviews';
 import { listContacts } from '../api/contacts';
 import { newInterviewItem, InterviewItem, ApplicationItem, JobSpecItem, ContactItem } from '../defs/interfaces';
+import { formatFieldDateTime } from '../defs/tools'
+import { isDirty, setIsDirty } from '../App';
 
 type Props = {
   /** id of the interview to edit; null or undefined means create new */
@@ -92,6 +94,31 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
     }
   };
 
+  const handleFieldEdit = (field: string, value: string) => {
+    setIsDirty(true);
+    if (field.toLowerCase() == 'scheduled') {
+      setScheduled(value);
+    }
+    else if (field.toLowerCase() == 'contactid') {
+      setContactId(value ? Number(value) : '');
+    }
+    else if (field.toLowerCase() == 'description') {
+      setDescription(value);
+    }
+    else if (field.toLowerCase() == 'notes') {
+      setNotes(value);
+    }
+    else if (field.toLowerCase() == 'analysis') {
+      setAnalysis(value);
+    }
+    else if (field.toLowerCase() == 'outcome') {
+      setOutcome(value);
+    }
+    else if (field.toLowerCase() == 'feedback') {
+      setFeedback(value);
+    }
+  }
+
   const handleSubmit = async () => {
     setError(null);
     // Basic client‑side validation
@@ -102,7 +129,6 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
     }
 
     const payload: newInterviewItem = {
-      Id: null,
       ApplicationId: applicationId,
       Scheduled: new Date(scheduled).toISOString(),
       ContactId: Number(contactId) || null,
@@ -117,8 +143,9 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
 
     try {
       await saveInterview(payload);
+      setIsDirty(false);
       onSuccess();
-      onClose();
+      handleCancel();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save interview');
     }
@@ -134,6 +161,7 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
     setFeedback('');
     setApplication(null);
     setJobSpec(null);
+    setIsDirty(false);
     onClose();
   };
 
@@ -157,18 +185,22 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
 
           <div className="modal-field">
             <label>* Scheduled for</label>
-            <input
+            <input id="scheduled"
               type="datetime-local"
               required
               placeholder="Publish Date"
-              value={scheduled}
-              onChange={(e) => setScheduled(e.target.value)}
+              value={formatFieldDateTime(scheduled)}
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
             />
           </div>
 
           <div className="modal-field">
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <select style={{ flex: 1 }} value={contactId} onChange={(e) => setContactId(e.target.value ? Number(e.target.value) : '')}>
+              <select id="ContactId"
+                style={{ flex: 1 }} 
+                value={contactId} 
+                onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+              >
                 <option value="">No contact selected</option>
                 {luContacts.map((s) => (
                   <option key={s.Id} value={s.Id}>{s.Name}</option>
@@ -179,45 +211,51 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
                 onClick={() => {
                   setContactId('');
                   setModalOpenContact(true);
-                }}>+</button>
+                }}
+                >+</button>
             </div>
           </div>
 
           <div className="modal-field">
-            <textarea 
+            <textarea id="description"
               value={description} 
               placeholder="Description of the interview" 
-              onChange={(e) => setDescription(e.target.value)} />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+            />
           </div>
 
           <div className="modal-field">
-            <textarea 
+            <textarea id="notes"
               value={notes} 
               placeholder="Notes about the interview" 
-              onChange={(e) => setNotes(e.target.value)} />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+            />
           </div>
 
           {interviewId ? (
             <div>
               <div className="modal-field">
-                <textarea 
+                <textarea id="analysis"
                     value={analysis} 
                     placeholder="Analysis and tips for the interview" 
-                    onChange={(e) => setAnalysis(e.target.value)} />
+                    onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+                />
               </div>
 
               <div className="modal-field">
-                <textarea 
+                <textarea id="outcome"
                     value={outcome} 
                     placeholder="Outcome of the interview" 
-                    onChange={(e) => setOutcome(e.target.value)} />
+                    onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+                />
               </div>
 
               <div className="modal-field">
-                <textarea 
+                <textarea id="feedback"
                     value={feedback} 
                     placeholder="Feedback from interviewer" 
-                    onChange={(e) => setFeedback(e.target.value)} />
+                    onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+                />
               </div>
             </div>
           ) : null}

@@ -4,7 +4,9 @@ import { getOffer, saveOffer } from '../api/offers';
 import { getApplication } from '../api/applications';
 import { getJobSpec } from '../api/jobSpecs';
 import { listBenefits } from '../api/lu_benefits'
-import { newOfferItem, OfferItem, ApplicationItem, luBenefitItem } from '../defs/interfaces';
+import { newOfferItem, OfferItem, JobSpecItem, ApplicationItem, luBenefitItem } from '../defs/interfaces';
+import { formatFieldDate } from '../defs/tools'
+import { isDirty, setIsDirty } from '../App';
 
 type Props = {
   /** id of the offer to edit; null or undefined means create new */
@@ -83,6 +85,22 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
     }
   };
 
+  const handleFieldEdit = (field: string, value: string) => {
+    setIsDirty(true);
+    if (field.toLowerCase() == 'offered') {
+      setOffered(value);
+    }
+    else if (field.toLowerCase() == 'salary') {
+      setSalary(value);
+    }
+    else if (field.toLowerCase() == 'description') {
+      setDescription(value);
+    }
+    else if (field.toLowerCase() == 'notes') {
+      setNotes(value);
+    }
+  }
+
   const handleSubmit = async () => {
     setError(null);
     // Basic client‑side validation
@@ -104,6 +122,7 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
 
     try {
       await saveOffer(payload);
+      setIsDirty(false);
       onSuccess();
       onClose();
     } catch (err) {
@@ -117,6 +136,7 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
     setDescription('');
     setNotes('');
     setApplication(null);
+    setIsDirty(false);
     onClose();
   };
 
@@ -140,31 +160,37 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
 
           <div className="modal-field">
             <label>* Offered on</label>
-            <input
+            <input id="offered"
               type="date"
               required
               placeholder="Offer Date"
-              value={offered}
-              onChange={(e) => setOffered(e.target.value)}
+              value={formatFieldDate(offered)}
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
             />
           </div>
 
           <div className="modal-field">
-            <input value={salary} onChange={(e) => setSalary(e.target.value)} placeholder="Salary offered" />
+            <input id="salary"
+              value={salary} 
+              placeholder="Salary offered" 
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+            />
           </div>
 
           <div className="modal-field">
-            <textarea 
+            <textarea id="description"
               value={description} 
               placeholder="Description of the offer" 
-              onChange={(e) => setDescription(e.target.value)} />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+            />
           </div>
 
           <div className="modal-field">
-            <textarea 
+            <textarea id="notes"
               value={notes} 
               placeholder="Notes about the offer" 
-              onChange={(e) => setNotes(e.target.value)} />
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+            />
           </div>
 
           <div className="modal-actions">

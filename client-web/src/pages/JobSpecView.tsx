@@ -137,14 +137,14 @@ export default function JobSpecView() {
         jobSpec.Benefits = jsBenefits;
         setJSTags(jsTags || []);
         jobSpec.Tags = jsTags;
-        jobSpec.Applications = applications;
-        jobSpec.Applications[0].Interviews = [];
-        if (jobSpec.Applications && jobSpec.Applications.length > 0) {
-          setApplicationId(jobSpec.Applications[0].Id);
-          jobSpec.Applications[0].Interviews = interviews;
-          jobSpec.Applications[0].Offers = offers;
-          if (Array.isArray(jobSpec.Applications) && jobSpec.Applications.length > 0) {
-            if (Array.isArray(jobSpec.Applications[0].Interviews) && jobSpec.Applications[0].Interviews.length > 0) {
+        jobSpec.Applications = [];
+        if (applications && applications.length > 0) {
+          jobSpec.Applications = applications;
+          if (jobSpec.Applications && jobSpec.Applications.length > 0) {
+            setApplicationId(jobSpec.Applications[0].Id);
+            jobSpec.Applications[0].Interviews = [];
+            if (interviews && interviews.length > 0) {
+              jobSpec.Applications[0].Interviews = interviews;
               for (let i = 0; i<jobSpec.Applications[0].Interviews.length; i++) {
                 if (jobSpec.Applications[0].Interviews[i].ContactId) {
                   lContacts.find((contact: ContactItem) => contact.Id === jobSpec.Applications[0].Interviews[i].ContactId);
@@ -152,11 +152,11 @@ export default function JobSpecView() {
                 }
               }
             }
-
-            if (Array.isArray(jobSpec.Applications[0].Offers) && jobSpec.Applications[0].Offers.length > 0) {
+            jobSpec.Applications[0].Offers = [];
+            if (offers && offers.length > 0) {
+              jobSpec.Applications[0].Offers = offers;
               for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
                 const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].id)).catch(() => []));
-
                 jobSpec.Applications[0].Offers[i].Benefits = ofBenefits;
               }
             }

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FaSearch } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import { 
@@ -167,12 +167,12 @@ export default function HomePage() {
     <section className="page">
       <div className="page-header-row">
         <h2>Job specs</h2>
-          <button 
-            type="button"
-            className="action-button"
-            onClick={navigateToNewJobSpec}>
-            Add new Job Spec
-          </button>
+        <button 
+          type="button"
+          className="action-button"
+          onClick={navigateToNewJobSpec}>
+          Add new Job Spec
+        </button>
       </div>
 
       {loading && <p>Loading summary...</p>}
@@ -203,7 +203,7 @@ export default function HomePage() {
             <div className="status-arrow">→</div>
             {counts.applied > 0 ? (
               <div
-                className="status-box status-box-applied status-box-clickable"
+                className="status-box status-box-clickable status-box-applied"
                 role="button"
                 tabIndex={0}
                 onClick={() => openModalFor('applied')}>
@@ -212,7 +212,7 @@ export default function HomePage() {
               </div>
             ) : (
               <div
-                className="status-box status-box-applied status-box-clickable"
+                className="status-box status-box-applied"
                 role="button"
                 tabIndex={0}>
                 <div className="status-title status-title-applied">Applied</div>
@@ -222,7 +222,7 @@ export default function HomePage() {
             <div className="status-arrow">→</div>
             {counts.interview > 0 ? (
               <div
-                className="status-box status-box-interview status-box-clickable"
+                className="status-box status-box-clickable status-box-interview"
                 role="button"
                 tabIndex={0}
                 onClick={() => openModalFor('interview')}>
@@ -231,7 +231,7 @@ export default function HomePage() {
               </div>
             ) : (
               <div
-                className="status-box status-box-interview status-box-clickable"
+                className="status-box status-box-interview"
                 role="button"
                 tabIndex={0}>
                 <div className="status-title status-title-interview">Interview</div>
@@ -241,16 +241,16 @@ export default function HomePage() {
             <div className="status-arrow">→</div>
             {counts.offers > 0 ? (
               <div
-                className="status-box status-box-offer status-box-clickable"
+                className="status-box status-box-clickable status-box-offer"
                 role="button"
                 tabIndex={0}
                 onClick={() => openModalFor('offers')}>
-                <div className="status-title status-title-offer">Offers</div>
-                <div className="status-value status-value-offer">{counts.offers}</div>
+                <div className="status-title status-title-offered">Offers</div>
+                <div className="status-value status-value-offered">{counts.offers}</div>
               </div>
             ) : (
               <div
-                className="status-box status-box-offer status-box-clickable"
+                className="status-box status-box-offer"
                 role="button"
                 tabIndex={0}>
                 <div className="status-title status-title-offered">Offers</div>
@@ -260,9 +260,9 @@ export default function HomePage() {
           </div>
           
           {counts.discarded > 0 ? (
-            <div className="discarded-row">
+            <div className="status-row">
               <div
-                className="status-box status-box-discarded status-box-clickable"
+                className="status-box status-box-clickable status-box-discarded"
                 role="button"
                 tabIndex={0}
                 onClick={() => openModalFor('discarded')}>
@@ -271,9 +271,9 @@ export default function HomePage() {
               </div>
             </div>
           ) : (
-            <div className="discarded-row">
+            <div className="status-row">
               <div
-                className="status-box status-box-discarded status-box-clickable"
+                className="status-box status-box-discarded"
                 role="button"
                 tabIndex={0}>
                 <div className="status-title status-title-discarded">Discarded</div>
@@ -283,24 +283,24 @@ export default function HomePage() {
           )}
         </div>
       )}
-
-      <div className="page-header-row">
-        <span className="modal-field">
+      <hr className="rounded"></hr>
+      <div className="source-header">
+        <span className="source-header-title">
           <h2>Job Seeking Portals</h2>
         </span>
-        <span className="modal-field">
+        <span className="source-header">
+          <FaSearch aria-hidden="true" />
+        </span>
+        <span className="source-header-search">
           <input
             type="text"
+            className="source-header"
             placeholder="Filter portals..."
             value={filter}
             onChange={(e)=>setFilter(e.currentTarget.value)}
-            style={{marginLeft:'1rem', marginRight:'1rem'}}
           />
         </span>
-        <span className="modal-field">
-          <FaSearch aria-hidden="true" />
-        </span>
-        <span className="modal-field">
+        <span className="source-header-action">
           <button 
             type="button"
             className="action-button"
@@ -318,17 +318,13 @@ export default function HomePage() {
       {!sourcesLoading &&
         !sourcesError &&
         filteredParents.length > 0 && (
-          <ul className="source-list"
-              style={{ listStyle: 'none', padding: 0 }}>
+          <ul className="source-list">
             {filteredParents.map((parent) => (
               <li key={parent.Id}
                   className="source-item">
                 {children[parent.Id] ? (
                   <span className="source-expand-span"
-                    style={{
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => setExpanded((prev)=>{
+                      onClick={() => setExpanded((prev)=>{
                         const newSet=new Set(prev);
                         if(newSet.has(parent.Id))newSet.delete(parent.Id);else newSet.add(parent.Id);
                         return newSet;
@@ -340,71 +336,41 @@ export default function HomePage() {
                     ▼
                   </span>
                 )}
-
                 {parent.PortalURL ? (
-                  <a
+                  <a className="source-item"
                     href={parent.PortalURL || '#'}
                     target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      marginRight: 'auto',
-                      textDecoration: 'none',
-                      color: '#0066cc',
-                    }}>
+                    rel="noopener noreferrer">
                     {parent.Name}
                   </a>
                 ) : (
-                  <span
-                    className="source-details"
-                    style={{
-                      marginRight: 'auto',
-                      textDecoration: 'none',
-                      color: '#0066cc',
-                    }}
-                  >
+                  <span className="source-item">
                     {parent.Name}
                   </span>
                 )}
                 {parent.Details && (
-                  <span
-                    className="source-details"
-                    style={{ marginLeft: '1rem', color: '#666', fontSize: '.85rem' }}>
+                  <span className="source-item-secondary">
                     {parent.Details}
                   </span>
                 )}
                 {expanded.has(parent.Id) && (
-                  <ul>
+                  <ul className="source-sublist">
                     {expanded.has(parent.Id) && (children[parent.Id]||[]).map((child) => (
-                      <li key={child.Id}
-                          className="source-item">
+                      <li key={child.Id} className="source-subitem">
                         {child.PortalURL ? (
-                          <a
+                          <a className="source-subitem"
                             href={child.PortalURL || '#'}
                             target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              marginRight: 'auto',
-                              textDecoration: 'none',
-                              color: '#0066cc',
-                            }}>
+                            rel="noopener noreferrer">
                             {child.Name}
                           </a>
                         ) : (
-                          <span
-                            className="source-details"
-                            style={{
-                              marginRight: 'auto',
-                              textDecoration: 'none',
-                              color: '#0066cc',
-                            }}
-                          >
+                          <span className="source-subitem">
                             {child.Name}
                           </span>
                         )}
                         {child.Details && (
-                          <span
-                            className="source-details"
-                            style={{ marginLeft: '1rem', color: '#666', fontSize: '.85rem' }}>
+                          <span className="source-subitem-secondary">
                             {child.Details}
                           </span>
                         )}

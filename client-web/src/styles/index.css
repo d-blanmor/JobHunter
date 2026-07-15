@@ -1,6 +1,8 @@
 /* Central entry for styles — manages all portal-specific styling */
 
-@import './base.css'; /* Defines variables and structure base */
+@import './skin-definition.css'; /* Defines variables */
+@import './base.css'; /* Defines structure base */
+@import './home.css';
 @import './gage.css';
 @import './modal.css';
 @import './stage.css';

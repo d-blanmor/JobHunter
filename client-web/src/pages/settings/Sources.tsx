@@ -208,134 +208,127 @@ export default function SourcesPage() {
           {orderedSources.length != 0 ? (
             <div className="lookup-table">
               {sources.length != 0 ? (
-                <ul className="source-list"
-                    style={{ listStyle: 'none', padding: 0 }}>
-                    {parents.map((parent, index) => (
-                      <li key={parent.Id}
-                          className="source-item">
-                        {children[parent.Id] ? (
-                          <span className="source-expand-span"
-                            style={{
-                              cursor: 'pointer',
-                            }}
-                            onClick={() => setExpanded((prev)=>{
-                                const newSet=new Set(prev);
-                                if(newSet.has(parent.Id))newSet.delete(parent.Id);else newSet.add(parent.Id);
-                                return newSet;
-                              })}>
-                            {(expanded.has(parent.Id) ? '▼' : '▶')}
-                          </span>
-                        ) : (
-                            <span className="source-expand-span-empty">
-                              ▼
-                            </span>
-                        )}
-                        <span className="source-item">{parent.Name}</span>
-                        <span className="source-item">{parent.PortalURL || '—'}</span>
-                        <span className="source-item">{parent.Details || '—'}</span>
-                        <span className="lookup-action-buttons" 
-                              style={{ display: 'flex', gap: '0.25rem' }}>
-                          {index > 0 ? (
-                            <button
-                              type="button"
-                              className="lookup-action-button lookup-action-up"
-                              onClick={() => moveParent(parent, 'up')}
-                              aria-label="Move up"
-                            >
-                              &#11014;
-                            </button>
-                          ) : (
-                            <div className="action-placeholder" />
-                          )}
-                          {parent.Order}
-                          {index < orderedParents.length - 1 ? (
-                            <button
-                              type="button"
-                              className="lookup-action-button lookup-action-down"
-                              onClick={() => moveParent(parent, 'down')}
-                              aria-label="Move down"
-                            >
-                              &#11015;
-                            </button>
-                          ) : (
-                            <div className="action-placeholder" />
-                          )}
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-edit"
-                            onClick={() => openEditModal(parent)}
-                            aria-label="Edit source"
-                          >
-                            &#9999;
-                          </button>
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-delete"
-                            onClick={() => handleDeleteSource(parent)}
-                            aria-label="Delete source"
-                          >
-                            &#10060;
-                          </button>
+                <ul className="source-list">
+                  {parents.map((parent, index) => (
+                    <li key={parent.Id} className="source-item">
+                      {children[parent.Id] && children[parent.Id].length > 0 ? (
+                        <span className="source-expand-span"
+                          onClick={() => setExpanded((prev)=>{
+                            const newSet=new Set(prev);
+                            if(newSet.has(parent.Id))newSet.delete(parent.Id);else newSet.add(parent.Id);
+                            return newSet;
+                          })}>
+                          {(expanded.has(parent.Id) ? '▼' : '▶')}
                         </span>
-                        {expanded.has(parent.Id) && (
-                          <ul>
-                            {expanded.has(parent.Id) && (children[parent.Id]||[]).map((child, index) => (
-                              <li key={child.Id}
-                                  className="source-item">
-                                <span className="source-item">{child.Name}</span>
-                                <span className="source-item">{child.PortalURL || '—'}</span>
-                                <span className="source-item">{child.Details || '—'} </span>
-                                <span className="lookup-action-buttons" 
-                                      style={{ display: 'flex', gap: '0.25rem' }}>
-
-                                  {index > 0 ? (
-                                    <button
-                                      type="button"
-                                      className="lookup-action-button lookup-action-up"
-                                      onClick={() => moveChild(child, 'up')}
-                                      aria-label="Move up"
-                                    >
-                                      &#11014;
-                                    </button>
-                                  ) : (
-                                    <div className="action-placeholder" />
-                                  )}
-                                  {child.Order}
-                                  {index < orderedSources.length - 1 ? (
-                                    <button
-                                      type="button"
-                                      className="lookup-action-button lookup-action-down"
-                                      onClick={() => moveChild(child, 'down')}
-                                      aria-label="Move down"
-                                    >
-                                      &#11015;
-                                    </button>
-                                  ) : (
-                                    <div className="action-placeholder" />
-                                  )}
-                                  <button
-                                    type="button"
-                                    className="lookup-action-button lookup-action-edit"
-                                    onClick={() => openEditModal(child)}
-                                    aria-label="Edit source"
-                                  >
-                                    &#9999;
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="lookup-action-button lookup-action-delete"
-                                    onClick={() => handleDeleteSource(child)}
-                                    aria-label="Delete source"
-                                  >
-                                    &#10060;
-                                  </button>
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
+                      ) : (
+                        <span className="source-expand-span-empty"></span>
+                      )}
+                      <span className="source-item">{parent.Name}</span>
+                      <span className="source-item">{parent.PortalURL || '—'}</span>
+                      <span className="source-item">{parent.Details || '—'}</span>
+                      <span className="lookup-action-buttons" 
+                            style={{ display: 'flex', gap: '0.25rem' }}>
+                        {index > 0 ? (
+                          <button
+                            type="button"
+                            className="lookup-action-button lookup-action-up"
+                            onClick={() => moveParent(parent, 'up')}
+                            aria-label="Move up"
+                          >
+                            &#11014;
+                          </button>
+                        ) : (
+                          <div className="action-placeholder" />
                         )}
-                      </li>
-                    ))}
+                        {parent.Order}
+                        {index < orderedParents.length - 1 ? (
+                          <button
+                            type="button"
+                            className="lookup-action-button lookup-action-down"
+                            onClick={() => moveParent(parent, 'down')}
+                            aria-label="Move down"
+                          >
+                            &#11015;
+                          </button>
+                        ) : (
+                          <div className="action-placeholder" />
+                        )}
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-edit"
+                          onClick={() => openEditModal(parent)}
+                          aria-label="Edit source"
+                        >
+                          &#9999;
+                        </button>
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-delete"
+                          onClick={() => handleDeleteSource(parent)}
+                          aria-label="Delete source"
+                        >
+                          &#10060;
+                        </button>
+                      </span>
+                      {expanded.has(parent.Id) && (
+                        <ul>
+                          {expanded.has(parent.Id) && (children[parent.Id]||[]).map((child, index) => (
+                            <li key={child.Id}
+                                className="source-item">
+                              <span className="source-item">{child.Name}</span>
+                              <span className="source-item">{child.PortalURL || '—'}</span>
+                              <span className="source-item">{child.Details || '—'} </span>
+                              <span className="lookup-action-buttons" 
+                                    style={{ display: 'flex', gap: '0.25rem' }}>
+
+                                {index > 0 ? (
+                                  <button
+                                    type="button"
+                                    className="lookup-action-button lookup-action-up"
+                                    onClick={() => moveChild(child, 'up')}
+                                    aria-label="Move up"
+                                  >
+                                    &#11014;
+                                  </button>
+                                ) : (
+                                  <div className="action-placeholder" />
+                                )}
+                                {child.Order}
+                                {index < orderedSources.length - 1 ? (
+                                  <button
+                                    type="button"
+                                    className="lookup-action-button lookup-action-down"
+                                    onClick={() => moveChild(child, 'down')}
+                                    aria-label="Move down"
+                                  >
+                                    &#11015;
+                                  </button>
+                                ) : (
+                                  <div className="action-placeholder" />
+                                )}
+                                <button
+                                  type="button"
+                                  className="lookup-action-button lookup-action-edit"
+                                  onClick={() => openEditModal(child)}
+                                  aria-label="Edit source"
+                                >
+                                  &#9999;
+                                </button>
+                                <button
+                                  type="button"
+                                  className="lookup-action-button lookup-action-delete"
+                                  onClick={() => handleDeleteSource(child)}
+                                  aria-label="Delete source"
+                                >
+                                  &#10060;
+                                </button>
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
                 </ul>
               ) : ( '' )}
             </div>

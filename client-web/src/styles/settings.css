@@ -1,3 +1,15 @@
+/*
+.settings-link,
+.button {
+  display: inline-block;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+}
+*/
+
 .settings-grid {
   /* Use a 3‑column layout */
   display: grid;

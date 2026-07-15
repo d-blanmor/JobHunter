@@ -1,100 +1,97 @@
-
-:root {
-  /* --- THEME VARIABLES (SYSTEM) --- */
-  /* Light Skin Variables (Default): Explicitly defined for robustness */
-  --color-brand-primary: #5c5f64;
-  --color-brand-primary-received: #5c5f64;
-  --color-brand-primary-applied: #8a8a8a;
-  --color-brand-primary-interview: #5c5f64;
-  --color-brand-primary-offered: #5c5f64;
-  --color-brand-primary-discarded: #5c5f64;
-  --color-brand-secondary: #9ba1aa;
-  --color-button: white;
-  --color-background-button: #2563eb;
-  --color-text-default: #111827;
-  --color-text-muted: #475569;
-  --color-text-muted-received: #475569;
-  --color-text-muted-applied: #475569;
-  --color-text-muted-interview: #475569;
-  --color-text-muted-offered: #475569;
-  --color-text-muted-discarded: #475569;
-  --color-background-page: #ffffff;
-  --color-background-box: #ffffff;
-  --color-background-box-received: #a8bcff;
-  --color-background-box-applied: #8eb0f0;
-  --color-background-box-interview: #81cdcf;
-  --color-background-box-offer: #9efae3;
-  --color-background-box-discarded: #f0bdad;
-  --color-arrow: #2a4f88;
-  --color-background-arrow: #ffffff;
-  --color-background-main: #f5f7fb;
-  --color-border-default: #e5e7eb;
-  /* --- WORKFLOW STAGE COLORS (LIGHT SKIN) --- */
-  --stage-received-bg: #d1fae5;
-  --stage-applied-bg: #a7f3d0;
-  --stage-interview-bg: #6ee7b3;
-  --stage-offers-bg: #4ade80;
-  /* --- END STAGE COLORS --- */
-  --color-scheme: light;
-}
-
-/* DARK MODE EXAMPLE */
-[data-skin="dark"] {
-  --color-brand-primary: #6e8ad8;
-  --color-brand-primary-received: #6e8ad8;
-  --color-brand-primary-applied: #6e8ad8;
-  --color-brand-primary-interview: #6e8ad8;
-  --color-brand-primary-offered: #6e8ad8;
-  --color-brand-primary-discarded: #6e8ad8;
-  --color-brand-secondary: #6e8ad8;
-  --color-button: #A7A7A7;
-  --color-background-button: #1d47a1;
-  --color-text-default: #f3f4f6;
-  --color-text-muted: #9ca3af;
-  --color-text-muted-received: #2253f7;
-  --color-text-muted-applied: #0c4bbe;
-  --color-text-muted-interview: #066e72;
-  --color-text-muted-offered: #09664f;
-  --color-text-muted-discarded: #3d0e00;
-  --color-background-page: #1f2937;
-  --color-background-box: #1f2937;
-  --color-background-box-received: #a8bcff;
-  --color-background-box-applied: #8eb0f0;
-  --color-background-box-interview: #81cdcf;
-  --color-background-box-offer: #9efae3;
-  --color-background-box-discarded: #f0bdad;
-  --color-arrow: #a3c1f8;
-  --color-background-arrow: #1f2937;
-  --color-background-main: #111827;
-  --color-border-default: #374151;
-  /* --- WORKFLOW STAGE COLORS (LIGHT SKIN) --- */
-  --stage-received-bg: #d1fae5;
-  --stage-applied-bg: #a7f3d0;
-  --stage-interview-bg: #6ee7b3;
-  --stage-offers-bg: #4ade80;
-  /* --- END STAGE COLORS --- */
-  --color-scheme: dark;
-
-}
-
 body {
   margin: 0;
   min-height: 100vh;
   background: var(--color-background-main);
-  color: var(--color-text-default);
+  color: var(--color-brand-primary);
+}
+/*
+.top-nav a {
+  padding: 10px 16px;
+}
+*/
+
+.top-nav {
+  display: inline-block;
+  align-items: center;
+  gap: 12px;
+}
+.top-nav a {
+  text-decoration: none;
+  padding: 0.5em 0.5em;
+  border-radius: 10px;
+  background: var(--color-background-main);
+  color: var(--color-brand-primary);
+  cursor: pointer;
+  align-items: center;
+  text-align: center;
+  font-size: 1.5rem;
+  margin: 0.2em;
+}
+.top-nav a:hover:not(.disabled) {
+  background: var(--color-background-button);
+}
+.top-nav a:hover {
+  background: var(--color-background-button);
+  color: var(--color-brand-primary);
+  box-shadow: 0 1px 1px var(--color-brand-secondary);
+  font-size: 1.5rem;
+}
+.top-nav button {
+  border: none;
+  padding: 10px 10px;
+  display: inline-block;
+  text-decoration: none;
+  background-color: var(--color-background-main);
+  color: var(--color-brand-skin);
+  border-radius: 10px;
+  border-color: var(--color-background-main);
+  cursor: pointer;
+  text-align: center;
+  font-size: 1rem;
+  margin: 1em;
+}
+.top-nav button:hover:not(.disabled) {
+  background: var(--color-background-button);
+}
+.top-nav button:hover {
+  background: var(--color-background-button);
+  color: var(--color-brand-skin);
+  font-size: 1rem;
 }
 
-button,
+.menu-button-plain button {
+  border: none;
+}
+
+.menu-button a {
+  
+  
+  box-shadow: 0 1px 10px var(--color-brand-secondary);
+}
+.menu-button:hover:not(.disabled) {
+  color: var(--color-brand-primary);
+  background: red;
+  background: var(--color-background-button);
+}
+.menu-button:hover {
+  background: var(--color-background-button);
+  color: var(--color-brand-primary);
+  box-shadow: 0 1px 1px var(--color-brand-secondary);
+}
+
+/*button,*/
 input,
 select {
   font: inherit;
   transition: all 0.2s ease;
   border-color: var(--color-border-default);
 }
+
 .app-shell {
   max-width: 1040px;
   margin: 0 auto;
   padding: 24px;
+  color: var(--color-brand-primary);
 }
 
 .app-header {
@@ -104,8 +101,8 @@ select {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 32px;
+  color: var(--color-brand-primary);
 }
-
 .app-header h1 {
   margin: 0;
   font-size: 2rem;
@@ -114,188 +111,3 @@ select {
 .app-header p {
   color: var(--color-brand-secondary);
 }
-
-.page {
-  background: var(--color-background-page);
-  border-radius: 18px;
-  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.08);
-  padding: 24px;
-}
-.page-header-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-.page-subtitle {
-  margin: 6px 0 0;
-  color: var(--color-text-muted);
-  font-size: 0.98rem;
-}
-.wide-button {
-  width: 100%;
-  justify-content: center;
-}
-.status-grid-container {
-  display:flex;
-  flex-direction:column;
-  gap:24px;
-  margin-bottom:3rem
-}
-.status-row {
-  display:flex;
-  align-items:stretch;
-  gap:16px
-}
-.status-arrow {
-  font-size: 2rem;
-  line-height: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin-top: 2rem;
-  padding: 24px;
-  color: var(--color-arrow);
-  background: var(--color-background-arrow);
-}
-.status-box {
-  flex-grow: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 24px;
-  border-radius: 16px;
-  background: var(--color-background-box);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-}
-.status-box-received {
-  background: var(--color-background-box-received);
-}
-.status-box-applied {
-  background: var(--color-background-box-applied);
-}
-.status-box-interview {
-  background: var(--color-background-box-interview);
-}
-.status-box-offer {
-  background: var(--color-background-box-offer);
-}
-.status-box-discarded {
-  background: var(--color-background-box-discarded);
-  width: 100x;
-  margin-left: 825px;
-}
-.status-title {
-  font-size: 1rem;
-  color: var(--color-text-muted);
-  margin-bottom: 8px
-}
-.status-title-received {
-  color: var(--color-text-muted-received);
-}
-.status-title-applied {
-  color: var(--color-text-muted-applied);
-}
-.status-title-interview {
-  color: var(--color-text-muted-interview);
-}
-.status-title-offered {
-  color: var(--color-text-muted-offered);
-}
-.status-title-discarded {
-  color: var(--color-text-muted-discarded);
-}
-.status-value {
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--color-brand-primary)
-}
-.status-value-received {
-  color: var(--color-brand-primary-received)
-}
-.status-value-applied {
-  color: var(--color-brand-primary-applied)
-}
-.status-value-interview {
-  color: var(--color-brand-primary-interview)
-}
-.status-value-offered {
-  color: var(--color-brand-primary-offered)
-}
-.status-value-discarded {
-  color: var(--color-brand-primary-discarded)
-}
-.source-list {
-  padding: 1rem 0;
-}
-.source-item li {
-  border-bottom: 1px solid var(--color-border-default);
-  display: flex;
-  align-items: center;
-  margin-bottom: .5rem;
-  margin-left: 25px;
-}
-.source-expand-span {
-  appearance: none;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-background-button);
-  color: var(--color-button);
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.12s ease;
-}
-.source-expand-span-empty {
-  appearance: none;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  color: transparent;
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.12s ease;
-}
-.source-item span {
-  padding: 8px 5px;
-  margin: 5px;
-  border-bottom: 1px solid var(--color-border-default);
-}
-.source-item:last-child {
-  border-bottom: none
-}
-.top-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px
-}
-
-.action-button {
-  background: var(--color-background-button);
-  color: var(--color-button);
-  cursor: pointer;
-  display: inline-block;
-  text-decoration: none;
-  padding: 10px 16px;
-  border-radius: 10px;
-}
-
-.action-button:hover:not(.disabled) {
-  background: var(--color-background-button);
-}
-
-.action-button:hover {
-  background: var(--color-background-button);
-}
-

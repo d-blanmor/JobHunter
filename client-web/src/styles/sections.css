@@ -27,6 +27,12 @@
   padding-top: 0;
 }
 
+.job-spec-section-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  color:#0e0346
+}
+
 .section-heading-row {
   display: flex;
   align-items: center;
@@ -37,7 +43,7 @@
 
 .section-heading {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .section-status {

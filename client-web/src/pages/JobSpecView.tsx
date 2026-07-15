@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { FaEdit, FaLink } from 'react-icons/fa';
 
 import JobSpecModal from '../components/JobSpecModal';
 import ApplicationModal from '../components/ApplicationModal';
@@ -55,6 +56,18 @@ export default function JobSpecView() {
   const [modalEditApplication, setModalEditApplication] = useState(false);
   const [modalEditInterview, setModalEditInterview] = useState(false);
   const [modalEditOffer, setModalEditOffer] = useState(false);
+  const [showJsDescription, setShowJsDescription] = useState(true);
+  const [showJsAnalysis, setShowJsAnalysis] = useState(false);
+  const [showJsNotes, setShowJsNotes] = useState(false);
+  const [showApLetter, setShowApLetter] = useState(false);
+  const [showApCV, setShowApCV] = useState(false);
+  const [showApNotes, setShowApNotes] = useState(false);
+  const [showInDescription, setShowInDescription] = useState(false);
+  const [showInAnalysis, setShowInAnalysis] = useState(false);
+  const [showInNotes, setShowInNotes] = useState(false);
+  const [showInOutcome, setShowInOutcome] = useState(false);
+  const [showInFeedback, setShowInFeedback] = useState(false);
+  const [showOfNotes, setShowOfNotes] = useState(false);
 
   // Entities
   const [jobSpec, setJobSpec] = useState<JobSpecItem | null>(null);
@@ -273,14 +286,20 @@ export default function JobSpecView() {
         <div className="job-spec-view">
           <div className="page-header-row">
             <div>
-              <h2 className="job-spec-title">
+              <span className="page-header-link" title='Edit Job Spec' onClick={() => {setModalEditJobSpec(true);}}><FaEdit aria-hidden="true" /></span>
+
+              <span className="job-spec-title">
                 {safeValue(jobSpec.Position)}
-                {jobSpec.Link ? (
-                  <a href={jobSpec.Link} target="_blank" rel="noreferrer" className="job-spec-link" title="Open job link">
-                    🔗
+              </span>
+
+              {jobSpec.Link ? (
+                <span className="page-header-link">
+                  <a className="page-header-link" title={`link to: ${jobSpec.Link}`} href={jobSpec.Link} target="_blank" rel="noreferrer">
+                    <FaLink aria-hidden="true" />
                   </a>
-                ) : null}
-              </h2>
+                </span>
+              ) : null}
+
               {jobSpec.Company ? (
                 <p className="job-spec-company">{safeValue(jobSpec.Company)}</p>
               ) : (
@@ -393,26 +412,56 @@ export default function JobSpecView() {
             </div>
           ) : null}
 
-          {jobSpec.Description ? (
+          {jobSpec.Description && showJsDescription ? (
             <div className="job-spec-section job-spec-description-section">
-              <h4 className="section-heading">Description</h4>
+              <div className="job-spec-section-clickable"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setShowJsDescription(false)}><h4 className="section-heading">▼ Description</h4></div>
               <p className="job-spec-description">{safeValue(jobSpec.Description)}</p>
             </div>
-          ) : null}
-
-          {jobSpec.Analysis ? (
+          ) : (jobSpec.Description ? (
             <div className="job-spec-section job-spec-description-section">
-              <h4 className="section-heading">Analysis and recomendations</h4>
+              <div className="job-spec-section-clickable"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setShowJsDescription(true)}><h4 className="section-heading">▶ Description</h4></div>
+            </div>
+          ) : null )}
+
+          {jobSpec.Analysis && showJsAnalysis ? (
+            <div className="job-spec-section job-spec-description-section">
+              <div className="job-spec-section-clickable"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setShowJsAnalysis(false)}><h4 className="section-heading">▼ Analysis and recomendations</h4></div>
               <p className="job-spec-description">{safeValue(jobSpec.Analysis)}</p>
             </div>
-          ) : null}
-
-          {jobSpec.Notes ? (
+          ) : (jobSpec.Analysis ? (
             <div className="job-spec-section job-spec-description-section">
-              <h4 className="section-heading">Notes</h4>
+              <div className="job-spec-section-clickable"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setShowJsAnalysis(true)}><h4 className="section-heading">▶ Analysis and recomendations</h4></div>
+            </div>
+          ) : null )}
+
+          {jobSpec.Notes && showJsNotes ? (
+            <div className="job-spec-section job-spec-description-section">
+              <div className="job-spec-section-clickable"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setShowJsNotes(false)}><h4 className="section-heading">▼ Notes</h4></div>
               <p className="job-spec-description">{safeValue(jobSpec.Notes)}</p>
             </div>
-          ) : null}
+          ) : (jobSpec.Notes ? (
+            <div className="job-spec-section job-spec-description-section">
+              <div className="job-spec-section-clickable"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setShowJsNotes(true)}><h4 className="section-heading">▶ Notes</h4></div>
+            </div>
+          ) : null )}
 
           <div className="modal-actions">
             <button className="button" 
@@ -433,40 +482,71 @@ export default function JobSpecView() {
 
               {jobSpec.Applications.map((application) => (
                 <div key={application.Id || Math.random()} className="application-item">
-                  {application.Applied ? (
-                    <div className="job-spec-field-row">
-                      <span className="job-spec-field-label">Applied on</span>
-                      <span>{formatDateOnly(application.Applied)}</span>
-                    </div>
-                  ) : null}
+                  <div className="job-spec-metadata">
+                    {application.Applied ? (
+                      <div className="job-spec-field-row">
+                        <span className="job-spec-field-label">Applied on</span>
+                        <span>{formatDateOnly(application.Applied)}</span>
+                      </div>
+                    ) : null}
 
-                  {application.Confirmed ? (
-                    <div className="job-spec-field-row">
-                      <span className="job-spec-field-label">Confirmed on</span>
-                      <span>{formatDateOnly(application.Confirmed)}</span>
-                    </div>
-                  ) : null}
-
-                  {application.Letter ? (
+                    {application.Confirmed ? (
+                      <div className="job-spec-field-row">
+                        <span className="job-spec-field-label">Confirmed on</span>
+                        <span>{formatDateOnly(application.Confirmed)}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                  {application.Letter && showApLetter ? (
                     <div className="job-spec-section job-spec-description-section">
-                      <h4 className="section-heading">Application letter</h4>
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowApLetter(false)}><h4 className="section-heading">▼ Cover Letter</h4></div>
                       <p className="job-spec-description">{safeValue(application.Letter)}</p>
                     </div>
-                  ) : null}
-
-                  {application.CV ? (
+                  ) : (application.Letter ? (
                     <div className="job-spec-section job-spec-description-section">
-                      <h4 className="section-heading">Resume sent</h4>
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowApLetter(true)}><h4 className="section-heading">▶ Cover Letter</h4></div>
+                    </div>
+                  ) : null )}
+
+                  {application.CV && showApCV ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowApCV(false)}><h4 className="section-heading">▼ Resume sent</h4></div>
                       <p className="job-spec-description">{safeValue(application.CV)}</p>
                     </div>
-                  ) : null}
-
-                  {application.Notes ? (
+                  ) : (application.CV ? (
                     <div className="job-spec-section job-spec-description-section">
-                      <h4 className="section-heading">Notes</h4>
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowApCV(true)}><h4 className="section-heading">▶ Resume sent</h4></div>
+                    </div>
+                  ) : null )}
+
+                  {application.Notes && showApNotes ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowApNotes(false)}><h4 className="section-heading">▼ Notes</h4></div>
                       <p className="job-spec-description">{safeValue(application.Notes)}</p>
                     </div>
-                  ) : null}
+                  ) : (application.Notes ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowApNotes(true)}><h4 className="section-heading">▶ Notes</h4></div>
+                    </div>
+                  ) : null )}
 
                   {application.Discarded ? (
                     <div className="job-spec-field-row">
@@ -534,40 +614,90 @@ export default function JobSpecView() {
                     </div>
                   ) : ''}
 
-                  {interview.Description ? (
+                  {interview.Description && showInDescription ? (
                     <div className="job-spec-section job-spec-description-section">
-                      <h4 className="section-heading">Description</h4>
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowInDescription(false)}><h4 className="section-heading">▼ Description</h4></div>
                       <p className="job-spec-description">{safeValue(interview.Description)}</p>
                     </div>
-                  ) : null}
-
-                  {interview.Analysis ? (
+                  ) : (interview.Description ? (
                     <div className="job-spec-section job-spec-description-section">
-                      <h4 className="section-heading">Recomendations</h4>
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowInDescription(true)}><h4 className="section-heading">▶ Description</h4></div>
+                    </div>
+                  ) : null )}
+
+                  {interview.Analysis && showInAnalysis ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowInAnalysis(false)}><h4 className="section-heading">▼ Recomendations</h4></div>
                       <p className="job-spec-description">{safeValue(interview.Analysis)}</p>
                     </div>
-                  ) : null}
-
-                  {interview.Notes ? (
+                  ) : (interview.Analysis ? (
                     <div className="job-spec-section job-spec-description-section">
-                      <h4 className="section-heading">Notes</h4>
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowInAnalysis(true)}><h4 className="section-heading">▶ Recomendations</h4></div>
+                    </div>
+                  ) : null )}
+
+                  {interview.Notes && showInNotes ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowInNotes(false)}><h4 className="section-heading">▼ Notes</h4></div>
                       <p className="job-spec-description">{safeValue(interview.Notes)}</p>
                     </div>
-                  ) : null}
-
-                  {interview.Outcome ? (
+                  ) : (interview.Notes ? (
                     <div className="job-spec-section job-spec-description-section">
-                      <h4 className="section-heading">Outcome</h4>
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowInNotes(true)}><h4 className="section-heading">▶ Notes</h4></div>
+                    </div>
+                  ) : null )}
+
+                  {interview.Outcome && showInOutcome ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowInOutcome(false)}><h4 className="section-heading">▼ Outcome</h4></div>
                       <p className="job-spec-description">{safeValue(interview.Outcome)}</p>
                     </div>
-                  ) : null}
-
-                  {interview.Feedback ? (
+                  ) : (interview.Outcome ? (
                     <div className="job-spec-section job-spec-description-section">
-                      <h4 className="section-heading">Feedback</h4>
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowInOutcome(true)}><h4 className="section-heading">▶ Outcome</h4></div>
+                    </div>
+                  ) : null )}
+
+                  {interview.Feedback && showInFeedback ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowInFeedback(false)}><h4 className="section-heading">▼ Feedback</h4></div>
                       <p className="job-spec-description">{safeValue(interview.Feedback)}</p>
                     </div>
-                  ) : null}
+                  ) : (interview.Feedback ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowInFeedback(true)}><h4 className="section-heading">▶ Feedback</h4></div>
+                    </div>
+                  ) : null )}
 
                   {interview.Id ? (
                     <div className="modal-actions">
@@ -599,24 +729,37 @@ export default function JobSpecView() {
                       <span>{formatDateOnly(offer.Offered)}</span>
                     </div>
                   ) : null}
+
                   {offer.Salary ? (
                     <div className="job-spec-field-row">
                       <span className="job-spec-field-label">Salary</span>
                       <span>{safeValue(offer.Salary)}</span>
                     </div>
                   ) : null}
+
                   {offer.Benefits ? (
                     <div className="job-spec-field-row">
                       <span className="job-spec-field-label">Benefits</span>
                       <span>{normalizeBenefits(offer.Benefits)}</span>
                     </div>
                   ) : null}
-                  {offer.Notes ? (
-                    <div className="job-spec-field-row">
-                      <span className="job-spec-field-label">Notes</span>
-                      <span className="job-spec-description">{safeValue(offer.Notes)}</span>
+
+                  {offer.Notes && showOfNotes ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowOfNotes(false)}><h4 className="section-heading">▼ Notes</h4></div>
+                      <p className="job-spec-description">{safeValue(offer.Notes)}</p>
                     </div>
-                  ) : null}
+                  ) : (offer.Notes ? (
+                    <div className="job-spec-section job-spec-description-section">
+                      <div className="job-spec-section-clickable"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setShowOfNotes(true)}><h4 className="section-heading">▶ Notes</h4></div>
+                    </div>
+                  ) : null )}
 
                   {offer.Id ? (
                     <div className="modal-actions">

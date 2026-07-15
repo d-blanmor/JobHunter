@@ -1,5 +1,6 @@
 import { useNavigate, Route, Routes, Link } from 'react-router-dom';
-import { FaSun, FaMoon } from 'react-icons/fa';
+import { FaAddressBook, FaCog, FaSun, FaMoon, FaHome } from 'react-icons/fa';
+import { FaHouse, FaIdCard} from 'react-icons/fa6';
 import HomePage from './pages/HomePage';
 import SettingsPage from './pages/settings/SettingsPage';
 import LuBenefitsPage from './pages/settings/LuBenefitsPage';
@@ -51,16 +52,6 @@ function App() {
     setCurrentSkin(skin);
   };
 
-  const handleClick = (url: string) => {
-    if (isDirty()) {
-      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
-        return;
-    }
-    navigate(url);
-    setIsDirty(false);
-    return;
-  };
-
   const handleOnClick = (event: any) => {
     if (isBlocked) {
       if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
@@ -82,31 +73,22 @@ function App() {
           <p>Track and manage your job applications.</p>
         </div>
         <nav className="top-nav">
-          <Link className="action-button" to="/" onClick={(e) => {handleOnClick(e);}}>
-            Home
+          <Link className="menu-button" to="/" onClick={(e) => {handleOnClick(e);}} title='Home'>
+            <FaHouse aria-hidden="true"/>
           </Link>
-          <Link className="action-button" to="/contacts" onClick={(e) => {handleOnClick(e);}}>
-            Contacts
+          <Link className="menu-button" to="/contacts" onClick={(e) => {handleOnClick(e);}} title='Contacts'>
+            <FaIdCard aria-hidden="true"/>
           </Link>
-          <Link className="action-button" to="/settings" onClick={(e) => {handleOnClick(e);}}>
-            Settings
+          <Link className="menu-button" to="/settings" onClick={(e) => {handleOnClick(e);}} title='Settings'>
+            <FaCog aria-hidden="true"/>
           </Link>
-          <button
+          <button className="menu-button-plain"
             aria-label={currentSkin === "light" ? "Switch to dark mode" : "Switch to light mode"}
-            onClick={() => handleSkinChange(currentSkin === 'light' ? 'dark' : 'light')}
-            style={{
-              marginLeft: 'auto',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              color: 'inherit',
-              fontSize: '1.5rem',
-              padding: 0
-            }}>
+            onClick={() => handleSkinChange(currentSkin === 'light' ? 'dark' : 'light')}>
             {currentSkin === 'light' ? (
-              <FaMoon aria-hidden="true" />
+              <FaMoon aria-hidden="true"/>
             ) : (
-              <FaSun aria-hidden="true" />
+              <FaSun aria-hidden="true"/>
             )}
           </button>
         </nav>

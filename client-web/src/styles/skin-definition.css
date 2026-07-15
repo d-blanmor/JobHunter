@@ -1,0 +1,77 @@
+:root {
+  /* --- THEME VARIABLES (SYSTEM) --- */
+  /* Light Skin Variables (Default): Explicitly defined for robustness */
+  --color-background-main: #f5f7fb;
+  --color-background-page: #ffffff;
+  --color-brand-primary: #384768;
+  --color-brand-secondary: #757a81;
+  --color-brand-skin: #1f275c;
+  --color-background-box: #ffffff;
+  --color-border-default: #e5e7eb;
+  
+  --color-text-default: #111827;
+  --color-text-muted: #475569;
+  --color-text-link: #072566;
+
+  /* --- WORKFLOW STAGE COLORS (LIGHT SKIN) --- */
+  --color-status-title-received: #2253f7;
+  --color-status-title-applied: #0c4bbe;
+  --color-status-title-interview: #066e72;
+  --color-status-title-offered: #09664f;
+  --color-status-title-discarded: #3d0e00;
+  --color-status-value-received: #5c5f64;
+  --color-status-value-applied: #5c5f64;
+  --color-status-value-interview: #5c5f64;
+  --color-status-value-offered: #5c5f64;
+  --color-status-value-discarded: #5c5f64;
+  --color-background-box-received: #a8bcff;
+  --color-background-box-applied: #8eb0f0;
+  --color-background-box-interview: #81cdcf;
+  --color-background-box-offer: #9efae3;
+  --color-background-box-discarded: #f0bdad;
+  --stage-received-bg: #d1fae5;
+  --stage-applied-bg: #a7f3d0;
+  --stage-interview-bg: #6ee7b3;
+  --stage-offers-bg: #4ade80;
+  /* --- END STAGE COLORS --- */
+  --color-scheme: light;
+}
+
+/* DARK MODE EXAMPLE */
+[data-skin="dark"] {
+  --color-background-main: #111827;
+  --color-background-page: #1f2937;
+  --color-brand-primary: #6e8ad8;
+  --color-brand-secondary: #6e8ad8;
+  --color-brand-skin: #f9fdbc;
+  --color-background-box: #1f2937;
+  --color-border-default: #374151;
+
+  --color-text-default: #f3f4f6;
+  --color-text-muted: #9ca3af;
+  --color-text-link: #072566;
+
+  /* --- WORKFLOW STAGE COLORS (LIGHT SKIN) --- */
+  --color-status-title-received: #2253f7;
+  --color-status-title-applied: #0c4bbe;
+  --color-status-title-interview: #066e72;
+  --color-status-title-offered: #09664f;
+  --color-status-title-discarded: #3d0e00;
+  --color-status-value-received: #404244;
+  --color-status-value-applied: #404244;
+  --color-status-value-interview: #404244;
+  --color-status-value-offered: #404244;
+  --color-status-value-discarded: #404244;
+  --color-background-box-received: #a8bcff;
+  --color-background-box-applied: #8eb0f0;
+  --color-background-box-interview: #81cdcf;
+  --color-background-box-offer: #9efae3;
+  --color-background-box-discarded: #f0bdad;
+  --stage-received-bg: #d1fae5;
+  --stage-applied-bg: #a7f3d0;
+  --stage-interview-bg: #6ee7b3;
+  --stage-offers-bg: #4ade80;
+  /* --- END STAGE COLORS --- */
+  --color-scheme: dark;
+
+}

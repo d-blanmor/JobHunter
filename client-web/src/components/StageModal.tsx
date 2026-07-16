@@ -1,10 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Stage,
-  Counts,
-} from '../defs/types';
-//import { wfStageItem } from '../defs/interfaces';
+import { FaTags, FaArrowCircleRight, FaTrashAlt, FaUndo } from 'react-icons/fa';
+import { GiCardDiscard } from "react-icons/gi";
+import { Stage,  } from '../defs/types';
 import { wfStageItem } from '../defs/types';
 import { 
   titleMap,
@@ -18,11 +16,11 @@ import { inStageReceived, inStageApplied, inStageInterview, inStageOffer, inStag
 import { listWorkModels } from '../api/lu_workmodels';
 import { listTags } from '../api/tags';
 import { listRoleTypes } from '../api/lu_roletypes';
-import { listContacts, saveContact } from '../api/contacts';
-import { deleteJobSpec, getJobSpecTags } from '../api/jobSpecs';
-import { listAllApplications, getApplication, saveApplication } from '../api/applications';
-import { listAllInterviews, getInterview, saveInterview } from '../api/interviews';
-import { listAllOffers, getOffer, saveOffer } from '../api/offers';
+import { listContacts } from '../api/contacts';
+import { deleteJobSpec } from '../api/jobSpecs';
+import { getApplication, saveApplication } from '../api/applications';
+import { getInterview, saveInterview } from '../api/interviews';
+import { getOffer, saveOffer } from '../api/offers';
 import { DEFAULT_PAGE_SIZE } from '../config';
 
 type Props = {
@@ -51,45 +49,7 @@ function parseDate(value?: string | null) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-function buildJobSpecItem(
-  spec: wfStageItem
-  //,
-  //stage: Stage,
-  //applications: any[],
-  //interviews: any[],
-  //offers: any[],
-  //tagsMap: Map<number, string>,
-  //jobSpecTagIds: number[],
-) {
-/*
-  const applicationByJobSpec = applications.filter((app) => app.JobSpecId === spec.JobSpecId);
-  const latestApplication = applicationByJobSpec.reduce((best, app) => {
-    const next = parseDate(app.Applied);
-    const current = best ? parseDate(best.Applied) : null;
-    if (!current) return app;
-    if (!next) return best;
-    return next > current ? app : best;
-  }, applicationByJobSpec[0] as any | undefined);
-
-  const applicationIds = applicationByJobSpec.map((app) => spec.JobSpecId);
-  const interviewItems = interviews.filter((item) => applicationIds.includes(spec.ApplicationId));
-  const latestInterview = interviewItems.reduce((best, item) => {
-    const next = parseDate(spec.Scheduled);
-    const current = best ? parseDate(best.Scheduled) : null;
-    if (!current) return item;
-    if (!next) return best;
-    return next > current ? item : best;
-  }, interviewItems[0] as any | undefined);
-
-  const offerItems = offers.filter((item) => applicationIds.includes(spec.ApplicationId));
-  const latestOffer = offerItems.reduce((best, item) => {
-    const next = parseDate(spec.Offered);
-    const current = best ? parseDate(best.Offered) : null;
-    if (!current) return item;
-    if (!next) return best;
-    return next > current ? item : best;
-  }, offerItems[0] as any | undefined);
-*/
+function buildJobSpecItem( spec: wfStageItem ) {
   return {
     JobspecId: spec.JobSpecId,
     ApplicationId: spec.ApplicationId ?? null,
@@ -176,35 +136,6 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       setTags(tagData);
 
       const stageJobSpecs = await loadStageSpecs(stage);
-      /*
-      const apps = ['applied', 'interview', 'offers', 'discarded'].includes(stage)
-        ? await listAllApplications()
-        : [];
-      const interviews = stage === 'interview' ? await listAllInterviews() : [];
-      const offers = stage === 'offers' ? await listAllOffers() : [];
-      const tagMap = new Map<number, string>(
-        tagData.map((tag: any): [number, string] => [Number(tag.Id), String(tag.Name)]),
-      );
-
-      const jobSpecTags = await Promise.all(
-        stageJobSpecs.map(async (spec: any) => {
-          try {
-            const relations = await getJobSpecTags(spec.JobSpecId);
-            return {
-              id: spec.JobSpecId,
-              tagIds: Array.isArray(relations)
-                ? relations
-                    .map((relation: any) => relation.TagId)
-                    .filter((tagId) => typeof tagId === 'number')
-                : [],
-            };
-          } catch (tagErr) {
-            console.warn('[StageModal] failed loading tags for job spec', spec.JobSpecId, tagErr);
-            return { id: spec.JobSpecId, tagIds: [] };
-          }
-        }),
-      );
-      */
 
       if (!mounted) return;
       const itemsWithMeta = stageJobSpecs.map((spec: any) => {
@@ -490,11 +421,9 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
             </div>
             <div className="modal-field">
               <label>Role Type</label>
-              <select
-                className="stage-select"
-                value={selectedRoleTypeIds[0] ? String(selectedRoleTypeIds[0]) : ''}
-                onChange={(event) => handleDropdownChange(event, setSelectedRoleTypeIds)}
-              >
+              <select className="modal-field"
+                      value={selectedRoleTypeIds[0] ? String(selectedRoleTypeIds[0]) : ''}
+                      onChange={(event) => handleDropdownChange(event, setSelectedRoleTypeIds)}>
                 <option value="">All Role Types</option>
                 {roleTypes.map((role) => (
                   <option key={role.Id} value={role.Id}>{role.Name}</option>
@@ -503,11 +432,9 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
             </div>
             <div className="modal-field">
               <label>Work Model</label>
-              <select
-                className="stage-select"
-                value={selectedWorkModelIds[0] ? String(selectedWorkModelIds[0]) : ''}
-                onChange={(event) => handleDropdownChange(event, setSelectedWorkModelIds)}
-              >
+              <select className="modal-field"
+                      value={selectedWorkModelIds[0] ? String(selectedWorkModelIds[0]) : ''}
+                      onChange={(event) => handleDropdownChange(event, setSelectedWorkModelIds)}>
                 <option value="">All Work Models</option>
                 {workModels.map((model) => (
                   <option key={model.Id} value={model.Id}>{model.Name}</option>
@@ -516,11 +443,9 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
             </div>
             <div className="modal-field">
               <label>Tags</label>
-              <select
-                className="stage-select"
-                value={selectedTagIds[0] ? String(selectedTagIds[0]) : ''}
-                onChange={(event) => handleDropdownChange(event, setSelectedTagIds)}
-              >
+              <select className="modal-field"
+                      value={selectedTagIds[0] ? String(selectedTagIds[0]) : ''}
+                      onChange={(event) => handleDropdownChange(event, setSelectedTagIds)}>
                 <option value="">All Tags</option>
                 {tags.map((tag) => (
                   <option key={tag.Id} value={tag.Id}>{tag.Name}</option>
@@ -540,7 +465,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
             </div>
             {pagedItems.length === 0 && (
               <div className="stage-row empty-row">
-                <div className="stage-cell" style={{ gridColumn: '1 / -1' }}>
+                <div className="stage-cell stage-paged-cell">
                   No job specs match the selected filters.
                 </div>
               </div>
@@ -594,98 +519,86 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                   )}
                 </div>
                 <div className="stage-cell">
-                  🏷️
+                  <FaTags />
                 </div>
                 <div className="stage-cell stage-cell-actions">
                   {stage === 'received' ? (
                     <div className="stage-row-actions">
-                      <button
-                        type="button"
-                        className={`stage-action-button${actionLoadingId === item.JobSpecId ? ' disabled' : ''}`}
-                        title="Create application for this job spec"
+                      <button type="button"
+                              className={`stage-action-button${actionLoadingId === item.JobSpecId ? ' disabled' : ''}`}
+                              title="Create application for this job spec"
 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (actionLoadingId !== item.JobSpecId) {
-                            setSelectedJobSpecId(Number(item.JobSpecId));
-                            setModalOpenApplication(true);
-                          }
-                        }}
-                        disabled={actionLoadingId === item.JobSpecId}
-                      >
-                        →
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (actionLoadingId !== item.JobSpecId) {
+                                  setSelectedJobSpecId(Number(item.JobSpecId));
+                                  setModalOpenApplication(true);
+                                }
+                              }}
+                              disabled={actionLoadingId === item.JobSpecId}>
+                        <FaArrowCircleRight />
                       </button>
-                      <button
-                        type="button"
-                        className={`stage-action-button stage-action-button-delete${actionLoadingId === item.JobSpecId ? ' disabled' : ''}`}
-                        title="Soft delete this job spec"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (actionLoadingId !== item.JobSpecId) handleSoftDeleteJobSpec(item.JobSpecId);
-                        }}
-                        disabled={actionLoadingId === item.JobSpecId}
-                      >
-                        ✖
+                      <button type="button"
+                              className={`stage-action-button stage-action-button-delete${actionLoadingId === item.JobSpecId ? ' disabled' : ''}`}
+                              title="Soft delete this job spec"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (actionLoadingId !== item.JobSpecId) handleSoftDeleteJobSpec(item.JobSpecId);
+                              }}
+                              disabled={actionLoadingId === item.JobSpecId}>
+                        <FaTrashAlt />
                       </button>
-                      <button
-                        type="button"
-                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
-                        title="Discard application"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
-                            handleDiscardApplication(item.ApplicationId);
-                          }
-                        }}
-                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
-                      >
-                        🗑
+                      <button type="button"
+                              className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                              title="Discard application"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                                  handleDiscardApplication(item.ApplicationId);
+                                }
+                              }}
+                              disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}>
+                        <GiCardDiscard />
                       </button>
                     </div>
                   ) : stage === 'applied' ? (
                     <div className="stage-row-actions">
-                      <button
-                        type="button"
-                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
-                        title="Create interview for this application"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
-                            setSelectedApplicationId(Number(item.ApplicationId));
-                            setModalOpenInterview(true);
-                          }
-                        }}
-                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
-                      >
-                        →
+                      <button type="button"
+                              className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                              title="Create interview for this application"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                                  setSelectedApplicationId(Number(item.ApplicationId));
+                                  setModalOpenInterview(true);
+                                }
+                              }}
+                              disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}>
+                        <FaArrowCircleRight />
                       </button>
-                      <button
-                        type="button"
-                        className={`stage-action-button stage-action-button-delete${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
-                        title="Soft delete this application"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
-                            handleSoftDeleteApplication(item.ApplicationId);
-                          }
-                        }}
-                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
-                      >
-                        ✖
+                      <button type="button"
+                              className={`stage-action-button stage-action-button-delete${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                              title="Soft delete this application"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                                  handleSoftDeleteApplication(item.ApplicationId);
+                                }
+                              }}
+                              disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}>
+                        <FaTrashAlt />
                       </button>
-                      <button
-                        type="button"
-                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
-                        title="Discard application"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
-                            handleDiscardApplication(item.ApplicationId);
-                          }
-                        }}
-                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
-                      >
-                        🗑
+                      <button type="button"
+                              className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                              title="Discard application"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                                  handleDiscardApplication(item.ApplicationId);
+                                }
+                              }}
+                              disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}>
+                        <GiCardDiscard />
                       </button>
                     </div>
                   ) : stage === 'interview' ? (
@@ -705,96 +618,84 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                       >
                         +
                       </button>
-                      <button
-                        type="button"
-                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
-                        title="Create offer for this application"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
-                            setSelectedApplicationId(Number(item.ApplicationId));
-                            setModalOpenOffer(true);
-                          }
-                        }}
-                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
-                      >
-                        →
+                      <button type="button"
+                              className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                              title="Create offer for this application"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                                  setSelectedApplicationId(Number(item.ApplicationId));
+                                  setModalOpenOffer(true);
+                                }
+                              }}
+                              disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}>
+                        <FaArrowCircleRight />
                       </button>
-                      <button
-                        type="button"
-                        className={`stage-action-button stage-action-button-delete${actionLoadingId === item.InterviewId ? ' disabled' : ''}`}
-                        title="Soft delete this interview"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.InterviewId && actionLoadingId !== item.InterviewId) {
-                            handleSoftDeleteInterview(item.InterviewId);
-                          }
-                        }}
-                        disabled={!item.InterviewId || actionLoadingId === item.InterviewId}
-                      >
-                        ✖
+                      <button type="button"
+                              className={`stage-action-button stage-action-button-delete${actionLoadingId === item.InterviewId ? ' disabled' : ''}`}
+                              title="Soft delete this interview"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.InterviewId && actionLoadingId !== item.InterviewId) {
+                                  handleSoftDeleteInterview(item.InterviewId);
+                                }
+                              }}
+                              disabled={!item.InterviewId || actionLoadingId === item.InterviewId}>
+                        <FaTrashAlt />
                       </button>
-                      <button
-                        type="button"
-                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
-                        title="Discard application"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
-                            handleDiscardApplication(item.ApplicationId);
-                          }
-                        }}
-                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
-                      >
-                        🗑
+                      <button type="button"
+                              className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                              title="Discard application"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                                  handleDiscardApplication(item.ApplicationId);
+                                }
+                              }}
+                              disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}>
+                        <GiCardDiscard />
                       </button>
                     </div>
                   ) : stage === 'offers' ? (
                     <div className="stage-row-actions">
-                      <button
-                        type="button"
-                        className={`stage-action-button stage-action-button-delete${actionLoadingId === item.OfferId ? ' disabled' : ''}`}
-                        title="Soft delete this offer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.OfferId && actionLoadingId !== item.OfferId) {
-                            handleSoftDeleteOffer(item.OfferId);
-                          }
-                        }}
-                        disabled={!item.OfferId || actionLoadingId === item.OfferId}
-                      >
-                        ✖
+                      <button type="button"
+                              className={`stage-action-button stage-action-button-delete${actionLoadingId === item.OfferId ? ' disabled' : ''}`}
+                              title="Soft delete this offer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.OfferId && actionLoadingId !== item.OfferId) {
+                                  handleSoftDeleteOffer(item.OfferId);
+                                }
+                              }}
+                              disabled={!item.OfferId || actionLoadingId === item.OfferId}>
+                        <FaTrashAlt />
                       </button>
-                      <button
-                        type="button"
-                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
-                        title="Discard application"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
-                            handleDiscardApplication(item.ApplicationId);
-                          }
-                        }}
-                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
-                      >
-                        🗑
+                      <button type="button"
+                              className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                              title="Discard application"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                                  handleDiscardApplication(item.ApplicationId);
+                                }
+                              }}
+                              disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}>
+                        <GiCardDiscard />
                       </button>
                     </div>
                   ) : stage === 'discarded' ? (
                     <div className="stage-row-actions">
-                      <button
-                        type="button"
-                        className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
-                        title="Restore application"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
-                            handleRestoreApplication(item.ApplicationId);
-                          }
-                        }}
-                        disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
-                      >
-                        ↺
+                      <button type="button"
+                              className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}
+                              title="Restore application"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (item.ApplicationId && actionLoadingId !== item.ApplicationId) {
+                                  handleRestoreApplication(item.ApplicationId);
+                                }
+                              }}
+                              disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}>
+                        <FaUndo />
                       </button>
                     </div>
                   ) : (
@@ -805,26 +706,26 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
             ))}
           </div>
           <div className="stage-pagination">
-            <button className="button secondary-button" onClick={() => handlePageChange(1)} disabled={page === 1}>
+            <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(1)} disabled={page === 1}>
               First
             </button>
-            <button className="button secondary-button" onClick={() => handlePageChange(page - 1)} disabled={page === 1}>
+            <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(page - 1)} disabled={page === 1}>
               Previous
             </button>
             <span>
               Page {page} / {totalPages}
             </span>
-            <button className="button secondary-button" onClick={() => handlePageChange(page + 1)} disabled={page === totalPages}>
+            <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(page + 1)} disabled={page === totalPages}>
               Next
             </button>
-            <button className="button secondary-button" onClick={() => handlePageChange(totalPages)} disabled={page === totalPages}>
+            <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(totalPages)} disabled={page === totalPages}>
               Last
             </button>
           </div>
         </>
       )}
-      <div className="modal-actions" style={{ justifyContent: 'center' }}>
-        <button className="button secondary-button" onClick={onClose}>Close</button>
+      <div className="modal-actions">
+        <button className="stage-button stage-secondary-button" onClick={onClose}>Close</button>
       </div>
 
       {modalOpenApplication && (

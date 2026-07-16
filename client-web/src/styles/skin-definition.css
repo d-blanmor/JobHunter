@@ -8,11 +8,9 @@
   --color-brand-skin: #1f275c;
   --color-background-box: #ffffff;
   --color-border-default: #e5e7eb;
-  
   --color-text-default: #111827;
   --color-text-muted: #475569;
   --color-text-link: #072566;
-
   /* --- WORKFLOW STAGE COLORS (LIGHT SKIN) --- */
   --color-status-title-received: #2253f7;
   --color-status-title-applied: #0c4bbe;
@@ -33,6 +31,24 @@
   --stage-applied-bg: #a7f3d0;
   --stage-interview-bg: #6ee7b3;
   --stage-offers-bg: #4ade80;
+  /* --- Modal --- */
+  --modal-background: rgba(15, 23, 42, 0.7);
+  --modal-box-shadow: rgba(15, 23, 42, 0.18);
+  --modal-popup-overlay: rgba(15, 23, 42, 0.55);
+  --stage-grid-header-front: #082758;
+  --stage-grid-header-back: #b6b5b5;
+  --stage-border-bottom: #e5e7eb;
+  --stage-row-clickable: #0e0346;
+  --stage-row-clickable-hover: rgba(37, 99, 235, 0.08);
+  --stage-row-position-name: #083877;
+  --stage-row-company-name: #264588;
+  --stage-row-empty: #6b7280;
+  --stage-popup-border: #d1d5db;
+  --stage-button-background: #f5f7fb;
+  --stage-button-hover-background: #f8fafc;
+  --stage-button-disabled-background: #f1f1f1;
+  --stage-button-delete: #dc2626;
+  --stage-button-delete-border: #fecaca;
   /* --- END STAGE COLORS --- */
   --color-scheme: light;
 }
@@ -46,11 +62,9 @@
   --color-brand-skin: #f9fdbc;
   --color-background-box: #1f2937;
   --color-border-default: #374151;
-
   --color-text-default: #f3f4f6;
   --color-text-muted: #9ca3af;
   --color-text-link: #072566;
-
   /* --- WORKFLOW STAGE COLORS (LIGHT SKIN) --- */
   --color-status-title-received: #2253f7;
   --color-status-title-applied: #0c4bbe;
@@ -71,6 +85,24 @@
   --stage-applied-bg: #a7f3d0;
   --stage-interview-bg: #6ee7b3;
   --stage-offers-bg: #4ade80;
+  /* --- Modal --- */
+  --modal-background: rgba(15, 23, 42, 0.7);
+  --modal-box-shadow: rgba(15, 23, 42, 0.18);
+  --modal-popup-overlay: rgba(15, 23, 42, 0.55);
+  --stage-grid-header-front: #082758;
+  --stage-grid-header-back: #b6b5b5;
+  --stage-border-bottom: #e5e7eb;
+  --stage-row-clickable: #6ca3e0;
+  --stage-row-clickable-hover: rgba(37, 99, 235, 0.08);
+  --stage-row-position-name: #8aaacf;
+  --stage-row-company-name: #6d9cd1;
+  --stage-row-empty: #6b7280;
+  --stage-popup-border: #d1d5db;
+  --stage-button-background: #2f3b55;
+  --stage-button-hover-background: #f8fafc;
+  --stage-button-disabled-background: #111827;
+  --stage-button-delete: #dc2626;
+  --stage-button-delete-border: #fecaca;
   /* --- END STAGE COLORS --- */
   --color-scheme: dark;
 

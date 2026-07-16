@@ -2,7 +2,7 @@
   position: fixed;
   inset: 0;
   /* Use a semi-transparent overlay based on background color */
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--modal-background);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -16,7 +16,7 @@
   background: var(--color-background-page); /* USE VARIABLE */
   border-radius: 18px;
   padding: 24px;
-  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 18px 60px var(--modal-box-shadow);
   overflow-y: auto;
   display: flex; 
   flex-direction: column;
@@ -29,13 +29,11 @@
   margin-bottom: 0;
   min-width: 0;
 }
-
 .modal-field label {
   font-weight: 600;
   font-size: 0.82rem;
   color: var(--color-brand-primary);
 }
-
 .modal-field input,
 .modal-field select,
 .modal-field textarea {
@@ -47,12 +45,10 @@
   background: var(--color-background-page);
   color: var(--color-brand-primary);
 }
-
 .modal-field textarea {
   resize: vertical;
   min-height: 96px;
 }
-
 .modal-field select {
   appearance: none;
 }
@@ -77,4 +73,3 @@
     width: min(100%, 92vw);
   }
 }
-

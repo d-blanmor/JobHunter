@@ -14,13 +14,13 @@
   gap: 10px;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--stage-border-bottom);
 }
 
 .stage-row-header {
   font-weight: 700;
-  color: #082758;
-  background: #b6b5b5;
+  color: var(--stage-grid-header-front);
+  background: var(--stage-grid-header-back);
   border-radius: 12px;
   padding: 12px 10px;
 }
@@ -28,11 +28,11 @@
 .stage-row-clickable {
   cursor: pointer;
   transition: background 0.15s ease;
-  color:#0e0346
+  color: var(--stage-row-clickable);
 }
 
 .stage-row-clickable:hover {
-  background: rgba(37, 99, 235, 0.08);
+  background: var(--stage-row-clickable-hover);
 }
 
 .stage-cell {
@@ -59,8 +59,13 @@
 }
 
 .job-position-name {
-  color: #059669;
-  font-weight: 600;
+  font-weight: bold;
+  font-size: 1.3em;
+  color: var(--stage-row-position-name);
+}
+
+.job-position-empty {
+
 }
 
 .job-position-separator {
@@ -68,8 +73,8 @@
 }
 
 .job-company-name {
-  color: #2563eb;
-  font-weight: 600;
+  font-size: 1.2em;
+  color: var(--stage-row-company-name);
 }
 
 .stage-row-actions {
@@ -81,7 +86,7 @@
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(15, 23, 42, 0.55);
+  background: var(--modal-popup-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,7 +101,7 @@
   background: white;
   border-radius: 18px;
   padding: 22px;
-  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 18px 60px var(--modal-box-shadow);
 }
 
 .stage-modal-popup h4 {
@@ -113,7 +118,7 @@
   width: 100%;
   min-height: 92px;
   padding: 10px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--stage-popup-border);
   border-radius: 10px;
   font-size: 0.92rem;
   resize: vertical;
@@ -121,27 +126,27 @@
 
 .stage-action-button {
   appearance: none;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border-default);
   border-radius: 10px;
   width: 28px;
   height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: white;
+  background: var(--color-background-box);
   cursor: pointer;
   transition: background 0.15s ease, transform 0.12s ease;
   margin-right: 10px;
 }
 
 .stage-action-button:hover:not(.disabled) {
-  background: #f8fafc;
+  background: var(--stage-button-hover-background);
   transform: translateY(-1px);
 }
 
 .stage-action-button-delete {
-  border-color: #fecaca;
-  color: #dc2626;
+  border-color: var(--stage-button-delete-fron);
+  color: var(--stage-button-delete);
 }
 
 .stage-action-button.disabled {
@@ -152,7 +157,7 @@
 .empty-row .stage-cell {
   padding: 18px 10px;
   text-align: center;
-  color: #6b7280;
+  color: var(--stage-row-empty);
 }
 
 .stage-pagination {
@@ -161,6 +166,35 @@
   align-items: center;
   gap: 10px;
   margin-top: 18px;
+}
+
+.modal-actions {
+  justify-content: center;
+}
+
+.stage-button {
+  background: var(--stage-button-background);
+  color: var(--color-brand-primary);
+  box-shadow: 0 1px 10px var(--color-brand-secondary);
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+  padding: 0.5em 1em;
+  border-radius: 10px;
+  width: 6em;
+}
+.stage-button:disabled {
+  background: var(--stage-button-disabled-background);
+  box-shadow: none;
+  cursor:default;
+}
+.stage-button:hover:not(.disabled) {
+  color: var(--color-brand-primary);
+  box-shadow: 0 1px 1px var(--color-brand-secondary);
+}
+
+.stage-secondary-button{
+
 }
 
 @media (max-width: 980px) {
@@ -181,5 +215,9 @@
 
   .stage-cell {
     width: 100%;
+  }
+
+  .stage-paged-cell {
+    grid-column: 1 / -1;
   }
 }

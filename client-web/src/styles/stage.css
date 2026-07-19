@@ -127,6 +127,7 @@
 .stage-action-button {
   appearance: none;
   border: 1px solid var(--color-border-default);
+  color: var(--stage-row-action);
   border-radius: 10px;
   width: 28px;
   height: 28px;

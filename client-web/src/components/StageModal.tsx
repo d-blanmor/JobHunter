@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaTags, FaArrowCircleRight, FaTrashAlt, FaUndo } from 'react-icons/fa';
+import { FaTags, FaArrowCircleRight, FaTrashAlt, FaUndo, FaRegCalendarPlus } from 'react-icons/fa';
 import { GiCardDiscard } from "react-icons/gi";
 import { Stage,  } from '../defs/types';
 import { wfStageItem } from '../defs/types';
@@ -616,7 +616,7 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                         }}
                         disabled={!item.ApplicationId || actionLoadingId === item.ApplicationId}
                       >
-                        +
+                        <FaRegCalendarPlus />
                       </button>
                       <button type="button"
                               className={`stage-action-button${actionLoadingId === item.ApplicationId ? ' disabled' : ''}`}

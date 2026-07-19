@@ -43,12 +43,18 @@
   --stage-row-position-name: #083877;
   --stage-row-company-name: #264588;
   --stage-row-empty: #6b7280;
+  --stage-row-action: #4d4d4d;
   --stage-popup-border: #d1d5db;
   --stage-button-background: #f5f7fb;
   --stage-button-hover-background: #f8fafc;
   --stage-button-disabled-background: #f1f1f1;
-  --stage-button-delete: #dc2626;
+  --stage-button-delete: #7c0f0f;
   --stage-button-delete-border: #fecaca;
+  /* --- Entity View --- */
+  --view-labels: #757a81;
+  --view-labels-discarded: #f0bbbbd2;
+  --view-values: #384768;
+  --view-text-background: #e4e4e4;
   /* --- END STAGE COLORS --- */
   --color-scheme: light;
 }
@@ -64,8 +70,8 @@
   --color-border-default: #374151;
   --color-text-default: #f3f4f6;
   --color-text-muted: #9ca3af;
-  --color-text-link: #072566;
-  /* --- WORKFLOW STAGE COLORS (LIGHT SKIN) --- */
+  --color-text-link: #6e8ad8;
+  /* --- WORKFLOW STAGE COLORS --- */
   --color-status-title-received: #2253f7;
   --color-status-title-applied: #0c4bbe;
   --color-status-title-interview: #066e72;
@@ -97,12 +103,18 @@
   --stage-row-position-name: #8aaacf;
   --stage-row-company-name: #6d9cd1;
   --stage-row-empty: #6b7280;
+  --stage-row-action: #6b7280;
   --stage-popup-border: #d1d5db;
   --stage-button-background: #2f3b55;
   --stage-button-hover-background: #f8fafc;
   --stage-button-disabled-background: #111827;
-  --stage-button-delete: #dc2626;
+  --stage-button-delete: #c06666;
   --stage-button-delete-border: #fecaca;
+  /* --- Entity View --- */
+  --view-labels: #475569;
+  --view-labels-discarded: #581414d2;
+  --view-values: #9cb5d1;
+  --view-text-background: #243041;
   /* --- END STAGE COLORS --- */
   --color-scheme: dark;
 

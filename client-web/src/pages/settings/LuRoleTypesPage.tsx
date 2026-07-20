@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
+import { FaEdit, FaTrashAlt, FaArrowCircleUp, FaArrowCircleDown } from "react-icons/fa";
+import { GoDotFill } from "react-icons/go";
 import Modal from '../../components/Modal';
 import { listRoleTypes, saveRoleType, deleteRoleType } from '../../api/lu_roletypes';
 
@@ -166,7 +168,7 @@ export default function LuRoleTypesPage() {
               <tbody>
                 {orderedRoleTypes.map((roletype, index) => (
                   <tr key={roletype.Id}>
-                    <td> &#10625; </td>
+                    <td> <GoDotFill /> </td>
                     <td>{roletype.Name}</td>
                     <td className="cell-actions">
                       <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
@@ -177,7 +179,7 @@ export default function LuRoleTypesPage() {
                             onClick={() => moveRoleType(roletype, 'up')}
                             aria-label="Move up"
                           >
-                            &#11014;
+                            <FaArrowCircleUp />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -190,7 +192,7 @@ export default function LuRoleTypesPage() {
                             onClick={() => moveRoleType(roletype, 'down')}
                             aria-label="Move down"
                           >
-                            &#11015;
+                            <FaArrowCircleDown />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -201,7 +203,7 @@ export default function LuRoleTypesPage() {
                           onClick={() => openEditModal(roletype)}
                           aria-label="Edit role type"
                         >
-                          &#9999;
+                          <FaEdit />
                         </button>
                         <button
                           type="button"
@@ -209,7 +211,7 @@ export default function LuRoleTypesPage() {
                           onClick={() => handleDeleteRoleType(roletype)}
                           aria-label="Delete role type"
                         >
-                          &#10060;
+                          <FaTrashAlt />
                         </button>
                       </div>
                     </td>

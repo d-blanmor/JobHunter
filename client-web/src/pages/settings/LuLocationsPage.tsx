@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
+import { FaEdit, FaTrashAlt, FaArrowCircleUp, FaArrowCircleDown } from "react-icons/fa";
+import { GoDotFill } from "react-icons/go";
 import Modal from '../../components/Modal';
 import { listLocations, saveLocation, deleteLocation } from '../../api/lu_locations';
 
@@ -168,7 +170,7 @@ export default function LocationsPage() {
               <tbody>
                 {orderedLocations.map((location, index) => (
                   <tr key={location.Id}>
-                    <td> &#10625; </td>
+                    <td> <GoDotFill /> </td>
                     <td>{location.Country}</td>
                     <td>{location.City || '—'}</td>
                     <td className="cell-actions">
@@ -180,7 +182,7 @@ export default function LocationsPage() {
                             onClick={() => moveLocation(location, 'up')}
                             aria-label="Move up"
                           >
-                            &#11014;
+                            <FaArrowCircleUp />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -193,7 +195,7 @@ export default function LocationsPage() {
                             onClick={() => moveLocation(location, 'down')}
                             aria-label="Move down"
                           >
-                            &#11015;
+                            <FaArrowCircleDown />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -204,7 +206,7 @@ export default function LocationsPage() {
                           onClick={() => openEditModal(location)}
                           aria-label="Edit location"
                         >
-                          &#9999;
+                          <FaEdit />
                         </button>
                         <button
                           type="button"
@@ -212,7 +214,7 @@ export default function LocationsPage() {
                           onClick={() => handleDeleteLocation(location)}
                           aria-label="Delete location"
                         >
-                          &#10060;
+                          <FaTrashAlt />
                         </button>
                       </div>
                     </td>

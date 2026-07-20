@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
+import { FaEdit, FaTrashAlt, FaArrowCircleUp, FaArrowCircleDown } from "react-icons/fa";
+import { GoDotFill } from "react-icons/go";
 import Modal from '../../components/Modal';
 import { listTags, saveTag, deleteTag, getJobSpecsByTag, deleteJobSpecsByTag } from '../../api/tags';
 
@@ -168,7 +170,7 @@ export default function TagsPage() {
               <tbody>
                 {orderedTags.map((tag, index) => (
                   <tr key={tag.Id}>
-                    <td> &#10625; </td>
+                    <td> <GoDotFill /> </td>
                     <td>{tag.Name}</td>
                     <td>{tag.Context || '—'}</td>
                     <td className="cell-actions">
@@ -180,7 +182,7 @@ export default function TagsPage() {
                             onClick={() => moveTag(tag, 'up')}
                             aria-label="Move up"
                           >
-                            &#11014;
+                            <FaArrowCircleUp />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -193,7 +195,7 @@ export default function TagsPage() {
                             onClick={() => moveTag(tag, 'down')}
                             aria-label="Move down"
                           >
-                            &#11015;
+                            <FaArrowCircleDown />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -204,7 +206,7 @@ export default function TagsPage() {
                           onClick={() => openEditModal(tag)}
                           aria-label="Edit tag"
                         >
-                          &#9999;
+                          <FaEdit />
                         </button>
                         <button
                           type="button"
@@ -212,7 +214,7 @@ export default function TagsPage() {
                           onClick={() => handleDeleteTag(tag)}
                           aria-label="Delete tag"
                         >
-                          &#10060;
+                          <FaTrashAlt />
                         </button>
                       </div>
                     </td>

@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
+import { FaEdit, FaTrashAlt, FaArrowCircleUp, FaArrowCircleDown } from "react-icons/fa";
+import { GoDotFill } from "react-icons/go";
 import Modal from '../../components/Modal';
 import { listBenefits, saveBenefit, deleteBenefit, getJobSpecsBenefit, getOffersBenefit } from '../../api/lu_benefits';
 
@@ -166,7 +168,7 @@ export default function LuBenefitsPage() {
               <tbody>
                 {orderedBenefits.map((benefit, index) => (
                   <tr key={benefit.Id}>
-                    <td> &#10625; </td>
+                    <td> <GoDotFill /> </td>
                     <td>{benefit.Name}</td>
                     <td className="cell-actions">
                       <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
@@ -177,7 +179,7 @@ export default function LuBenefitsPage() {
                             onClick={() => moveBenefit(benefit, 'up')}
                             aria-label="Move up"
                           >
-                            &#11014;
+                            <FaArrowCircleUp />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -190,7 +192,7 @@ export default function LuBenefitsPage() {
                             onClick={() => moveBenefit(benefit, 'down')}
                             aria-label="Move down"
                           >
-                            &#11015;
+                            <FaArrowCircleDown />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -201,7 +203,7 @@ export default function LuBenefitsPage() {
                           onClick={() => openEditModal(benefit)}
                           aria-label="Edit benefit"
                         >
-                          &#9999;
+                          <FaEdit />
                         </button>
                         <button
                           type="button"
@@ -209,7 +211,7 @@ export default function LuBenefitsPage() {
                           onClick={() => handleDeleteBenefit(benefit)}
                           aria-label="Delete benefit"
                         >
-                          &#10060;
+                          <FaTrashAlt />
                         </button>
                       </div>
                     </td>

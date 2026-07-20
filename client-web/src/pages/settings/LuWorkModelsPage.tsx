@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
+import { FaEdit, FaTrashAlt, FaArrowCircleUp, FaArrowCircleDown } from "react-icons/fa";
+import { GoDotFill } from "react-icons/go";
 import Modal from '../../components/Modal';
 import { listWorkModels, saveWorkModel, deleteWorkModel } from '../../api/lu_workmodels';
 
@@ -166,7 +168,7 @@ export default function LuWorkModelsPage() {
               <tbody>
                 {orderedWorkModels.map((workmodel, index) => (
                   <tr key={workmodel.Id}>
-                    <td> &#10625; </td>
+                    <td> <GoDotFill /> </td>
                     <td>{workmodel.Name}</td>
                     <td className="cell-actions">
                       <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
@@ -177,7 +179,7 @@ export default function LuWorkModelsPage() {
                             onClick={() => moveWorkModel(workmodel, 'up')}
                             aria-label="Move up"
                           >
-                            &#11014;
+                            <FaArrowCircleUp />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -190,7 +192,7 @@ export default function LuWorkModelsPage() {
                             onClick={() => moveWorkModel(workmodel, 'down')}
                             aria-label="Move down"
                           >
-                            &#11015;
+                            <FaArrowCircleDown />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -201,7 +203,7 @@ export default function LuWorkModelsPage() {
                           onClick={() => openEditModal(workmodel)}
                           aria-label="Edit work model"
                         >
-                          &#9999;
+                          <FaEdit />
                         </button>
                         <button
                           type="button"
@@ -209,7 +211,7 @@ export default function LuWorkModelsPage() {
                           onClick={() => handleDeleteWorkModel(workmodel)}
                           aria-label="Delete work model"
                         >
-                          &#10060;
+                          <FaTrashAlt />
                         </button>
                       </div>
                     </td>

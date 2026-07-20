@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
+import { FaEdit, FaTrashAlt, FaArrowCircleUp, FaArrowCircleDown } from "react-icons/fa";
 import SourceModal from '../../components/SourceModal';
 import { listSources, saveSource, deleteSource  } from '../../api/sources';
 import { SourceItem } from '../../defs/interfaces';
@@ -235,7 +236,7 @@ export default function SourcesPage() {
                             onClick={() => moveParent(parent, 'up')}
                             aria-label="Move up"
                           >
-                            &#11014;
+                            <FaArrowCircleUp />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -248,7 +249,7 @@ export default function SourcesPage() {
                             onClick={() => moveParent(parent, 'down')}
                             aria-label="Move down"
                           >
-                            &#11015;
+                            <FaArrowCircleDown />
                           </button>
                         ) : (
                           <div className="action-placeholder" />
@@ -259,7 +260,7 @@ export default function SourcesPage() {
                           onClick={() => openEditModal(parent)}
                           aria-label="Edit source"
                         >
-                          &#9999;
+                          <FaEdit aria-hidden="true" />
                         </button>
                         <button
                           type="button"
@@ -267,7 +268,7 @@ export default function SourcesPage() {
                           onClick={() => handleDeleteSource(parent)}
                           aria-label="Delete source"
                         >
-                          &#10060;
+                          <FaTrashAlt />
                         </button>
                       </span>
                       {expanded.has(parent.Id) && (
@@ -288,7 +289,7 @@ export default function SourcesPage() {
                                     onClick={() => moveChild(child, 'up')}
                                     aria-label="Move up"
                                   >
-                                    &#11014;
+                                    <FaArrowCircleUp />
                                   </button>
                                 ) : (
                                   <div className="action-placeholder" />
@@ -301,7 +302,7 @@ export default function SourcesPage() {
                                     onClick={() => moveChild(child, 'down')}
                                     aria-label="Move down"
                                   >
-                                    &#11015;
+                                    <FaArrowCircleDown />
                                   </button>
                                 ) : (
                                   <div className="action-placeholder" />
@@ -312,7 +313,7 @@ export default function SourcesPage() {
                                   onClick={() => openEditModal(child)}
                                   aria-label="Edit source"
                                 >
-                                  &#9999;
+                                  <FaEdit aria-hidden="true" />
                                 </button>
                                 <button
                                   type="button"
@@ -320,7 +321,7 @@ export default function SourcesPage() {
                                   onClick={() => handleDeleteSource(child)}
                                   aria-label="Delete source"
                                 >
-                                  &#10060;
+                                  <FaTrashAlt />
                                 </button>
                               </span>
                             </li>

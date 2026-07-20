@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
 import Modal from './Modal'; // your existing modal component
 import { getSource, listMainSources, saveSource } from '../api/sources';
 import { newSourceItem, SourceItem } from '../defs/interfaces';
@@ -15,6 +16,8 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
   /* ---------- State --------------------------------------------------- */
   const [isLoading, setIsLoading] = useState<boolean>(!!sourceId);
   const [error, setError] = useState<string | null>(null);
+
+  const [showDescription, setShowDescription] = useState(false);
 
   // form fields – initialise to empty values
   const [mainSources, setMainSources] = useState<any[]>([]);
@@ -145,13 +148,40 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
               onChange={(e) => setPortalURL(e.target.value)} />
           </div>
 
-          <div className="modal-field">
-            <textarea
-              placeholder="Description of the Source"
-              rows={3}
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-            />
+          <div className="modal-table">
+            {showDescription ? (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(false);}}>
+                  <FaRegArrowAltCircleDown />
+                </span>
+                <span className='modal-field-expanded'>
+                  <textarea id="Description"
+                            placeholder="Description of the Source"
+                            rows={3}
+                            value={details}
+                            onChange={(e) => setDetails(e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            ) : (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(true);}}>
+                  <FaRegArrowAltCircleRight />
+                </span>
+                <span className='modal-field'>
+                  <textarea id="Description"
+                            placeholder="Description of the Source"
+                            rows={3}
+                            value={details}
+                            onChange={(e) => setDetails(e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            )}
           </div>
 
           <div className="modal-actions">

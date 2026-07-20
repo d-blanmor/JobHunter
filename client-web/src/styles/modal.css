@@ -15,7 +15,7 @@
   max-height: 85vh;
   background: var(--color-background-page); /* USE VARIABLE */
   border-radius: 18px;
-  padding: 24px;
+  padding: 50px;
   box-shadow: 0 18px 60px var(--modal-box-shadow);
   overflow-y: auto;
   display: flex; 
@@ -23,9 +23,19 @@
   /* Shadow needs to adjust slightly for dark mode visibility */
 }
 
-.modal-field {
+.modal-table {
   display: grid;
-  gap: 4px;
+  width: 100%;
+}
+
+.modal-row {
+  display: grid;
+  grid-template-columns: minmax(0, 16px) minmax(0, 900px) minmax(0, 80px);
+  align-items: start;
+  margin: 0.2em 0em 0em 0em;
+}
+
+.modal-field {
   margin-bottom: 0;
   min-width: 0;
 }
@@ -34,10 +44,33 @@
   font-size: 0.82rem;
   color: var(--color-brand-primary);
 }
-.modal-field input,
-.modal-field select,
-.modal-field textarea {
-  width: 80%;
+.modal-field input {
+  width: 917px;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default); /* USE VARIABLE */
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+}
+.modal-field-date input {
+  width: 823px;
+  height: 1.1em;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default); /* USE VARIABLE */
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+}
+.modal-field-date label {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--color-brand-primary);
+  margin: 0px 10px 0px 0px;
+}
+.modal-field select {
+  width: 940px;
   margin: 5px 0px 5px 0px;
   padding: 8px 10px;
   border: 1px solid var(--color-border-default); /* USE VARIABLE */
@@ -46,11 +79,26 @@
   color: var(--color-brand-primary);
 }
 .modal-field textarea {
+  width: 897px;
+  min-height: 50px;
+  margin: 5px 0px 5px 5px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default); /* USE VARIABLE */
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
   resize: vertical;
-  min-height: 96px;
 }
-.modal-field select {
-  appearance: none;
+.modal-field-expanded textarea {
+  width: 897px;
+  min-height: 500px;
+  margin: 5px 0px 5px 5px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default); /* USE VARIABLE */
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+  resize: vertical;
 }
 
 .modal-filters {

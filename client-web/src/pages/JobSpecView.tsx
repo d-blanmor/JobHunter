@@ -265,6 +265,40 @@ export default function JobSpecView() {
     finally {}
   };
 
+  const getModalTitle = (modal: string) => {
+    var title: string = '';
+
+    if (modal.toLowerCase() === 'jobspec') {
+      title = 'Edit job spec';
+      if (jobSpec != null) {
+        if (jobSpec.Company) title = `${title} for ${jobSpec.Position} at ${jobSpec.Company}`
+        else title = `${title} for ${jobSpec.Position}`
+      }
+    }
+    else if (modal.toLowerCase() === 'application') {
+      title = 'Edit application';
+      if (jobSpec != null) {
+        if (jobSpec.Company) title = `${title} for ${jobSpec.Position} at ${jobSpec.Company}`
+        else title = `${title} for ${jobSpec.Position}`
+      }
+    }
+    else if (modal.toLowerCase() === 'interview') {
+      title = 'Edit interview';
+      if (jobSpec != null) {
+        if (jobSpec.Company) title = `${title} for ${jobSpec.Position} at ${jobSpec.Company}`
+        else title = `${title} for ${jobSpec.Position}`
+      }
+    }
+    else if (modal.toLowerCase() === 'offer') {
+      title = 'Edit offer';
+      if (jobSpec != null) {
+        if (jobSpec.Company) title = `${title} for ${jobSpec.Position} at ${jobSpec.Company}`
+        else title = `${title} for ${jobSpec.Position}`
+      }
+    }
+    return title;
+  }
+
   return (
     <section className="page">
       {loading && (
@@ -300,7 +334,7 @@ export default function JobSpecView() {
                 {safeValue(jobSpec.Position)}
               </span>
               {jobSpec.Link ? (
-                <span className="job-spec-title">
+                <span className="job-spec-title-link  ">
                   <a className="job-spec-label" title={`link to: ${jobSpec.Link}`} href={jobSpec.Link} target="_blank" rel="noreferrer">
                     <FaExternalLinkAlt aria-hidden="true" />
                   </a>
@@ -903,7 +937,7 @@ export default function JobSpecView() {
       {modalEditJobSpec && (
         <JobSpecModal
           jobSpecId={jobSpec?.Id || null}
-          title = "Edit job spec"
+          title = {getModalTitle('jobspec')}
           onClose={() => setModalEditJobSpec(false)}
           onSuccess={async () => {
             await refreshJobSpec(true); // refresh portal list after modal close
@@ -916,7 +950,7 @@ export default function JobSpecView() {
         <ApplicationModal
           applicationId={applicationId}
           jobSpecId={jobSpec?.Id || null}
-          title = "Edit application"
+          title = {getModalTitle('application')}
           onClose={() => setModalEditApplication(false)}
           onSuccess={async () => {
             await refreshJobSpec(true); // refresh portal list after modal close
@@ -929,7 +963,7 @@ export default function JobSpecView() {
         <InterviewModal
           interviewId={interviewId}
           applicationId={applicationId}
-          title = "Edit interview"
+          title = {getModalTitle('interview')}
           onClose={() => setModalEditInterview(false)}
           onSuccess={async () => {
             await refreshJobSpec(true); // refresh portal list after modal close
@@ -942,7 +976,7 @@ export default function JobSpecView() {
         <OfferModal
           offerId={offerId}
           applicationId={applicationId}
-          title = "Edit offer"
+          title = {getModalTitle('offer')}
           onClose={() => setModalEditOffer(false)}
           onSuccess={async () => {
             await refreshJobSpec(true); // refresh portal list after modal close

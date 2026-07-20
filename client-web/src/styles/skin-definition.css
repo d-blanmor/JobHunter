@@ -7,6 +7,7 @@
   --color-brand-secondary: #757a81;
   --color-brand-skin: #1f275c;
   --color-background-box: #ffffff;
+  --color-background-button: #ffffff;
   --color-border-default: #e5e7eb;
   --color-text-default: #111827;
   --color-text-muted: #475569;
@@ -67,6 +68,7 @@
   --color-brand-secondary: #6e8ad8;
   --color-brand-skin: #f9fdbc;
   --color-background-box: #1f2937;
+  --color-background-button: #1f2937;
   --color-border-default: #374151;
   --color-text-default: #f3f4f6;
   --color-text-muted: #9ca3af;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FaPlus, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import SourceModal from '../components/SourceModal';
 import ContactModal from '../components/ContactModal';
@@ -27,6 +28,10 @@ export default function JobSpecCreate() {
   const [modalOpenSource, setModalOpenSource] = useState(false);
   const [modalOpenPlaceOfWork, setModalOpenPlaceOfWork] = useState(false);
   const [modalOpenContact, setModalOpenContact] = useState(false);
+  const [showDescription, setShowDescription] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
+  
   
   // Entities
   const [position, setPosition] = useState('');
@@ -287,38 +292,24 @@ export default function JobSpecCreate() {
       {!loading && (
         <div>
           <div className="modal-field">
-            <input id="Position"
-              required
-              value={position} 
-              placeholder="Position"
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+            <input id="Position" required value={position} placeholder="Position" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <input id="Company"
-              value={company} 
-              placeholder="Company"
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+            <input id="Company" value={company} placeholder="Company" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <select id="Source"
-                      style={{ flex: 1 }} 
-                      value={sourceId} 
-                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
-                <option value="">No source selected</option>
-                {parents.map((s) => (
-                  <option key={s.Id} value={s.Id}>{s.Name}</option>
-                ))}
-              </select>
-              <button 
-                className="button small" 
-                onClick={() => {
-                  setSourceId('');
-                  setModalOpenSource(true);
-                }}>+</button>
-            </div>
+            <select id="Source" value={sourceId} onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
+              <option value="">No source selected</option>
+              {parents.map((s) => (<option key={s.Id} value={s.Id}>{s.Name}</option>))}
+            </select>
+            <button className="button" 
+              onClick={() => {
+                setSourceId('');
+                setModalOpenSource(true);}}>
+              <FaPlus />
+            </button>
           </div>
 
           <div className="modal-field">
@@ -328,12 +319,13 @@ export default function JobSpecCreate() {
               onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
-          <div className="modal-field">
+          <div className="modal-field-date">
+            <label className="modal-field-label">* Published on</label>
             <input id="Published"
-              type="date"
-              placeholder="Publish Date"
-              value={published}
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  type="date"
+                  placeholder="Publish Date"
+                  value={published}
+                  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
@@ -352,45 +344,38 @@ export default function JobSpecCreate() {
                     value={roleTypeId} 
                     onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
               <option value="">No role type selected</option>
-              {roleTypes.map((r) => (
-                <option key={r.Id} value={r.Id}>{r.Name}</option>
-              ))}
+              {roleTypes.map((r) => (<option key={r.Id} value={r.Id}>{r.Name}</option>))}
             </select>
           </div>
 
           <div className="modal-field">
-            <input id="SalaryExpectation"
-              value={salaryExpectation} 
-              placeholder="Salary range"
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+            <input id="SalaryExpectation" value={salaryExpectation} placeholder="Salary range" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <select id="PlaceOfWork"
-                      style={{ flex: 1 }} 
-                      value={placeOfWorkId} 
-                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
-                <option value="">No place of work selected</option>
-                {placesOfWork.map((p) => {
-                  return (
-                    <option key={p.Id} value={p.Id}>{placeOfWorkLabel(p)}</option>
-                  );
-                })}
-              </select>
-              <button
-                type="button"
-                className="button small"
-                title="Create new place of work"
-                onClick={() => {
-                  setPlaceOfWorkId('');
-                  setModalOpenPlaceOfWork(true);
-                }}>+</button>
-            </div>
+            <select id="PlaceOfWork"
+                    value={placeOfWorkId} 
+                    onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
+              <option value="">No place of work selected</option>
+              {placesOfWork.map((p) => {
+                return (
+                  <option key={p.Id} value={p.Id}>{placeOfWorkLabel(p)}</option>
+                );
+              })}
+            </select>
+            <button
+              type="button"
+              className="button"
+              title="Create new place of work"
+              onClick={() => {
+                setPlaceOfWorkId('');
+                setModalOpenPlaceOfWork(true);}}>
+              <FaPlus />
+            </button>
           </div>
 
           <div className="modal-field">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={(e) => e.stopPropagation()}>
+            <div onClick={(e) => e.stopPropagation()}>
               <select id="Contact"
                       value={contactId ?? ''}
                       onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
@@ -403,44 +388,139 @@ export default function JobSpecCreate() {
               </select>
               <button
                 type="button"
-                className="button small"
+                className="button"
                 title="Create new contact"
                 onClick={() => {
                   setContactId(null);
                   setModalOpenContact(true);
-                }}>+</button>
+                }}><FaPlus /></button>
             </div>
           </div>
 
-          <div className="modal-field">
-            <textarea id="Description"
-                      value={description} 
-                      placeholder="Description of the role" 
-                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+          <div className="modal-table">
+            {showDescription ? (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(false);
+                        setShowAnalysis(false);
+                        setShowNotes(false)}}>
+
+                  <FaRegArrowAltCircleDown />
+                </span>
+                <span className='modal-field-expanded'>
+                  <textarea id="Description"
+                            value={description} 
+                            placeholder="Description of the role" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            ) : (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(true);
+                        setShowAnalysis(false);
+                        setShowNotes(false)}}>
+
+                  <FaRegArrowAltCircleRight />
+                </span>
+                <span className='modal-field'>
+                  <textarea id="Description"
+                            value={description} 
+                            placeholder="Description of the role" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            )}
+
+            {showAnalysis ? (
+              <span className="modal-row">
+                <span className='modal-field' 
+                      style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(false);
+                        setShowAnalysis(false);
+                        setShowNotes(false)}}>
+                  <FaRegArrowAltCircleDown />
+                </span>
+                <span className='modal-field-expanded'>
+                  <textarea id="Analysis"
+                            value={analysis} 
+                            placeholder="Analysis of the role spec" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                </span>
+                <span className="modal-field">
+                  <button className="button" >Ask AI</button>
+                </span>
+              </span>
+            ) : (
+              <span className="modal-row">
+                <span className='modal-field' 
+                      style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(false);
+                        setShowAnalysis(true);
+                        setShowNotes(false)}}>
+                  <FaRegArrowAltCircleRight />
+                </span>
+                <span className='modal-field'>
+                  <textarea id="Analysis"
+                            value={analysis} 
+                            placeholder="Analysis of the role spec" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                </span>
+                <span className="modal-field">
+                  <button className="button" >Ask AI</button>
+                </span>
+              </span>
+            )}
+
+            {showNotes ? (
+              <span className="modal-row">
+                <span className='modal-field' 
+                      style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(false);
+                        setShowAnalysis(false);
+                        setShowNotes(false)}}>
+                  <FaRegArrowAltCircleDown />
+                </span>
+                <span className='modal-field-expanded'>
+                  <textarea id="notes"
+                            value={notes} 
+                            placeholder="Notes about the role" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                </span>
+                <span className='modal-field'></span>
+              </span>
+            ) : (
+              <span className="modal-row">
+                <span className='modal-field' 
+                      style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(false);
+                        setShowAnalysis(false);
+                        setShowNotes(true)}}>
+                  <FaRegArrowAltCircleRight />
+                </span>
+                <span className='modal-field'>
+                  <textarea id="notes"
+                            value={notes} 
+                            placeholder="Notes about the role" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                </span>
+                <span className='modal-field'></span>
+              </span>
+            )}
           </div>
 
-          <div className="modal-field">
-            <textarea id="Analysis"
-                      className="modal-field"
-                      value={analysis} 
-                      placeholder="Analysis of the role spec" 
-                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
-            <span className="modal-actions">
-              <button className="button" >Ask AI</button>
-            </span>
-          </div>
-
-          <div className="modal-field">
-            <textarea id="notes"
-                      value={notes} 
-                      placeholder="Notes about the role" 
-                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
-          </div>
-
-          <div className="modal-actions">
+          <span className="modal-actions">
             <button className="button" onClick={handleSubmit}>OK</button>
             <button className="button secondary-button" onClick={handleCancel}>Cancel</button>
-          </div>
+          </span>
         </div>
       )}
 

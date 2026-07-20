@@ -47,7 +47,7 @@
   transition: background 0.15s ease, transform 0.12s ease;
 }
 .page-header-link:hover:not(.disabled) {
-  background: var(--color-background-button);
+  background: var(--color-background- );
 }
 .page-header-link:hover {
   background: var(--color-background-button);

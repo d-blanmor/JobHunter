@@ -33,6 +33,12 @@
   color: var(--view-values);
 }
 
+.job-spec-title-link {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-size: 1.1em;
+}
+
 .job-spec-subtitle {
   inherits: false;
   margin: 0.7em 0 0;

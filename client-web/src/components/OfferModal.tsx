@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
 import Modal from './Modal';
 import { getOffer, saveOffer } from '../api/offers';
 import { getApplication } from '../api/applications';
@@ -21,6 +22,9 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
   /* ---------- State --------------------------------------------------- */
   const [isLoading, setIsLoading] = useState<boolean>(!!offerId);
   const [error, setError] = useState<string | null>(null);
+
+  const [showDescription, setShowDescription] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
 
   // form fields – initialise to empty values
   // Entities
@@ -149,48 +153,89 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
         ? <p>Loading…</p>
         : (
         <div>
-          {jobSpec && application ? (
-            <div className="job-spec-metadata">
-              <div className="modal-field">
-                {jobSpec.Company && <span className="job-spec-meta-label">Offer for {jobSpec.Position} at {jobSpec.Company} </span>}
-                {!jobSpec.Company && <span className="job-spec-meta-label">Offer for {jobSpec.Position}</span>}
-              </div>
-            </div>
-          ) : null}
-
-          <div className="modal-field">
+          <div className="modal-field-date">
             <label>* Offered on</label>
             <input id="offered"
-              type="date"
-              required
-              placeholder="Offer Date"
-              value={formatFieldDate(offered)}
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
+                  type="date"
+                  required
+                  placeholder="Offer Date"
+                  value={formatFieldDate(offered)}
+                  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
             />
           </div>
 
           <div className="modal-field">
-            <input id="salary"
-              value={salary} 
-              placeholder="Salary offered" 
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
-            />
+            <input id="salary" value={salary}  placeholder="Salary offered"  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
           </div>
 
-          <div className="modal-field">
-            <textarea id="description"
-              value={description} 
-              placeholder="Description of the offer" 
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
-            />
-          </div>
+          <div className="modal-table">
+            {showDescription ? (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(false);
+                        setShowNotes(false);}}>
+                  <FaRegArrowAltCircleDown />
+                </span>
+                <span className='modal-field-expanded'>
+                  <textarea id="Description"
+                          value={description} 
+                          placeholder="Description of the offer" 
+                          onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            ) : (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(true);
+                        setShowNotes(false);}}>
+                  <FaRegArrowAltCircleRight />
+                </span>
+                <span className='modal-field'>
+                  <textarea id="Description"
+                          value={description} 
+                          placeholder="Description of the offer" 
+                          onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            )}
 
-          <div className="modal-field">
-            <textarea id="notes"
-              value={notes} 
-              placeholder="Notes about the offer" 
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
-            />
+            {showNotes ? (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(false);
+                        setShowNotes(false);}}>
+                  <FaRegArrowAltCircleDown />
+                </span>
+                <span className='modal-field-expanded'>
+                  <textarea id="notes"
+                            value={notes} 
+                            placeholder="Notes about the offer" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            ) : (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(false);
+                        setShowNotes(true);}}>
+                  <FaRegArrowAltCircleRight />
+                </span>
+                <span className='modal-field'>
+                  <textarea id="notes"
+                            value={notes} 
+                            placeholder="Notes about the offer" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            )}
           </div>
 
           <div className="modal-actions">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
 import Modal from './Modal';
 import { getJobSpec } from '../api/jobSpecs';
 import { getApplication, saveApplication} from '../api/applications';
@@ -19,6 +20,10 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
   /* ---------- State --------------------------------------------------- */
   const [isLoading, setIsLoading] = useState<boolean>(!!applicationId);
   const [error, setError] = useState<string | null>(null);
+
+  const [showLetter, setShowLetter] = useState(false);
+  const [showCV, setShowCV] = useState(false);
+  const [showNotes, setShowNotes] = useState(false);
 
   // form fields – initialise to empty values
   // Entities
@@ -144,16 +149,8 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
         ? <p>Loading…</p>
         : (
         <div>
-          {jobSpec ? (
-            <div className="job-spec-metadata">
-              <div className="modal-field">
-                {jobSpec.Company && <span className="job-spec-meta-label">Application for {jobSpec.Position} at {jobSpec.Company} </span>}
-                {!jobSpec.Company && <span className="job-spec-meta-label">Application for {jobSpec.Position}</span>}
-              </div>
-            </div>
-          ) : null}
 
-          <div className="modal-field">
+          <div className="modal-field-date">
             <label>* Applied on</label>
             <input id="applied"
               type="date"
@@ -164,34 +161,120 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
             />
           </div>
 
-          <div className="modal-field">
-            <textarea id="letter"
-              value={letter} 
-              placeholder="Application letter used" 
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
-            />
-          </div>
+          <div className="modal-table">
+            {showLetter ? (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowLetter(false);
+                        setShowCV(false);
+                        setShowNotes(false)}}>
+                  <FaRegArrowAltCircleDown />
+                </span>
+                <span className='modal-field-expanded'>
+                  <textarea id="letter"
+                            value={letter} 
+                            placeholder="Application letter used" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            ) : (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowLetter(true);
+                        setShowCV(false);
+                        setShowNotes(false)}}>
+                  <FaRegArrowAltCircleRight />
+                </span>
+                <span className='modal-field'>
+                  <textarea id="letter"
+                            value={letter} 
+                            placeholder="Application letter used" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            )}
 
-          <div className="modal-field">
-            <textarea id="cv"
-              value={cV} 
-              placeholder="Resume sent" 
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
-            />
-          </div>
+            {showCV ? (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowLetter(false);
+                        setShowCV(false);
+                        setShowNotes(false)}}>
+                  <FaRegArrowAltCircleDown />
+                </span>
+                <span className='modal-field-expanded'>
+                  <textarea id="cv"
+                            value={cV} 
+                            placeholder="Resume sent" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            ) : (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowLetter(false);
+                        setShowCV(true);
+                        setShowNotes(false)}}>
+                  <FaRegArrowAltCircleRight />
+                </span>
+                <span className='modal-field'>
+                  <textarea id="cv"
+                            value={cV} 
+                            placeholder="Resume sent" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            )}
 
+            {showNotes ? (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowLetter(false);
+                        setShowCV(false);
+                        setShowNotes(false)}}>
+                  <FaRegArrowAltCircleDown />
+                </span>
+                <span className='modal-field-expanded'>
+                  <textarea id="notes"
+                            value={notes} 
+                            placeholder="Notes about the application" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            ) : (
+              <span className="modal-row">
+                <span className='modal-field' style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowLetter(false);
+                        setShowCV(false);
+                        setShowNotes(true)}}>
+                  <FaRegArrowAltCircleRight />
+                </span>
+                <span className='modal-field'>
+                  <textarea id="notes"
+                            value={notes} 
+                            placeholder="Notes about the application" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                </span>
+                <span className="modal-field"></span>
+              </span>
+            )}
 
-          <div className="modal-field">
-            <textarea id="notes"
-              value={notes} 
-              placeholder="Notes about the application" 
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}
-            />
           </div>
 
           {applicationId ? (
             <div>
-              <div className="modal-field">
+              <div className="modal-field-date">
                 <label>Confirmed on</label>
                 <input id="confirmed"
                     type="date"
@@ -201,7 +284,7 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
                 />
               </div>
 
-              <div className="modal-field">
+              <div className="modal-field-date">
                 <label>Discarded on</label>
                 <input id="discarded"
                     type="date"

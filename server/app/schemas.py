@@ -100,7 +100,7 @@ class LnkJobSpecBenefitBase(BaseModel):
     Order: int = 0
 
 class LnkOfferBenefitBase(BaseModel):
-    JobSpecId: int
+    OfferId: int
     LuBenefitId: int
     Notes: Optional[str] = None
     Order: int = 0

@@ -1,0 +1,1 @@
+"""JobHunter api routers package."""

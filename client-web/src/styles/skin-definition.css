@@ -1,0 +1,123 @@
+:root {
+  /* --- THEME VARIABLES (SYSTEM) --- */
+  /* Light Skin Variables (Default): Explicitly defined for robustness */
+  --color-background-main: #f5f7fb;
+  --color-background-page: #ffffff;
+  --color-brand-primary: #384768;
+  --color-brand-secondary: #757a81;
+  --color-brand-skin: #1f275c;
+  --color-background-box: #ffffff;
+  --color-background-button: #ffffff;
+  --color-border-default: #e5e7eb;
+  --color-text-default: #111827;
+  --color-text-muted: #475569;
+  --color-text-link: #072566;
+  /* --- WORKFLOW STAGE COLORS (LIGHT SKIN) --- */
+  --color-status-title-received: #2253f7;
+  --color-status-title-applied: #0c4bbe;
+  --color-status-title-interview: #066e72;
+  --color-status-title-offered: #09664f;
+  --color-status-title-discarded: #3d0e00;
+  --color-status-value-received: #5c5f64;
+  --color-status-value-applied: #5c5f64;
+  --color-status-value-interview: #5c5f64;
+  --color-status-value-offered: #5c5f64;
+  --color-status-value-discarded: #5c5f64;
+  --color-background-box-received: #a8bcff;
+  --color-background-box-applied: #8eb0f0;
+  --color-background-box-interview: #81cdcf;
+  --color-background-box-offer: #9efae3;
+  --color-background-box-discarded: #f0bdad;
+  --stage-received-bg: #d1fae5;
+  --stage-applied-bg: #a7f3d0;
+  --stage-interview-bg: #6ee7b3;
+  --stage-offers-bg: #4ade80;
+  /* --- Modal --- */
+  --modal-background: rgba(15, 23, 42, 0.7);
+  --modal-box-shadow: rgba(15, 23, 42, 0.18);
+  --modal-popup-overlay: rgba(15, 23, 42, 0.55);
+  --stage-grid-header-front: #082758;
+  --stage-grid-header-back: #b6b5b5;
+  --stage-border-bottom: #e5e7eb;
+  --stage-row-clickable: #0e0346;
+  --stage-row-clickable-hover: rgba(37, 99, 235, 0.08);
+  --stage-row-position-name: #083877;
+  --stage-row-company-name: #264588;
+  --stage-row-empty: #6b7280;
+  --stage-row-action: #4d4d4d;
+  --stage-popup-border: #d1d5db;
+  --stage-button-background: #f5f7fb;
+  --stage-button-hover-background: #f8fafc;
+  --stage-button-disabled-background: #f1f1f1;
+  --stage-button-delete: #7c0f0f;
+  --stage-button-delete-border: #fecaca;
+  /* --- Entity View --- */
+  --view-labels: #757a81;
+  --view-labels-discarded: #f0bbbbd2;
+  --view-values: #384768;
+  --view-text-background: #e4e4e4;
+  /* --- END STAGE COLORS --- */
+  --color-scheme: light;
+}
+
+/* DARK MODE EXAMPLE */
+[data-skin="dark"] {
+  --color-background-main: #111827;
+  --color-background-page: #1f2937;
+  --color-brand-primary: #6e8ad8;
+  --color-brand-secondary: #6e8ad8;
+  --color-brand-skin: #f9fdbc;
+  --color-background-box: #1f2937;
+  --color-background-button: #1f2937;
+  --color-border-default: #374151;
+  --color-text-default: #f3f4f6;
+  --color-text-muted: #9ca3af;
+  --color-text-link: #6e8ad8;
+  /* --- WORKFLOW STAGE COLORS --- */
+  --color-status-title-received: #2253f7;
+  --color-status-title-applied: #0c4bbe;
+  --color-status-title-interview: #066e72;
+  --color-status-title-offered: #09664f;
+  --color-status-title-discarded: #3d0e00;
+  --color-status-value-received: #404244;
+  --color-status-value-applied: #404244;
+  --color-status-value-interview: #404244;
+  --color-status-value-offered: #404244;
+  --color-status-value-discarded: #404244;
+  --color-background-box-received: #a8bcff;
+  --color-background-box-applied: #8eb0f0;
+  --color-background-box-interview: #81cdcf;
+  --color-background-box-offer: #9efae3;
+  --color-background-box-discarded: #f0bdad;
+  --stage-received-bg: #d1fae5;
+  --stage-applied-bg: #a7f3d0;
+  --stage-interview-bg: #6ee7b3;
+  --stage-offers-bg: #4ade80;
+  /* --- Modal --- */
+  --modal-background: rgba(15, 23, 42, 0.7);
+  --modal-box-shadow: rgba(15, 23, 42, 0.18);
+  --modal-popup-overlay: rgba(15, 23, 42, 0.55);
+  --stage-grid-header-front: #082758;
+  --stage-grid-header-back: #b6b5b5;
+  --stage-border-bottom: #e5e7eb;
+  --stage-row-clickable: #6ca3e0;
+  --stage-row-clickable-hover: rgba(37, 99, 235, 0.08);
+  --stage-row-position-name: #8aaacf;
+  --stage-row-company-name: #6d9cd1;
+  --stage-row-empty: #6b7280;
+  --stage-row-action: #6b7280;
+  --stage-popup-border: #d1d5db;
+  --stage-button-background: #2f3b55;
+  --stage-button-hover-background: #f8fafc;
+  --stage-button-disabled-background: #111827;
+  --stage-button-delete: #c06666;
+  --stage-button-delete-border: #fecaca;
+  /* --- Entity View --- */
+  --view-labels: #475569;
+  --view-labels-discarded: #581414d2;
+  --view-values: #9cb5d1;
+  --view-text-background: #243041;
+  /* --- END STAGE COLORS --- */
+  --color-scheme: dark;
+
+}

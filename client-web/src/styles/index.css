@@ -1,0 +1,18 @@
+/* Central entry for styles — manages all portal-specific styling */
+
+@import './skin-definition.css'; /* Defines variables */
+@import './base.css'; /* Defines structure base */
+@import './home.css';
+@import './gage.css';
+@import './modal.css';
+@import './stage.css';
+@import './job-spec.css';
+@import './settings.css';
+
+/* --- UX GUIDELINE FOR PORTAL STYLES ---
+   When adding styles for a new portal/feature:
+   1. Create a dedicated folder/file (e.g., src/styles/new-portal.css).
+   2. Do NOT redefine basic elements (buttons, containers); use classes defined in base.css.
+   3. Use CSS Variables defined in base.css for all colors (e.g., background: var(--color-background-page)).
+*/
+

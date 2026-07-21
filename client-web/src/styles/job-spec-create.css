@@ -1,0 +1,10 @@
+/* Styles specific to JobSpecCreate page */
+.job-spec-flex {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.job-spec-select-full {
+  flex: 1;
+}

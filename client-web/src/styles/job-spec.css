@@ -1,0 +1,165 @@
+.job-spec-view {
+  display: grid;
+  gap: 22px;
+}
+
+.job-spec {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.job-spec-discarded {
+  background: var(--view-labels-discarded);
+  border-radius: 18px;
+}
+
+.job-spec-decorated {
+  border-radius: 18px;
+  background: var(--color-background-page);
+  margin: 0em 0.4em 0.4em 0.4em;
+  padding: 0.1em 0.5em 0.5em 0.5em;
+}
+
+.job-spec-decorated-discarded {
+  border-radius: 18px;
+  background: var(--view-labels-discarded);
+  margin: 0em 0.4em 0.4em 0.4em;
+  padding: 0.1em 0.5em 0.5em 0.5em;
+}
+
+.job-spec-title {
+  margin: 0rem 1rem 0rem 0rem;
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--view-values);
+}
+
+.job-spec-title-link {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-size: 1.1em;
+}
+
+.job-spec-subtitle {
+  inherits: false;
+  margin: 0.7em 0 0;
+  color: var(--view-values);
+  font-size: 1rem;
+} 
+
+.job-spec-subtitle-link {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.job-spec-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0em 0em 0.5em 0em;
+}
+
+.jov-spec-contact-card {
+  flex-direction: column;
+  display: flex;
+  margin: 0.5em 0em 0.5em 0em;
+  gap: 0.2em;
+}
+.job-spec-contact {
+  font-size: 1em;
+  padding: 0em 0em 0em 0.5em;
+  margin: 0em 0em 0em 0.5em;
+}
+
+.job-spec-contact div {
+  font-size: 1em;
+  height: 4em;
+  padding-left: 3em;
+}
+.job-spec-contact span {
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 0.3em;
+}
+
+.job-spec-section-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin: 0.5em 0em 0.5em 0.2em;
+}
+
+.job-spec-field-row {
+  display: grid;
+  grid-template-columns: minmax(2em, 8em) minmax(0, 1fr);
+  align-items: start;
+  margin: 0em 5em 0em 0em;
+}
+.job-spec-field-row > span:last-child {
+  /*color: var(--color-brand-primary);*/
+}
+
+.section-heading {
+  font-size: 1.1em;
+  color: var(--view-labels);
+  width: 15em;
+}
+
+.job-spec-label {
+  color: var(--view-labels);
+  font-weight: 700;
+  font-size: 0.9em;
+  margin: 0px 0.5em 0em 0em;
+}
+
+.job-spec-label-link {
+  font-weight: 700;
+  font-size: 1em;
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--view-labels);
+}
+
+.job-spec-value {
+  color: var(--view-values);
+  font-weight: 600;
+  font-size: 1em;
+  margin: 0px 0em 0em 0.5em;
+}
+
+.job-spec-text {
+  margin: 0;
+  padding: 16px;
+  background: var(--view-text-background);
+  border-radius: 14px;
+  color: var(--view-values);
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.job-spec-textarea-section {
+  padding-top: 0;
+}
+
+.application-row {
+  display: grid;
+  grid-template-columns: minmax(1em, 0.8em) minmax(1em, 6em) minmax(1em, 8em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em);
+  align-items: center;
+  gap: 10px;
+  margin: 0em 0em 0.5em 0.4em;
+}
+
+.interview-row {
+  display: grid;
+  grid-template-columns: minmax(1em, 0.8em) minmax(1em, 6em) minmax(1em, 9em) minmax(1em, 6em) minmax(1em, 6em);
+  align-items: center;
+  gap: 10px;
+  margin: 0em 0em 0em 0.4em;
+}
+
+.offer-row {
+  display: grid;
+  grid-template-columns: minmax(1em, 0.8em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em);
+  align-items: center;
+  gap: 10px;
+  margin: 0em 0em 0em 0.4em;
+}

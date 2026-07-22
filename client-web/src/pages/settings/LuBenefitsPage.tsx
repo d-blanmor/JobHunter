@@ -172,6 +172,20 @@ export default function LuBenefitsPage() {
                     <td>{benefit.Name}</td>
                     <td className="cell-actions">
                       <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-edit"
+                          onClick={() => openEditModal(benefit)}
+                          aria-label="Edit benefit">
+                          <FaEdit />
+                        </button>
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-delete"
+                          onClick={() => handleDeleteBenefit(benefit)}
+                          aria-label="Delete benefit">
+                          <FaTrashAlt />
+                        </button>
                         {index > 0 ? (
                           <button
                             type="button"
@@ -197,22 +211,6 @@ export default function LuBenefitsPage() {
                         ) : (
                           <div className="action-placeholder" />
                         )}
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-edit"
-                          onClick={() => openEditModal(benefit)}
-                          aria-label="Edit benefit"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-delete"
-                          onClick={() => handleDeleteBenefit(benefit)}
-                          aria-label="Delete benefit"
-                        >
-                          <FaTrashAlt />
-                        </button>
                       </div>
                     </td>
                   </tr>

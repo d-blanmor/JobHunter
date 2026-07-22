@@ -172,6 +172,20 @@ export default function LuWorkModelsPage() {
                     <td>{workmodel.Name}</td>
                     <td className="cell-actions">
                       <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-edit"
+                          onClick={() => openEditModal(workmodel)}
+                          aria-label="Edit work model">
+                          <FaEdit />
+                        </button>
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-delete"
+                          onClick={() => handleDeleteWorkModel(workmodel)}
+                          aria-label="Delete work model">
+                          <FaTrashAlt />
+                        </button>
                         {index > 0 ? (
                           <button
                             type="button"
@@ -197,22 +211,6 @@ export default function LuWorkModelsPage() {
                         ) : (
                           <div className="action-placeholder" />
                         )}
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-edit"
-                          onClick={() => openEditModal(workmodel)}
-                          aria-label="Edit work model"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-delete"
-                          onClick={() => handleDeleteWorkModel(workmodel)}
-                          aria-label="Delete work model"
-                        >
-                          <FaTrashAlt />
-                        </button>
                       </div>
                     </td>
                   </tr>

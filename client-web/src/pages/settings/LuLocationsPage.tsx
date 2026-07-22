@@ -175,6 +175,20 @@ export default function LocationsPage() {
                     <td>{location.City || '—'}</td>
                     <td className="cell-actions">
                       <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-edit"
+                          onClick={() => openEditModal(location)}
+                          aria-label="Edit location">
+                          <FaEdit />
+                        </button>
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-delete"
+                          onClick={() => handleDeleteLocation(location)}
+                          aria-label="Delete location">
+                          <FaTrashAlt />
+                        </button>
                         {index > 0 ? (
                           <button
                             type="button"
@@ -200,22 +214,6 @@ export default function LocationsPage() {
                         ) : (
                           <div className="action-placeholder" />
                         )}
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-edit"
-                          onClick={() => openEditModal(location)}
-                          aria-label="Edit location"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-delete"
-                          onClick={() => handleDeleteLocation(location)}
-                          aria-label="Delete location"
-                        >
-                          <FaTrashAlt />
-                        </button>
                       </div>
                     </td>
                   </tr>

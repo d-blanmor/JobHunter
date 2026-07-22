@@ -175,6 +175,20 @@ export default function TagsPage() {
                     <td>{tag.Context || '—'}</td>
                     <td className="cell-actions">
                       <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-edit"
+                          onClick={() => openEditModal(tag)}
+                          aria-label="Edit tag">
+                          <FaEdit />
+                        </button>
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-delete"
+                          onClick={() => handleDeleteTag(tag)}
+                          aria-label="Delete tag">
+                          <FaTrashAlt />
+                        </button>
                         {index > 0 ? (
                           <button
                             type="button"
@@ -200,22 +214,6 @@ export default function TagsPage() {
                         ) : (
                           <div className="action-placeholder" />
                         )}
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-edit"
-                          onClick={() => openEditModal(tag)}
-                          aria-label="Edit tag"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-delete"
-                          onClick={() => handleDeleteTag(tag)}
-                          aria-label="Delete tag"
-                        >
-                          <FaTrashAlt />
-                        </button>
                       </div>
                     </td>
                   </tr>

@@ -325,8 +325,8 @@ Application settings:
 
 ## API contract
 
-The API is served under the base URL, configurable on the service initiation, by default would be [http://localhost:8000](http://localhost:8000).
-Once the server is running, the public APIs may be seen and tested via swagger at [/docs#/](http://localhost:8000/docs#/).
+The API is served under the base URL, configurable on the service initiation, by default would be [http://localhost:4171](http://localhost:4171).
+Once the server is running, the public APIs may be seen and tested via swagger at [/docs#/](http://localhost:4171/docs#/).
 Here is a list of the current APIs deffinitions:
 
 ### Health

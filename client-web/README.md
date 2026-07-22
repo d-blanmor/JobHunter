@@ -91,7 +91,7 @@ The UI follows a Client-Server architecture, acting as a Single Page Application
 
 1. User interacts with a component (e.g., clicking "View Applications").
 2. The frontend service layer constructs an HTTP request (GET, POST, DELETE).
-3. The request is sent to the base API URL: http://localhost:8000/api/v1/repository/{entity}.
+3. The request is sent to the base API URL: http://localhost:4171/api/v1/repository/{entity}.
 4. The UI handles the JSON response and updates the component state accordingly.
 
 ### Core Modules & Features
@@ -189,7 +189,7 @@ These modules allow users to manage and view the lookup data that enriches job s
 
 ### Prerequisites
 
-1. The JobHunter Backend API must be running: http://127.0.0.1:8000
+1. The JobHunter Backend API must be running: http://127.0.0.1:4171
 2. **Node ≥ 20** and **npm** installed.
 
 ```bash
@@ -236,7 +236,7 @@ npm run dev    # Opens http://localhost:5173 in your browser
 npm run build    # Generates /dist
 
 # Preview locally after building
-npm run preview  # Serves the static assets on localhost:4173
+npm run preview  # Serves the static assets on localhost:4170
 ```
 
 ---

@@ -34,7 +34,7 @@ class rolesLnkJobSpecBenefit(SQLModel, table=True):
 
 class rolesLnkOfferBenefit(SQLModel, table=True):
     __tablename__ = "roles_lnk_offers_benefits"
-    JobSpecId: int = Field(
+    OfferId: int = Field(
         primary_key=True,
         foreign_key="roles_offers.Id", 
     )

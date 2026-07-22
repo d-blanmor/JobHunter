@@ -4,7 +4,6 @@ from collections.abc import Generator
 
 from sqlmodel import Session, SQLModel, create_engine, select
 
-#from app.models import rolesLuLocation, rolesLuRoleType, rolesLuWorkModel, rolesLuBenefit, rolesSource
 import app.models as models
 
 if(conf_dbtype() == "sqlite"):

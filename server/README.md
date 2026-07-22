@@ -1,16 +1,24 @@
 # JobHunter API: Centralized Job Application Management System
 
-JobHunter is a backend-first job application tracker built with Python, FastAPI, SQLModel, and SQLite. The service provides a stable API layer for storing job specifications, related contacts, applications, interviews, and lookup values such as locations, work models, role types, and benefits.
+JobHunter is a centralized job application management system. This client dashboard provides a user-friendly interface for interacting with the robust, backend-first JobHunter API. Its purpose is to transform complex data models into an intuitive experience for tracking job applications, managing profiles, and viewing career history.
 
-This repository is intended to act as both:
-- a practical backend for local development, and
-- a client-facing contract definition for future UI or automation integrations.
+## Table of Contents
+
+| Section                                   |
+|-------------------------------------------|
+|  [Overview](#overview)                    |
+|  [Architecture](#architecture)            |
+|  [Data Model](#data-model)                |
+|  [API contract](#api-contract)            |
+|  [Testing](#testing)                      |
+|  [Notes for clients](#notes-for-clients)  |
 
 ---
 
-## 1. Purpose
+## Overview
 
 The system centralizes the management of:
+
 - job specifications,
 - applications and interviews,
 - companies and work locations,
@@ -20,9 +28,14 @@ The API is designed to be simple, predictable, and easy to consume from a web cl
 
 ---
 
-## 2. Architecture
+## Architecture
+
+### Database
+
+- Sqlite is currently the only option.
 
 ### Stack
+
 - Python 3.11+
 - FastAPI
 - SQLModel
@@ -31,6 +44,7 @@ The API is designed to be simple, predictable, and easy to consume from a web cl
 - Uvicorn
 
 ### Design principles
+
 - Backend-first API design
 - Repository-style CRUD endpoints
 - Soft delete via `IsActive = false`
@@ -39,271 +53,484 @@ The API is designed to be simple, predictable, and easy to consume from a web cl
 
 ---
 
-## 3. Data model overview
+## Data Model
 
-The application uses a small relational model with lookup entities and core entities.
+The application uses a small relational model with lookup entities and core entities. There are two domain a global with **app** prefix or none, and rolespec specific marked with a prefix **roles**
 
-### Lookup entities
-These are used to categorize or enrich job specs.
+Four kinds of data will be stored in the following tables:
 
-- `LuLocation`
-  - `Id` (int, PK, auto-increment)
-  - `Country` (string)
-  - `City` (string, optional)
-  - `IsActive` (bool)
-  - `Order` (int)
+- Lookup values: Marked with the string 'lu_' in the name of the table, all of them will have three fields, Id, IsActive and Order, a Name field will have the definition, however some lookups may be defined by other set of values, see below table definitions. An exception to the naming rule is tags, they may be considered as a lookup, however, is meant to act in a global application scope.
+- Relationships (n2n): Can be spotted by the table name since it will contain the string 'lnk_'. These tables act as relational tables between entities or lookups. The common structure will have these fields primary key and secondary key corresponding to the id of the entities linked, Order, and in some cases Notes.
+- Entity tables: The rest of the tables will have information that will define different entities
+- Settings: is an unique table that could be considered on its own, Key defines the setting name and Value the setting option, Notes for user friendly description and soft deletion IsActive field.
 
-- `LuRoleType`
-  - `Id` (int, PK, auto-increment)
-  - `Name` (string)
-  - `IsActive` (bool)
-  - `Order` (int)
+Data deletion will be done as soft deletion, meaining the data will not be erased, but the column IsActive will define if the row is soft-deleted (value false) or not (value true).
 
-- `LuWorkModel`
-  - `Id` (int, PK, auto-increment)
-  - `Name` (string)
-  - `IsActive` (bool)
-  - `Order` (int)
+There is however an exception to this rule, link tables will be hard deleted, since primary and secondary keys can't be duplicated, when a link is removed, the row will be deleted from the table.
 
-- `LuBenefit`
-  - `Id` (int, PK, auto-increment)
-  - `Name` (string)
-  - `IsActive` (bool)
-  - `Order` (int)
+### Data Structure
 
-### Core entities
-- `Source`
-  - `Id` (int, PK, auto-increment)
-  - `Name` (string)
-  - `PortalURL` (string, optional)
-  - `Details` (string, optional)
-  - `IsActive` (bool)
+#### Lookup values
 
-- `PlaceOfWork`
-  - `Id` (int, PK, auto-increment)
-  - `LocationId` (int, FK to `LuLocation`)
-  - `Address` (string, optional)
-  - `IsActive` (bool)
+Here is a definition for each lookup table:
 
-- `Contact`
-  - `Id` (int, PK, auto-increment)
-  - `Name` (string)
-  - `Email` (string, optional)
-  - `Phone` (string, optional)
-  - `Details` (string, optional)
-  - `IsActive` (bool)
+- `Tags`
 
-- `Application`
-  - `Id` (int, PK, auto-increment)
-  - `Applied` (datetime)
-  - `Confirmed` (datetime, optional)
-  - `Discarded` (datetime, optional)
-  - `Notes` (string, optional)
-  - `IsActive` (bool)
+  | Field      | Type    | Key                | Nullable |
+  |------------|---------|--------------------|----------|
+  | `Id`       | int     | PK, auto-increment | No       |
+  | `Name`     | string  |                    | No       |
+  | `Context`  | string  |                    | Yes      |
+  | `IsActive` | boolean |                    | No       |
+  | `Order`    | int     |                    | No       |
 
-- `JobSpec`
-  - `Id` (int, PK, auto-increment)
-  - `Position` (string)
-  - `Company` (string, optional)
-  - `SourceId` (int, FK to `Source`)
-  - `Link` (string, optional)
-  - `Description` (string, optional)
-  - `PlaceOfWorkId` (int, FK to `PlaceOfWork`)
-  - `WorkModelId` (int, FK to `LuWorkModel`)
-  - `RoleTypeId` (int, FK to `LuRoleType`)
-  - `SalaryExpectation` (string, optional)
-  - `ContactId` (int, FK to `Contact`)
-  - `Published` (datetime, optional)
-  - `Created` (datetime)
-  - `ApplicationId` (int, FK to `Application`)
-  - `IsActive` (bool)
+- `Roles_lu_Benefits`
 
-- `Interview`
-  - `Id` (int, PK, auto-increment)
-  - `ApplicationId` (int, FK to `Application`)
-  - `Scheduled` (datetime, optional)
-  - `ContactId` (int, FK to `Contact`)
-  - `Notes` (string, optional)
-  - `Outcome` (string, optional)
-  - `Feedback` (string, optional)
-  - `IsActive` (bool)
+  | Field      | Type    | Key                | Nullable |
+  |------------|---------|--------------------|----------|
+  | `Id`       | int     | PK, auto-increment | No       |
+  | `Name`     | string  |                    | No       |
+  | `IsActive` | boolean |                    | No       |
+  | `Order`    | int     |                    | No       |
 
-- `LnkJobSpecBenefit`
-  - `JobSpecId` (int, composite PK)
-  - `BenefitId` (int, composite PK)
-  - `Notes` (string, optional)
-  - `Order` (int)
-  - `IsActive` (bool)
+  Initial rows:
+
+  | Id  | Name                 | IsActive | Order |
+  |-----|----------------------|----------|-------|
+  | 1   | Health Insurance     | 1        | 1     |
+  | 2   | Pension Plan         | 1        | 2     |
+  | 3   | Bonus                | 1        | 3     |
+  | 4   | Vacation             | 1        | 4     |
+  | 5   | Commuting allowance  | 1        | 5     |
+
+- `Roles_lu_Locations`
+
+  | Field      | Type    | Key                | Nullable |
+  |------------|---------|--------------------|----------|
+  | `Id`       | int     | PK, auto-increment | No       |
+  | `Country`  | string  |                    | No       |
+  | `City`     | string  |                    | Yes      |
+  | `IsActive` | boolean |                    | No       |
+  | `Order`    | int     |                    | No       |
+
+  Initial rows:
+
+  | Id  | Country      | City             | IsActive | Order |
+  |-----|--------------|------------------|----------|-------|
+  | 1   | Ireland      |                  | 1        | 1     |
+
+- `Roles_lu_Role_Types`
+
+  | Field      | Type    | Key                | Nullable |
+  |------------|---------|--------------------|----------|
+  | `Id`       | int     | PK, auto-increment | No       |
+  | `Name`     | string  |                    | No       |
+  | `IsActive` | boolean |                    | No       |
+  | `Order`    | int     |                    | No       |
+
+  Initial rows:
+
+  | Id  | Name      | IsActive | Order |
+  |-----|-----------|----------|-------|
+  | 1   | Permanent | 1        | 1     |
+  | 2   | Contract  | 1        | 2     |
+  | 3   | Full-Time | 1        | 3     |
+
+- `Roles_lu_Work_Models`
+
+  | Field      | Type    | Key                | Nullable |
+  |------------|---------|--------------------|----------|
+  | `Id`       | int     | PK, auto-increment | No       |
+  | `Name`     | string  |                    | No       |
+  | `IsActive` | boolean |                    | No       |
+  | `Order`    | int     |                    | No       |
+
+  Initial rows:
+
+  | Id  | Name    | IsActive | Order |
+  |-----|---------|----------|-------|
+  | 1   | On site | 1        | 1     |
+  | 2   | Remote  | 1        | 2     |
+  | 3   | Hybrid  | 1        | 3     |
+
+#### Relationships
+
+Link tables between entities:
+
+- `Roles_lnk_JobSpec_Tags`
+
+  | Field         | Type    | Key                         | Nullable |
+  |---------------|---------|-----------------------------|----------|
+  | `JobSpecId`   | int     | PK, FK Roles_Job_Specs.Id   | No       |
+  | `TagId`       | int     | PK, FK Tags.Id              | No       |
+  | `Order`       | int     |                             | No       |
+
+- `Roles_lnk_JobSpecs_Benefits`
+
+  | Field         | Type    | Key                         | Nullable |
+  |---------------|---------|-----------------------------|----------|
+  | `JobSpecId`   | int     | PK, FK Roles_Job_Specs.Id   | No       |
+  | `LuBenefitId` | int     | PK, FK Roles_lu_Benefits.Id | No       |
+  | `Notes`       | string  |                             | Yes      |
+  | `Order`       | int     |                             | No       |
+
+- `Roles_lnk_Offers_Benefits`
+
+  | Field         | Type    | Key                         | Nullable |
+  |---------------|---------|-----------------------------|----------|
+  | `OfferId`     | int     | PK, FK Roles_Offers.Id      | No       |
+  | `LuBenefitId` | int     | PK, FK Roles_lu_Benefits.Id | No       |
+  | `Notes`       | string  |                             | Yes      |
+  | `Order`       | int     |                             | No       |
+
+#### Core entities
+
+Main entities:
+
+- `Roles_Sources`
+
+  | Field               | Type     | Key                        | Nullable |
+  |---------------------|----------|----------------------------|----------|
+  | `Id`                | int      | PK                         | No       |
+  | `Name`              | string   |                            | No       |
+  | `ParentId`          | int      | FK Roles_Sources.Id        | Yes      |
+  | `PortalURL`         | string   |                            | Yes      |
+  | `Icon`              | blob     |                            | Yes      |
+  | `Details`           | string   |                            | Yes      |
+  | `IsActive`          | boolean  |                            | No       |
+  | `Order`             | int      |                            | No       |
+
+- `Roles_Places_Of_Work`
+
+  | Field               | Type     | Key                        | Nullable |
+  |---------------------|----------|----------------------------|----------|
+  | `Id`                | int      | PK                         | No       |
+  | `LocationId`        | int      | FK Roles_lu_Locations.Id   | No       |
+  | `Address`           | string   |                            | Yes      |
+  | `IsActive`          | boolean  |                            | No       |
+
+- `Roles_Contacts`
+
+  | Field               | Type     | Key                        | Nullable |
+  |---------------------|----------|----------------------------|----------|
+  | `Id`                | int      | PK                         | No       |
+  | `Name`              | string   |                            | No       |
+  | `Email`             | string   |                            | Yes      |
+  | `Phone`             | string   |                            | Yes      |
+  | `Details`           | string   |                            | Yes      |
+  | `SourceId`          | int      | FK Roles_Sources.Id        | Yes      |
+  | `IsActive`          | boolean  |                            | No       |
+
+- `Roles_Job_Specs`
+
+  | Field               | Type     | Key                        | Nullable |
+  |---------------------|----------|----------------------------|----------|
+  | `Id`                | int      | PK                         | No       |
+  | `Position`          | string   |                            | No       |
+  | `Company`           | string   |                            | Yes      |
+  | `SourceId`          | int      | FK Roles_Sources.Id        | Yes      |
+  | `Link`              | string   |                            | Yes      |
+  | `PlaceOfWorkId`     | int      | FK Roles_Places_Of_Work.Id | Yes      |
+  | `WorkModelId`       | int      | FK Roles_lu_Work_Models.Id | Yes      |
+  | `RoleTypeId`        | int      | FK Roles_lu_Role_Types.Id  | Yes      |
+  | `SalaryExpectation` | string   |                            | Yes      |
+  | `ContactId`         | int      | FK Roles_Contacts.Id       | Yes      |
+  | `Description`       | string   |                            | Yes      |
+  | `Analysis`          | string   |                            | Yes      |
+  | `Notes`             | string   |                            | Yes      |
+  | `Published`         | datetime |                            | Yes      |
+  | `Created`           | datetime |                            | No       |
+  | `IsActive`          | boolean  |                            | No       |
+
+- `Roles_Applications`
+
+  | Field               | Type     | Key                        | Nullable |
+  |---------------------|----------|----------------------------|----------|
+  | `Id`                | int      | PK                         | No       |
+  | `JobSpecId`         | int      | FK Roles_Job_Specs.Id      | No       |
+  | `Applied`           | datetime |                            | No       |
+  | `Confirmed`         | datetime |                            | Yes      |
+  | `Discarded`         | datetime |                            | Yes      |
+  | `Letter`            | string   |                            | Yes      |
+  | `CV`                | string   |                            | Yes      |
+  | `Notes`             | string   |                            | Yes      |
+  | `IsActive`          | boolean  |                            | No       |
+
+- `Roles_Interviews`
+
+  | Field               | Type     | Key                        | Nullable |
+  |---------------------|----------|----------------------------|----------|
+  | `Id`                | int      | PK                         | No       |
+  | `ApplicationId`     | int      | FK Roles_Applications.Id   | No       |
+  | `Scheduled`         | datetime |                            | Yes      |
+  | `ContactId`         | int      | FK Roles_Contacts.Id       | Yes      |
+  | `Description`       | string   |                            | Yes      |
+  | `Analysis`          | string   |                            | Yes      |
+  | `Notes`             | string   |                            | Yes      |
+  | `Outcome`           | string   |                            | Yes      |
+  | `Feedback`          | string   |                            | Yes      |
+  | `IsActive`          | boolean  |                            | No       |
+
+- `Roles_Offers`
+
+  | Field               | Type     | Key                        | Nullable |
+  |---------------------|----------|----------------------------|----------|
+  | `Id`                | int      | PK                         | No       |
+  | `ApplicationId`     | int      | FK Roles_Applications.Id   | No       |
+  | `Salary`            | string   |                            | Yes      |
+  | `Description`       | string   |                            | Yes      |
+  | `Notes`             | string   |                            | Yes      |
+  | `IsActive`          | boolean  |                            | No       |
+
+#### App Settings
+
+Application settings:
+
+- `app_Settings`
+
+  | Field               | Type     | Key                        | Nullable |
+  |---------------------|----------|----------------------------|----------|
+  | `Key`               | string   | PK                         | No       |
+  | `Value`             | string   |                            | Yes      |
+  | `Notes`             | string   |                            | Yes      |
+  | `IsActive`          | boolean  |                            | No       |
+
+#### Views
+
+- `vwWorkflow`: Used to populate workflow stages, the result contents one and only one JobSpec, regardless of relationships between other tables, providing also the information needed to identify the stage the job specification is on:
+
+  - Received: JobSpecId defined AND ApplicationId, InterviewId and OfferId are undefined.
+  - Applied: JobSpecId and ApplicationId are defined AND InterviewId and OfferId are undefined AND Discarded is undefined.
+  - Interview: JobSpecId, ApplicationId and InterviewId are defined AND OfferId is undefined AND Discarded is undefined.
+  - Offer: JobSpecId, ApplicationId and OfferId are defined AND Discarded is undefined.
+  - Discarded: JobSpecId and ApplicationId are defined AND Discarded is defined.
+
+  | Field           | Type     |
+  |-----------------|----------|
+  | `JobSpecId`     | int      |
+  | `ApplicationId` | int      |
+  | `InterviewId`   | int      |
+  | `OfferId`       | int      |
+  | `Position`      | string   |
+  | `Company`       | string   |
+  | `RoleTypeId`    | int      |
+  | `WorkModelId`   | int      |
+  | `Created`       | datetime |
+  | `Applied`       | datetime |
+  | `Discarded`     | datetime |
+  | `Scheduled`     | datetime |
+  | `Offered`       | datetime |
 
 ---
 
-## 4. API contract
+## API contract
 
-The API is served under the base URL:
-
-- `http://127.0.0.1:8000`
+The API is served under the base URL, configurable on the service initiation, by default would be [http://localhost:8000](http://localhost:8000).
+Once the server is running, the public APIs may be seen and tested via swagger at [/docs#/](http://localhost:8000/docs#/).
+Here is a list of the current APIs deffinitions:
 
 ### Health
-- `GET /health`
 
-Returns:
-```json
-{
-  "status": "ok"
-}
+- `app\routers\initiate.py`
 
-### Repository-style endpoints
-The main CRUD routes follow this pattern:
-- GET /api/v1/repository/{entity}
-- GET /api/v1/repository/{entity}/{id}
-- POST /api/v1/repository/{entity}
-- DELETE /api/v1/repository/{entity}/{id}
+  | Name            | Command       | Method  |
+  |-----------------|---------------|---------|
+  | Health Check    | `/v1/health`  | GET     |
 
-Supported entities:
-- locations
-- role-types
-- work-models
-- benefits
-- sources
-- places-of-work
-- contacts
-- applications
-- job-specs
-- interviews
-- job-spec-benefits
+### Lookup APIs
 
-Example routes
+- `app\routers\tags.py`:
 
-Locations
-- GET /api/v1/repository/locations
-- GET /api/v1/repository/locations/{location_id}
-- POST /api/v1/repository/locations
-- DELETE /api/v1/repository/locations/{location_id}
+  | Name                  | Command                              | Method  |
+  |-----------------------|--------------------------------------|---------|
+  | List Tags             | `/v1/tags`                           | GET     |
+  | Get Tag               | `/v1/tags/{tag_id}`                  | GET     |
+  | Get Tag by name       | `/v1/tags/by-name/{tag_Name}`        | GET     |
+  | Get Tags by context   | `/v1/tags/by-context/{tag_Context}`  | GET     |
+  | Create or Update Tag  | `/v1/tags`                           | POST    |
+  | Delete Tag            | `/v1/tags/{tag_id}`                  | DELETE  |
 
-Job specs
-- GET /api/v1/repository/job-specs
-- GET /api/v1/repository/job-specs/{job_spec_id}
-- POST /api/v1/repository/job-specs
-- DELETE /api/v1/repository/job-specs/{job_spec_id}
+- `app\routers\roles\lu_benefits.py`:
 
-Additional helper endpoints (summary and lookups)
+  | Name                      | Command                                   | Method  |
+  |---------------------------|-------------------------------------------|---------|
+  | List Benefits             | `/v1/roles/lookup/benefits`               | GET     |
+  | Get Benefit               | `/v1/roles/lookup/benefits/{benefit_id}`  | GET     |
+  | Create or Update Benefit  | `/v1/roles/lookup/benefits`               | POST    |
+  | Delete Benefit            | `/v1/roles/lookup/benefits/{benefit_id}`  | DELETE  |
 
-- GET /api/v1/repository/applications/by-job-spec/{job_spec_id}
-  - Returns the application linked to the given JobSpec (if any and active).
+- `app\routers\roles\lu_locations.py`:
 
-- GET /api/v1/repository/interviews/by-application/{application_id}
-  - Returns active interviews linked to the provided Application, ordered by `Scheduled`.
+  | Name                  | Command                                   | Method  |
+  |-----------------------|-------------------------------------------|---------|
+  | List Tags             | `v1/roles/lookup/locations`               | GET     |
+  | Get Tag               | `v1/roles/lookup/locations/{location_id}` | GET     |
+  | Create or Update Tag  | `v1/roles/lookup/locations`               | POST    |
+  | Delete Tag            | `v1/roles/lookup/locations/{location_id}` | DELETE  |
 
-- GET /api/v1/repository/interviews/by-job-spec/{job_spec_id}
-  - Returns active interviews for the Application linked to the provided JobSpec, ordered by `Scheduled`.
+- `app\routers\roles\lu_roletypes.py`:
 
-- GET /api/v1/repository/job-specs/received
-  - Returns JobSpecs where `IsActive = true` and `ApplicationId IS NULL`.
+  | Name                        | Command                                       | Method  |
+  |-----------------------------|-----------------------------------------------|---------|
+  | List Role Types             | `/v1/roles/lookup/role-types`                 | GET     |
+  | Get Role Type               | `/v1/roles/lookup/role-types/{role_type_id}`  | GET     |
+  | Create or Update Role Type  | `/v1/roles/lookup/role-types`                 | POST    |
+  | Delete Role Type            | `/v1/roles/lookup/role-types/{role_type_id}`  | DELETE  |
 
-- GET /api/v1/repository/job-specs/applied
-  - Returns JobSpecs where `IsActive = true`, `ApplicationId IS NOT NULL`, the linked Application has `Discarded IS NULL`, and there are no active Interviews linked to that Application.
+- `app\routers\roles\lu_workmodels.py`:
 
-- GET /api/v1/repository/job-specs/interview
-  - Returns JobSpecs where `IsActive = true`, `ApplicationId IS NOT NULL`, the linked Application has `Discarded IS NULL`, and there is at least one active Interview linked to that Application.
+  | Name                        | Command                                         | Method  |
+  |-----------------------------|-------------------------------------------------|---------|
+  | List Work Models            | `/v1/roles/lookup/work-models`                  | GET     |
+  | Get Work Model              | `/v1/roles/lookup/work-models/{work_model_id}`  | GET     |
+  | Create or Update Work Model | `/v1/roles/lookup/work-models`                  | POST    |
+  | Delete Work Model           | `/v1/roles/lookup/work-models/{work_model_id}`  | DELETE  |
 
-- GET /api/v1/repository/job-specs/offers
-  - Placeholder for offered specs (returns empty list for now).
+### Relationship APIs
 
-- GET /api/v1/repository/job-specs/discarded
-  - Returns JobSpecs where `IsActive = true`, `ApplicationId IS NOT NULL`, and the linked Application has `Discarded IS NOT NULL`.
+- `app\routers\roles\lnk_jobspecs_benefits.py`:
 
-Query behavior
-- GET list endpoints accept an active_only query parameter.
-- By default, active_only=true returns only records where IsActive=true.
-- DELETE performs a soft delete by setting IsActive=false.
+  | Name                              | Command                                                     | Method  |
+  |-----------------------------------|-------------------------------------------------------------|---------|
+  | List JobSpecs-Benefits            | `/v1/roles/lnk/jobspecs-benefits`                           | GET     |
+  | Get JobSpec-Benefit               | `/v1/roles/lnk/jobspec-benefit/{jobspec_id}/{benefit_id}`   | GET     |
+  | Get Benefits from JobSpec         | `/v1/roles/lnk/jobspec-benefits/{jobspec_id}`               | GET     |
+  | Get JobSpecs from Benefit         | `/v1/roles/lnk/jobspecs-benefit/{benefit_id}`               | GET     |
+  | Create or Update JobSpec-Benefit  | `/v1/roles/lnk/jobspec-benefit`                             | POST    |
+  | Delete Benefits from JobSpec      | `/v1/roles/lnk/jobspec-benefits/{jobspec_id}`               | DELETE  |
+  | Delete JobSpecs from Benefit      | `/v1/roles/lnk/jobspecs-benefit/{benefit_id}`               | DELETE  |
+  | Delete JobSpec-Benefit            | `/v1/roles/lnk/jobspecs-benefits/{jobspec_id}/{benefit_id}` | DELETE  |
 
-Create/update behavior
-- POST creates a new entity when no Id is provided.
-- POST updates an existing entity if an Id is provided and the record exists.
+- `app\routers\roles\lnk_offers_benefits.py`:
+
+  | Name                            | Command                                                 | Method  |
+  |---------------------------------|---------------------------------------------------------|---------|
+  | List Offers-Benefits            | `/v1/roles/lnk/offers-benefits`                         | GET     |
+  | Get Offer-Benefit               | `/v1/roles/lnk/offer-benefit/{offer_id}/{benefit_id}`   | GET     |
+  | Get Benefits from Offer         | `/v1/roles/lnk/offer-benefits/{offer_id}`               | GET     |
+  | Get Offers from Benefit         | `/v1/roles/lnk/offers-benefit/{benefit_id}`             | GET     |
+  | Create or Update Offer-Benefit  | `/v1/roles/lnk/offer-benefit`                           | POST    |
+  | Delete Benefits from Offer      | `/v1/roles/lnk/offer-benefits/{offer_id}`               | DELETE  |
+  | Delete Offers from Benefit      | `/v1/roles/lnk/offers-benefit/{benefit_id}`             | DELETE  |
+  | Delete Offer-Benefit            | `/v1/roles/lnk/offers-benefits/{offer_id}/{benefit_id}` | DELETE  |
+
+- `app\routers\roles\lnk_jobspecs_tags.py`:
+
+  | Name                              | Command                                         | Method  |
+  |-----------------------------------|-------------------------------------------------|---------|
+  | List JobSpecs-Tags            | `/v1/roles/lnk/jobspecs-tags`                       | GET     |
+  | Get JobSpec-Tag               | `/v1/roles/lnk/jobspec-tag/{jobspec_id}/{tag_id}`   | GET     |
+  | Get Tags from JobSpec         | `/v1/roles/lnk/jobspec-tags/{jobspec_id}`           | GET     |
+  | Get JobSpecs from Tag         | `/v1/roles/lnk/jobspecs-tag/{tag_id}`               | GET     |
+  | Create or Update JobSpec-Tag  | `/v1/roles/lnk/jobspec-tag`                         | POST    |
+  | Delete Tags from JobSpec      | `/v1/roles/lnk/jobspec-tags/{jobspec_id}`           | DELETE  |
+  | Delete JobSpecs from Tag      | `/v1/roles/lnk/jobspecs-tag/{tag_id}`               | DELETE  |
+  | Delete JobSpec-Tag            | `/v1/roles/lnk/jobspecs-tags/{jobspec_id}/{tag_id}` | DELETE  |
+
+### Entities APIs
+
+- `app\routers\roles\sources.py`:
+
+  | Name                    | Command                                   | Method  |
+  |-------------------------|-------------------------------------------|---------|
+  | List Sources            | `/v1/roles/sources`                       | GET     |
+  | List main Sources       | `/v1/roles/sources-main`                  | GET     |
+  | Get Source              | `/v1/roles/sources/{source_id}`           | GET     |
+  | Get Sources by Parent   | `/v1/roles/sources/by-parent/{parent_id}` | GET     |
+  | Create or Update Source | `/v1/roles/sources`                       | POST    |
+  | Delete Source           | `/v1/roles/sources/{source_id}`           | DELETE  |
+
+- `app\routers\roles\contacts.py`:
+
+  | Name                     | Command                                    | Method  |
+  |--------------------------|--------------------------------------------|---------|
+  | List Contacts            | `/v1/roles/contacts`                       | GET     |
+  | Get Contact              | `/v1/roles/contacts/{contact_id}`          | GET     |
+  | Get Contact by Source    | `/v1/roles/contacts/by-source/{source_id}` | GET     |
+  | Create or Update Contact | `/v1/roles/contacts`                       | POST    |
+  | Delete Contact           | `/v1/roles/contacts/{contact_id}`          | DELETE  |
+
+- `app\routers\roles\placesofwork.py`:
+
+  | Name                           | Command                                        | Method  |
+  |--------------------------------|------------------------------------------------|---------|
+  | List Places of Work            | `/v1/roles/places-of-work`                     | GET     |
+  | Get Place of Work              | `/v1/roles/places-of-work/{place_of_work_id}`  | GET     |
+  | Create or Update Place of Work | `/v1/roles/places-of-work`                     | POST    |
+  | Delete Place of Work           | `/v1/roles/places-of-work/{place_of_work_id}`  | DELETE  |
+
+- `app\routers\roles\jobspecs.py`:
+
+  | Name                      | Command                             | Method  |
+  |---------------------------|-------------------------------------|---------|
+  | List Job Specs            | `/v1/roles/job-specs`               | GET     |
+  | Get Job Spec              | `/v1/roles/job-specs/{job_spec_id}` | GET     |
+  | Create or Update Job Spec | `/v1/roles/job-specs`               | POST    |
+  | Delete Job Spec           | `/v1/roles/job-specs/{job_spec_id}` | DELETE  |
+
+- `app\routers\roles\applications.py`:
+
+  | Name                         | Command                                          | Method  |
+  |------------------------------|--------------------------------------------------|---------|
+  | List Applications            | `/v1/roles/applications`                         | GET     |
+  | Get Application              | `/v1/roles/applications`                         | GET     |
+  | Get Applications by Job Spec | `/v1/roles/applications-by-jobspec/{jobspec_id}` | GET     |
+  | Create or Update Application | `/v1/roles/applications`                         | POST    |
+  | Delete Application           | `/v1/roles/applications/{application_id}`        | DELETE  |
+
+- `app\routers\roles\interviews.py`:
+
+  | Name                       | Command                                        | Method  |
+  |----------------------------|------------------------------------------------|---------|
+  | List Interviews            | `/v1/roles/interviews`                         | GET     |
+  | Get Interview              | `/v1/roles/interviews/{interview_id}`          | GET     |
+  | Get Interview by Job Spec  | `/v1/roles/interviews-by-jobspec/{jobspec_id}` | GET     |
+  | Create or Update Interview | `/v1/roles/interviews`                         | POST    |
+  | Delete Interview           | `/v1/roles/interviews/{interview_id}`          | DELETE  |
+
+- `app\routers\roles\offers.py`:
+
+  | Name                    | Command                                     | Method  |
+  |-------------------------|---------------------------------------------|---------|
+  | List Offers             | `/v1/roles/offers`                          | GET     |
+  | Get Offer               | `/v1/roles/offers/{offer_id}`               | GET     |
+  | Get Offers by Job Spec  | `/v1/roles/offers-by-jobspec/{jobspec_id}`  | GET     |
+  | Create or Update Offer  | `/v1/roles/offers`                          | POST    |
+  | Delete Offer            | `/v1/roles/offers/{offer_id}`               | DELETE  |
+
+### App Settings and Logic APIs
+
+- `app\routers\appSettings.py`:
+
+  | Name                      | Command                   | Method  |
+  |---------------------------|---------------------------|---------|
+  | List Settings             | `/v1/app-settings`        | GET     |
+  | Get Setting               | `/v1/app-settings/{key}`  | GET     |
+  | Create or Update Setting  | `/v1/app-settings`        | POST    |
+  | Delete Setting            | `/v1/app-settings/{key}`  | DELETE  |
+
+- `app\routers\workflows\stages.py`:
+
+  | Name                      | Command                         | Method  |
+  |---------------------------|---------------------------------|---------|
+  | List Job Specs Received   | `/v1/workflow/stages/received`  | GET     |
+  | List Job Specs Applied    | `/v1/workflow/stages/applied`   | GET     |
+  | List Job Specs Interview  | `/v1/workflow/stages/interview` | GET     |
+  | List Job Specs Offer      | `/v1/workflow/stages/offer`     | GET     |
+  | List Job Specs Discarded  | `/v1/workflow/stages/discarded` | GET     |
 
 ---
 
-## 5. Example requests
+## Testing
 
-Create a location
-```shell
-curl -X POST "http://127.0.0.1:8000/api/v1/repository/locations" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "Country": "Germany",
-    "City": "Berlin",
-    "Order": 2
-  }'
-```
-
-List active locations
-```shell
-curl "http://127.0.0.1:8000/api/v1/repository/locations"
-```
-
-Create a job spec
-```shell
-curl -X POST "http://127.0.0.1:8000/api/v1/repository/job-specs" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "Position": "Backend Engineer",
-    "Company": "Example Corp",
-    "SourceId": 1,
-    "WorkModelId": 2,
-    "RoleTypeId": 1,
-    "Description": "Build APIs for a growing product team",
-    "IsActive": true
-  }'
-```
-
----
-
-## 6. Seed data
-
-On startup, the app initializes the database and seeds initial lookup data, including sample values such as:
-- Ireland
-- Permanent
-- Contract
-- On site
-- Remote
-- Hybrid
-- Health Insurance
-- Pension Plan
-
----
-
-## 7. Local development
-
-Create a virtual environment
-```shell
-python -m venv .venv
-```
-
-Install dependencies
-On Windows:
-```shell
-.venv\Scripts\python -m pip install -r requirements.txt
-```
-
-Run the API
-```shell
-.venv\Scripts\uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-Run tests
-```shell
-.venv\Scripts\python -m pytest -q
-```
-
----
-
-## 8. Testing
 The repository includes smoke tests for:
+
 - health endpoint availability,
 - repository route availability,
 - basic CRUD flow for locations.
 
 To run the tests:
+
 ```shell
 cd server
 .venv\Scripts\python -m pytest -q
@@ -311,31 +538,12 @@ cd server
 
 ---
 
-## 9. Notes for clients
+## Notes for clients
 
 Clients should assume:
+
 - JSON is the response format,
 - IDs are integers,
 - soft-deleted records are not returned by default in list endpoints,
 - POST is used for both create and update operations,
 - DELETE is a soft delete operation rather than a hard removal.
-
----
-
-## 10. Future direction
-
-The current backend is intentionally simple and extensible. It is suitable for:
-- a web frontend,
-- a desktop client,
-- mobile integrations,
-- automation or import pipelines.
-
-This README is intended to serve as a stable contract for future client development.
-
-cd server
-.venv\Scripts\python -m pip install -r requirements.txt
-.venv\Scripts\pytest -q
-
----
-
-Last updated: 2026-06-28

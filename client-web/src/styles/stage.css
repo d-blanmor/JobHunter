@@ -143,6 +143,7 @@
 .stage-action-button:hover:not(.disabled) {
   background: var(--stage-button-hover-background);
   transform: translateY(-1px);
+  box-shadow: 0 1px 10px var(--color-brand-secondary);
 }
 
 .stage-action-button-delete {
@@ -176,7 +177,7 @@
 .stage-button {
   background: var(--stage-button-background);
   color: var(--color-brand-primary);
-  box-shadow: 0 1px 10px var(--color-brand-secondary);
+  box-shadow: 0 1px 1px var(--color-brand-secondary);
   cursor: pointer;
   display: inline-block;
   text-decoration: none;
@@ -186,12 +187,14 @@
 }
 .stage-button:disabled {
   background: var(--stage-button-disabled-background);
+  color: var(--stage-button-disabled);
+  border-color: var(--stage-button-disabled);
   box-shadow: none;
   cursor:default;
 }
 .stage-button:hover:not(.disabled) {
   color: var(--color-brand-primary);
-  box-shadow: 0 1px 1px var(--color-brand-secondary);
+  box-shadow: 0 1px 10px var(--color-brand-secondary);
 }
 
 .stage-secondary-button{

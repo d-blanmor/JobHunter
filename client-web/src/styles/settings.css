@@ -102,6 +102,7 @@
 }
 
 .cell-actions {
+  padding-left: 30em;
   display: flex;
   width: 200px;
   align-items: center;
@@ -121,7 +122,7 @@
 }
 
 .action-placeholder {
-  width: 1.2em;                 /* same width as an icon + padding */
+  width: 1.5em;                 /* same width as an icon + padding */
   height: 1.2em;
 }
 

@@ -56,9 +56,9 @@
 }
 
 .action-button {
-  background: var(--color-background-main);
+  background: var(--color-background-button);
   color: var(--color-brand-primary);
-  box-shadow: 0 1px 10px var(--color-brand-secondary);
+  box-shadow: 0 1px 1px var(--color-brand-secondary);
   cursor: pointer;
   display: inline-block;
   text-decoration: none;
@@ -67,12 +67,13 @@
   min-width: 1em;
 }
 .action-button:hover:not(.disabled) {
-  background: var(--color-background-button);
+  background: var(--color-border-default);
+  box-shadow: 0 1px 10px var(--color-brand-secondary);
 }
 .action-button:hover {
-  background: var(--color-background-button);
+  background: var(--color-border-default);
   color: var(--color-brand-primary);
-  box-shadow: 0 1px 1px var(--color-brand-secondary);
+  box-shadow: 0 1px 10px var(--color-brand-secondary);
 }
 
 /* Workflow Status */
@@ -218,7 +219,7 @@
 
 }
 .source-header button {
-  background: var(--color-background-main);
+  background: var(--color-background-button);
   color: var(--color-brand-primary);
   box-shadow: 0 1px 10px var(--color-brand-secondary);
   cursor: pointer;

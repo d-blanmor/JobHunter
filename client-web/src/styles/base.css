@@ -4,11 +4,6 @@ body {
   background: var(--color-background-main);
   color: var(--color-brand-primary);
 }
-/*
-.top-nav a {
-  padding: 10px 16px;
-}
-*/
 
 .top-nav {
   display: inline-block;
@@ -41,10 +36,10 @@ body {
   padding: 10px 10px;
   display: inline-block;
   text-decoration: none;
-  background-color: var(--color-background-main);
+  background-color: var(--color-background-button);
   color: var(--color-brand-skin);
   border-radius: 10px;
-  border-color: var(--color-background-main);
+  border-color: var(--color-border-default);
   cursor: pointer;
   text-align: center;
   font-size: 1rem;
@@ -77,20 +72,6 @@ body {
   box-shadow: 0 1px 1px var(--color-brand-secondary);
 }
 
-/*button,*/
-/*
-input,
-select {
-  font: inherit;
-  transition: all 0.2s ease;
-  border-color: var(--color-border-default);
-  width: 1em;
-}
-
-.textArea {
-  width: 98%;
-}
-*/
 .button {
   display: inline-block;
   text-decoration: none;

@@ -172,6 +172,20 @@ export default function LuRoleTypesPage() {
                     <td>{roletype.Name}</td>
                     <td className="cell-actions">
                       <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-edit"
+                          onClick={() => openEditModal(roletype)}
+                          aria-label="Edit role type">
+                          <FaEdit />
+                        </button>
+                        <button
+                          type="button"
+                          className="lookup-action-button lookup-action-delete"
+                          onClick={() => handleDeleteRoleType(roletype)}
+                          aria-label="Delete role type">
+                          <FaTrashAlt />
+                        </button>
                         {index > 0 ? (
                           <button
                             type="button"
@@ -197,22 +211,6 @@ export default function LuRoleTypesPage() {
                         ) : (
                           <div className="action-placeholder" />
                         )}
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-edit"
-                          onClick={() => openEditModal(roletype)}
-                          aria-label="Edit role type"
-                        >
-                          <FaEdit />
-                        </button>
-                        <button
-                          type="button"
-                          className="lookup-action-button lookup-action-delete"
-                          onClick={() => handleDeleteRoleType(roletype)}
-                          aria-label="Delete role type"
-                        >
-                          <FaTrashAlt />
-                        </button>
                       </div>
                     </td>
                   </tr>

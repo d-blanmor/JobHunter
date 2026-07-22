@@ -48,7 +48,8 @@
   --stage-popup-border: #d1d5db;
   --stage-button-background: #f5f7fb;
   --stage-button-hover-background: #f8fafc;
-  --stage-button-disabled-background: #f1f1f1;
+  --stage-button-disabled-background: #FFFFFF;
+  --stage-button-disabled: #939BAD;
   --stage-button-delete: #7c0f0f;
   --stage-button-delete-border: #fecaca;
   /* --- Entity View --- */
@@ -108,8 +109,9 @@
   --stage-row-action: #6b7280;
   --stage-popup-border: #d1d5db;
   --stage-button-background: #2f3b55;
-  --stage-button-hover-background: #f8fafc;
-  --stage-button-disabled-background: #111827;
+  --stage-button-hover-background: #2F3B55;
+  --stage-button-disabled-background: #1F2937;
+  --stage-button-disabled: #41537D;
   --stage-button-delete: #c06666;
   --stage-button-delete-border: #fecaca;
   /* --- Entity View --- */

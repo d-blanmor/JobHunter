@@ -407,21 +407,18 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       {!loading && !error && (
         <>
           <div className="modal-filters">
-            <div className="modal-field">
+            <div className="modal-filter-date">
               <label>{stageDateLabel}</label>
               <input type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} />
             </div>
-            <div className="modal-field">
-              <label>Position</label>
-              <input value={searchPosition} onChange={(event) => setSearchPosition(event.target.value)} placeholder="Search position" />
+            <div className="modal-filter">
+              <input value={searchPosition} onChange={(event) => setSearchPosition(event.target.value)} placeholder="Filter by position" />
             </div>
-            <div className="modal-field">
-              <label>Company</label>
-              <input value={searchCompany} onChange={(event) => setSearchCompany(event.target.value)} placeholder="Search company" />
+            <div className="modal-filter">
+              <input value={searchCompany} onChange={(event) => setSearchCompany(event.target.value)} placeholder="Filter by company" />
             </div>
-            <div className="modal-field">
-              <label>Role Type</label>
-              <select className="modal-field"
+            <div className="modal-filter">
+              <select className="modal-filter"
                       value={selectedRoleTypeIds[0] ? String(selectedRoleTypeIds[0]) : ''}
                       onChange={(event) => handleDropdownChange(event, setSelectedRoleTypeIds)}>
                 <option value="">All Role Types</option>
@@ -430,9 +427,8 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                 ))}
               </select>
             </div>
-            <div className="modal-field">
-              <label>Work Model</label>
-              <select className="modal-field"
+            <div className="modal-filter">
+              <select className="modal-filter"
                       value={selectedWorkModelIds[0] ? String(selectedWorkModelIds[0]) : ''}
                       onChange={(event) => handleDropdownChange(event, setSelectedWorkModelIds)}>
                 <option value="">All Work Models</option>
@@ -441,9 +437,8 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                 ))}
               </select>
             </div>
-            <div className="modal-field">
-              <label>Tags</label>
-              <select className="modal-field"
+            <div className="modal-filter">
+              <select className="modal-filter"
                       value={selectedTagIds[0] ? String(selectedTagIds[0]) : ''}
                       onChange={(event) => handleDropdownChange(event, setSelectedTagIds)}>
                 <option value="">All Tags</option>

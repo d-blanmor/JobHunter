@@ -98,7 +98,7 @@ cd ..\client-web
 Install dependencies
 
 ```shell
-npm ci          # or `npm i` or `npm install`
+npm i
 ```
 
 ### Setup

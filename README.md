@@ -129,9 +129,9 @@ Edit **.env** file and set the values according to the API configuration:
 | Variable          | Description                                               | Default   |
 |-------------------|-----------------------------------------------------------|-----------|
 | VITE_API_HOST     | Ip address the front end will use to call the API server  | 127.0.0.1 |
-| VITE_API_PORT     | Port listening for API calls                              | 8000      |
+| VITE_API_PORT     | Port listening for API calls                              | 4171      |
 | VITE_SERVER_HOST  | Host name (or IP address) for the user portal             | localhost |
-| VITE_SERVER_PORT  | Port assigned to the user portal                          | 4173      |
+| VITE_SERVER_PORT  | Port assigned to the user portal                          | 4170      |
 
 > **Deployment** – The built `/dist` folder can be served by any static file host (Netlify, Vercel, GitHub Pages, etc.).
 > If you use a reverse‑proxy or custom domain, configure the proxy to point API requests (`/api/*`) to your backend.
@@ -142,7 +142,7 @@ Edit **.env** file and set the values according to the API configuration:
 
 Exectute the file **run_jobhunter.bat**. It will launch both the API engine and the frontend.
 
-From a browser, open the url for user interface (default [http://localhost:4173](http://localhost:4173))
+From a browser, open the url for user interface (default [http://localhost:4170](http://localhost:4170))
 
 ---
 

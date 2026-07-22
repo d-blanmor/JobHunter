@@ -53,6 +53,10 @@ def init_db() -> None:
             session.add(benefit)
             session.flush()
 
+            setting = models.appSetting(Key="db_version", Value="1.0.0", Notes="Version control of the last deployed database", IsActive=True);
+            session.add(setting)
+            session.flush()
+
             session.commit()
 
 def get_session() -> Generator[Session, None, None]:

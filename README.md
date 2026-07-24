@@ -28,8 +28,8 @@ JobHunter is a backend-first job application tracker built with Python, FastAPI,
 
 Following an MVC approach, the application is devide in two subprojects:
 
-* Backend: deals with the data model and controller layers, a set of APIs are in charge of the data management and logic operations. These APIs are programmed in Python with FastAPI. The database being powered by SQLite and SQLModel.
-* Frontend: is a web app that interacts between the API and the user. NodeJS application acting as interface.
+- Backend: deals with the data model and controller layers, a set of APIs are in charge of the data management and logic operations. These APIs are programmed in Python with FastAPI. The database being powered by SQLite and SQLModel.
+- Frontend: is a web app that interacts between the API and the user. NodeJS application acting as interface.
 
 Both elements are described in detail on their respectives folders.
 
@@ -39,18 +39,18 @@ Both elements are described in detail on their respectives folders.
 
 ### Backend Prerequisites
 
-* Python 3.10.20
-* fastapi 0.115.0
-* sqlmodel 0.0.22
-* uvicorn 0.30.0
-* pydantic 2.9.0
-* httpx2 0.30.0
-* sqlalchemy_utils 0.7.4
+- Python 3.10.20
+- fastapi 0.115.0
+- sqlmodel 0.0.22
+- uvicorn 0.30.0
+- pydantic 2.9.0
+- httpx2 0.30.0
+- sqlalchemy_utils 0.7.4
 
 ### Frontend Prerequisites
 
-* Node ≥ 20
-* npm 11.17
+- Node ≥ 20
+- npm 11.17
 
 ---
 
@@ -82,10 +82,10 @@ Install dependencies
 
 Edit **config.ini** file
 
-* api.pathname: API assigned call (default '/api')
-* data.type: Database type, currently only sqlite.
-* data.db: Connection string to the database, currently path to sqlite data fiel.
-* pytest.testpaths: Folder for test suite.
+- api.pathname: API assigned call (default '/api')
+- data.type: Database type, currently only sqlite.
+- data.db: Connection string to the database, currently path to sqlite data fiel.
+- pytest.testpaths: Folder for test suite.
 
 ### Frontend
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaEdit, FaIdBadge, FaExternalLinkAlt, FaEnvelopeSquare, FaPhoneSquareAlt, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from 'react-icons/fa';
 import { BsInfoCircle } from "react-icons/bs";
+import ReactMarkdown from 'react-markdown';
 
 import JobSpecModal from '../components/JobSpecModal';
 import ApplicationModal from '../components/ApplicationModal';
@@ -493,7 +494,7 @@ export default function JobSpecView() {
                       onClick={() => setShowJsDescription(false)}>
                     <h4 className="section-heading"><FaRegArrowAltCircleDown /> Description</h4>
                   </div>
-                  <p className="job-spec-text">{safeValue(jobSpec.Description)}</p>
+                  <ReactMarkdown>{safeValue(jobSpec.Description)}</ReactMarkdown>
                 </div>
               ) : (jobSpec.Description ? (
                 <div className="job-spec job-spec-textarea-section">
@@ -510,7 +511,7 @@ export default function JobSpecView() {
                       role="button"
                       tabIndex={0}
                       onClick={() => setShowJsAnalysis(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Analysis and recomendations</h4></div>
-                  <p className="job-spec-text">{safeValue(jobSpec.Analysis)}</p>
+                  <ReactMarkdown>{safeValue(jobSpec.Analysis)}</ReactMarkdown>
                 </div>
               ) : (jobSpec.Analysis ? (
                 <div className="job-spec job-spec-textarea-section">
@@ -527,7 +528,7 @@ export default function JobSpecView() {
                       role="button"
                       tabIndex={0}
                       onClick={() => setShowJsNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
-                  <p className="job-spec-text">{safeValue(jobSpec.Notes)}</p>
+                  <ReactMarkdown>{safeValue(jobSpec.Notes)}</ReactMarkdown>
                 </div>
               ) : (jobSpec.Notes ? (
                 <div className="job-spec job-spec-textarea-section">
@@ -590,7 +591,7 @@ export default function JobSpecView() {
                                 role="button"
                                 tabIndex={0}
                                 onClick={() => setShowApLetter(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Cover Letter</h4></div>
-                            <p className="job-spec-text">{safeValue(application.Letter)}</p>
+                            <ReactMarkdown>{safeValue(application.Letter)}</ReactMarkdown>
                           </div>
                         ) : (application.Letter ? (
                           <div className="job-spec job-spec-textarea-section">
@@ -607,7 +608,7 @@ export default function JobSpecView() {
                                 role="button"
                                 tabIndex={0}
                                 onClick={() => setShowApCV(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Resume sent</h4></div>
-                            <p className="job-spec-text">{safeValue(application.CV)}</p>
+                            <ReactMarkdown>{safeValue(application.CV)}</ReactMarkdown>
                           </div>
                         ) : (application.CV ? (
                           <div className="job-spec job-spec-textarea-section">
@@ -624,7 +625,7 @@ export default function JobSpecView() {
                                 role="button"
                                 tabIndex={0}
                                 onClick={() => setShowApNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
-                            <p className="job-spec-text">{safeValue(application.Notes)}</p>
+                            <ReactMarkdown>{safeValue(application.Notes)}</ReactMarkdown>
                           </div>
                         ) : (application.Notes ? (
                           <div className="job-spec job-spec-textarea-section">
@@ -742,7 +743,7 @@ export default function JobSpecView() {
                                   role="button"
                                   tabIndex={0}
                                   onClick={() => setShowInDescription(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Description</h4></div>
-                              <p className="job-spec-text">{safeValue(interview.Description)}</p>
+                              <ReactMarkdown>{safeValue(interview.Description)}</ReactMarkdown>
                             </div>
                           ) : (interview.Description ? (
                             <div className="job-spec job-spec-textarea-section">
@@ -759,7 +760,7 @@ export default function JobSpecView() {
                                   role="button"
                                   tabIndex={0}
                                   onClick={() => setShowInAnalysis(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Recomendations</h4></div>
-                              <p className="job-spec-text">{safeValue(interview.Analysis)}</p>
+                              <ReactMarkdown>{safeValue(interview.Analysis)}</ReactMarkdown>
                             </div>
                           ) : (interview.Analysis ? (
                             <div className="job-spec job-spec-textarea-section">
@@ -776,7 +777,7 @@ export default function JobSpecView() {
                                   role="button"
                                   tabIndex={0}
                                   onClick={() => setShowInNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
-                              <p className="job-spec-text">{safeValue(interview.Notes)}</p>
+                              <ReactMarkdown>{safeValue(interview.Notes)}</ReactMarkdown>
                             </div>
                           ) : (interview.Notes ? (
                             <div className="job-spec job-spec-textarea-section">
@@ -793,7 +794,7 @@ export default function JobSpecView() {
                                   role="button"
                                   tabIndex={0}
                                   onClick={() => setShowInOutcome(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Outcome</h4></div>
-                              <p className="job-spec-text">{safeValue(interview.Outcome)}</p>
+                              <ReactMarkdown>{safeValue(interview.Outcome)}</ReactMarkdown>
                             </div>
                           ) : (interview.Outcome ? (
                             <div className="job-spec job-spec-textarea-section">
@@ -810,7 +811,7 @@ export default function JobSpecView() {
                                   role="button"
                                   tabIndex={0}
                                   onClick={() => setShowInFeedback(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Feedback</h4></div>
-                              <p className="job-spec-text">{safeValue(interview.Feedback)}</p>
+                              <ReactMarkdown>{safeValue(interview.Feedback)}</ReactMarkdown>
                             </div>
                           ) : (interview.Feedback ? (
                             <div className="job-spec job-spec-textarea-section">
@@ -900,7 +901,7 @@ export default function JobSpecView() {
                                   role="button"
                                   tabIndex={0}
                                   onClick={() => setShowOfNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
-                              <p className="job-spec-text">{safeValue(offer.Notes)}</p>
+                              <ReactMarkdown>{safeValue(offer.Notes)}</ReactMarkdown>
                             </div>
                           ) : (
                             <div className="job-spec job-spec-textarea-section">

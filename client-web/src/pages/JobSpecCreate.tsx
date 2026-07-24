@@ -31,6 +31,7 @@ export default function JobSpecCreate() {
   const [showDescription, setShowDescription] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [showCallIAAnalysis, setShowCallIAAnalysis] = useState(false);
   
   
   // Entities
@@ -211,6 +212,8 @@ export default function JobSpecCreate() {
     }
     else if (field.toLowerCase() == 'description') {
       setDescription(value);
+      setShowCallIAAnalysis(false);
+      if (value != '') setShowCallIAAnalysis(true);
     }
     else if (field.toLowerCase() == 'analysis') {
       setAnalysis(value);
@@ -291,8 +294,17 @@ export default function JobSpecCreate() {
       {error && <p className="error">{error}</p>}
       {!loading && (
         <div>
+          <div className="modal-field-date">
+            <label className="modal-field-label">Published on</label>
+            <input id="Published"
+                  type="date"
+                  placeholder="Publish Date"
+                  value={published}
+                  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+          </div>
+
           <div className="modal-field">
-            <input id="Position" required value={position} placeholder="Position" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+            * <input id="Position" required value={position} placeholder="Position" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
@@ -317,15 +329,6 @@ export default function JobSpecCreate() {
               value={link} 
               placeholder="URL to the job offer"
               onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
-          </div>
-
-          <div className="modal-field-date">
-            <label className="modal-field-label">* Published on</label>
-            <input id="Published"
-                  type="date"
-                  placeholder="Publish Date"
-                  value={published}
-                  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
@@ -452,9 +455,11 @@ export default function JobSpecCreate() {
                             placeholder="Analysis of the role spec" 
                             onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
                 </span>
-                <span className="modal-field">
-                  <button className="button" >Ask AI</button>
-                </span>
+                {showCallIAAnalysis ? (
+                  <span className="modal-field">
+                    <button className="button" >Ask AI</button>
+                  </span>
+                ) : ('')}
               </span>
             ) : (
               <span className="modal-row">
@@ -472,9 +477,11 @@ export default function JobSpecCreate() {
                             placeholder="Analysis of the role spec" 
                             onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
                 </span>
-                <span className="modal-field">
-                  <button className="button" >Ask AI</button>
-                </span>
+                {showCallIAAnalysis ? (
+                  <span className="modal-field">
+                    <button className="button" >Ask AI</button>
+                  </span>
+                ) : ('')}
               </span>
             )}
 

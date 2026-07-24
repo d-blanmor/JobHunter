@@ -186,9 +186,10 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
   const handleSubmit = async () => {
     setError(null);
     // Basic client‑side validation
-    if (!jobSpecId || !position) {
+    if (!jobSpecId || !position || !created) {
       if (!jobSpecId) setError('A job spec is required');
       if (!position) setError('A Postion is required');
+      if (!created) setError('Tracked since date is required')
       return;
     }
 
@@ -201,7 +202,6 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
       Description: description,
       Analysis: analysis,
       Notes: notes,
-      Published: published,
       Created: created,
       IsActive: isActive,
     };
@@ -210,6 +210,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
     if (workModelId != '') payload.WorkModelId = workModelId;
     if (roleTypeId != '') payload.RoleTypeId = roleTypeId;
     if (placeOfWorkId != '') payload.PlaceOfWorkId = placeOfWorkId;
+    if (published) payload.Published = published;
 
     try {
       await saveJobSpec(payload);
@@ -312,8 +313,17 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
       {error && <p className="error">{error}</p>}
       {!isLoading && (
         <div>
+          <div className="modal-field-date">
+            <label>* Tracked since</label>
+            <input id="Created"
+              type="date"
+              placeholder="Tracked since"
+              value={formatFieldDate(created)}
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+          </div>
+
           <div className="modal-field">
-            <input id="Position" required value={position} placeholder="Position" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+            * <input id="Position" required value={position} placeholder="Position" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
@@ -341,7 +351,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
           </div>
 
           <div className="modal-field-date">
-            <label>* Published on</label>
+            <label>Published on</label>
             <input id="Published"
               type="date"
               placeholder="Publish Date"

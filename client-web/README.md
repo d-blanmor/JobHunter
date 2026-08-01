@@ -199,7 +199,7 @@ git clone https://github.com/d-blanmor/JobHunter/client-web.git
 cd client-web
 
 # 2. Install dependencies
-npm ci          # or `npm i` or `npm install`
+npm i
 
 # 3. Set up environment variables
 copy .env.example .env.local   # Edit the file as required (API base URL, etc.)

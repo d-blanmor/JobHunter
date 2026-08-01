@@ -14,6 +14,7 @@ import { listSources } from '../api/sources';
 import { listContacts } from '../api/contacts';
 import { saveJobSpec } from '../api/jobSpecs';
 import { SourceItem } from '../defs/interfaces';
+import { ollamaCheckJobSpec } from '../api/integrations/ollama';
 
 import { 
   newJobSpecItem,

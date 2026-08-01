@@ -1,40 +1,11 @@
 import { setting_keys } from '../../config';
-import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaIdBadge, FaExternalLinkAlt, FaEnvelopeSquare, FaPhoneSquareAlt, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from 'react-icons/fa';
-import { BsInfoCircle } from "react-icons/bs";
-import ReactMarkdown from 'react-markdown';
 import { isDirty, setIsDirty } from '../../App';
-import { listAllSettings, getSetting, saveSetting } from '../../api/app_settings';
+import { getSetting, saveSetting } from '../../api/app_settings';
 import { ollamaListModels } from '../../api/integrations/ollama';
-/*
-import { 
-  formatDate, 
-  formatDateOnly, 
-  formatDateTime, 
-  formatFieldDate, 
-  safeValue,
-  getSourceItem,
-  getWorkModelItem,
-  getRoleTypeItem,
-  getContactItem,
-  normalizeBenefits,
-  getPlaceOfWorkLabel
-  } from '../defs/tools'
-import { 
-  JobSpecItem, 
-  ApplicationItem,
-  InterviewItem,
-  SourceItem, 
-  PlaceOfWorkItem,
-  luLocationItem, 
-  luWorkModelItem,
-  luRoleTypeItem,
-  ContactItem, 
-  TagItem,
-  luBenefitItem,
-  } from '../defs/interfaces';
-*/
+import { fromEvent } from "file-selector";
 
 export default function OllamaIntegrationPage() {
   const navigate = useNavigate();
@@ -91,39 +62,39 @@ export default function OllamaIntegrationPage() {
           getSetting(setting_keys.OLLAMA.PromptGenerateCoverLetter),
           getSetting(setting_keys.OLLAMA.KnowledgeSource)
         ]);
-
         if (!mounted) return;
-        if (url && url != '') {
-          setOllamaUrl(url);
-          //setOllamaUrl_Notes(url.Notes);
+
+        if (url) {
+          setOllamaUrl(url.Value);
+          setOllamaUrl_Notes(url.Notes);
         }
-        if (apiKey && apiKey != '') {
-          setOllamaApiKey(apiKey);
-          //setOllamaApiKey_Notes(apiKey.Notes);
+        if (apiKey) {
+          setOllamaApiKey(apiKey.Value);
+          setOllamaApiKey_Notes(apiKey.Notes);
         }
-        if (model && model != '') {
-          setOllamaModel(model);
-          //setOllamaModel_Notes(model.Notes);
+        if (model) {
+          setOllamaModel(model.Value);
+          setOllamaModel_Notes(model.Notes);
         }
-        if (prompt && prompt != '') {
-          setSystemPrompt(prompt);
-          //setSystemPrompt_Notes(prompt.Notes);
+        if (prompt) {
+          setSystemPrompt(prompt.Value);
+          setSystemPrompt_Notes(prompt.Notes);
         }
-        if (promptAnalyseJobspec && promptAnalyseJobspec != '') {
-          setPromptAnalyseJobspec(promptAnalyseJobspec);
-          //setPromptAnalyseJobspec_Notes(prompt.Notes);
+        if (promptAnalyseJobspec) {
+          setPromptAnalyseJobspec(promptAnalyseJobspec.Value);
+          setPromptAnalyseJobspec_Notes(prompt.Notes);
         }
-        if (promptMatchProfile && promptMatchProfile != '') {
-          setPromptMatchProfile(promptMatchProfile);
-          //setPromptMatchProfile_Notes(promptMatchProfile.Notes);
+        if (promptMatchProfile) {
+          setPromptMatchProfile(promptMatchProfile.Value);
+          setPromptMatchProfile_Notes(promptMatchProfile.Notes);
         }
-        if (promptGenerateCoverLetter && promptGenerateCoverLetter != '') {
-          setPromptGenerateCoverLetter(promptGenerateCoverLetter);
-          //setPromptGenerateCoverLetter_Notes(promptGenerateCoverLetter.Notes);
+        if (promptGenerateCoverLetter) {
+          setPromptGenerateCoverLetter(promptGenerateCoverLetter.Value);
+          setPromptGenerateCoverLetter_Notes(promptGenerateCoverLetter.Notes);
         }
-        if (profilePath && profilePath != '') {
-          setProfilePath(profilePath);
-          //setProfilePath_Notes(profilePath.Notes);
+        if (profilePath) {
+          setProfilePath(profilePath.Value);
+          setProfilePath_Notes(profilePath.Notes);
         }
       } 
       catch (err) {
@@ -285,7 +256,6 @@ export default function OllamaIntegrationPage() {
 
           <div className="settings">
             <div className="settings-field">
-              <p>Hola -{ollamaUrl}-</p>
               <input id="OllamaUrl" required value={ollamaUrl} placeholder="Ollama URL" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
             </div>
 
@@ -304,7 +274,7 @@ export default function OllamaIntegrationPage() {
 
           {isOllamaDefined ? (
             <>
-              <div className="modal-field">
+              <div className="settings-field">
                 <select id="OllamaModel"
                         value={ollamaModel} 
                         onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
@@ -314,43 +284,49 @@ export default function OllamaIntegrationPage() {
               </div>
 
               <div className="modal-table">
-                <span className='modal-field-expanded'>
-                    <textarea id="SystemPrompt"
-                            value={systemPrompt} 
-                            placeholder="System Prompt" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                <span className='settings-field-expanded'>
+                  <textarea id="SystemPrompt"
+                          value={systemPrompt} 
+                          placeholder="System Prompt" 
+                          onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
                 </span>
               </div>
 
               <div className="modal-table">
-                <span className='modal-field-expanded'>
-                    <textarea id="PromptAnalyseJobspec"
-                            value={promptAnalyseJobspec} 
-                            placeholder="Prompt to analyse a job specification" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                <span className='settings-field'>
+                  <textarea id="PromptAnalyseJobspec"
+                          value={promptAnalyseJobspec} 
+                          placeholder="Prompt to analyse a job specification" 
+                          onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
                 </span>
               </div>
 
               <div className="modal-table">
-                <span className='modal-field-expanded'>
-                    <textarea id="PromptMatchProfile"
-                            value={promptMatchProfile} 
-                            placeholder="Prompt to match a job specification with a CV" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                <span className='settings-field'>
+                  <textarea id="PromptMatchProfile"
+                          value={promptMatchProfile} 
+                          placeholder="Prompt to match a job specification with a CV" 
+                          onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
                 </span>
               </div>
 
               <div className="modal-table">
-                <span className='modal-field-expanded'>
-                    <textarea id="PromptGenerateCoverLetter"
-                            value={promptGenerateCoverLetter} 
-                            placeholder="Prompt used to write a cover letter for a specific job based on the user profile" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                <span className='settings-field'>
+                  <textarea id="PromptGenerateCoverLetter"
+                          value={promptGenerateCoverLetter} 
+                          placeholder="Prompt used to write a cover letter for a specific job based on the user profile" 
+                          onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
                 </span>
               </div>
 
-              <div className="modal-field">
-                <input id="ProfilePath" value={profilePath} placeholder="Profesional Profile Path" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+              <div className="settings-field">
+                <input id="ProfilePath" 
+                      type="file" 
+                      placeholder="Profesional Profile Path" 
+                      name="Select file" 
+                      accept=".txt, .md" 
+                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                <span className='settings-field-file'>{profilePath}</span>
               </div>
             </>
           ) : (

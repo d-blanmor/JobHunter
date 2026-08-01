@@ -14,7 +14,8 @@
     "react-dom": "18.3.1",
     "react-icons": "^5.7.0",
     "react-router-dom": "6.16.0",
-    "react-markdown": "10.1.0"
+    "react-markdown": "10.1.0",
+    "file-selector": "4.1.0"
   },
   "devDependencies": {
     "@types/react": "18.3.3",

@@ -124,7 +124,7 @@
 }
 .settings-field textarea {
   width: 897px;
-  min-height: 50px;
+  min-height: 75px;
   margin: 5px 0px 5px 5px;
   padding: 8px 10px;
   border: 1px solid var(--color-border-default);
@@ -135,7 +135,7 @@
 }
 .settings-field-expanded textarea {
   width: 897px;
-  min-height: 500px;
+  min-height: 200px;
   margin: 5px 0px 5px 5px;
   padding: 8px 10px;
   border: 1px solid var(--color-border-default);
@@ -143,6 +143,14 @@
   background: var(--color-background-page);
   color: var(--color-brand-primary);
   resize: vertical;
+}
+.settings-field-file {
+  margin-bottom: 0;
+  min-width: 0;
+  padding-left: 0.8em;
+}
+#ProfilePath {
+  width: 100px;
 }
 
 .settings-label {

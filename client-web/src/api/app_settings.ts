@@ -7,7 +7,7 @@ export async function listAllSettings(IsActve: boolean = true) {
 }
 
 export async function getSetting(key: string) {
-  const res = await fetch(`${API_BASE}/roles/app-settings/${key}`);
+  const res = await fetch(`${API_BASE}/app-settings/${key}`);
   if (!res.ok) {
     if (res.status != 404) throw new Error(`Failed to load setting ${key}`);
     return '';

@@ -6,6 +6,19 @@ export const DEV_SERVER_HOST = import.meta.env.VITE_DEV_SERVER_HOST ?? 'localhos
 export const DEV_SERVER_PORT = import.meta.env.VITE_DEV_SERVER_PORT ?? '4170';
 export const DEFAULT_PAGE_SIZE = Number(import.meta.env.VITE_DEFAULT_PAGE_SIZE ?? '10');
 
+export const setting_keys = {
+  'OLLAMA': {
+    'OllamaURL': 'OLLAMA_URL',
+    'OllamaApiKey': 'OLLAMA_API_KEY',
+    'OllamaModel': 'OLLAMA_MODEL',
+    'SystemPrompt': 'OLLAMA_SYSTEM_PROMPT',
+    'PromptAnalyseJobspec': 'OLLAMA_PROMPT_ANALYSE_JOBSPEC',
+    'PromptMatchProfile': 'OLLAMA_PROMPT_MATCH_PROFILE',
+    'PromptGenerateCoverLetter': 'OLLAMA_PROMPT_GENERATE_COVER_LETTER',
+    'KnowledgeSource': 'OLLAMA_KNOWLEDGE_SOURCE',
+  }
+}
+
 export default {
   API_BASE,
   API_HOST,

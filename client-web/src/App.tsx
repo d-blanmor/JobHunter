@@ -12,6 +12,7 @@ import JobSpecCreate from './pages/JobSpecCreate';
 import JobSpecView from './pages/JobSpecView';
 import Contacts from './pages/Contacts';
 import SourcesPage from './pages/settings/Sources';
+import OllamaIntegrationPage from './pages/settings/Ollama'
 import { useState, useEffect } from 'react';
 
 var isBlocked: boolean = false;
@@ -109,6 +110,7 @@ function App() {
           <Route path="/settings/lu_roletypes" element={<LuRoleTypesPage />} />
           <Route path="/settings/lu_workmodels" element={<LuWorkModelsPage />} />
           <Route path="/settings/tags" element={<TagsPage />} />
+          <Route path="/settings/Ollama" element={<OllamaIntegrationPage />} />
         </Routes>
       </main>
     </div>

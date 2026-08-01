@@ -130,3 +130,17 @@ class vwWorkflowBase(BaseModel):
     Discarded: Optional[datetime] = None
     Scheduled: Optional[datetime] = None
     Offered: Optional[datetime] = None
+
+class ollamaModelBase(BaseModel):
+    Key: str = None
+    Name: str = None
+
+class OllamaModelsResponse(BaseModel):
+    models: list[ollamaModelBase]
+    state: int
+    message: Optional[str] = None
+
+class OllamaJobspecResponse(BaseModel):
+    outcome: str
+    state: int
+    message: Optional[str] = None

@@ -1,7 +1,5 @@
 from fastapi import FastAPI
 
-from .routers.workflows import stages
-
 from .routers import (
     initiate,
     tags,
@@ -23,6 +21,8 @@ from .routers.roles import (
     placesofwork, 
     sources,
 )
+from .routers.workflows import stages
+from .routers.integrations import ollama
 
 app = FastAPI(title="JobHunter API", version="0.1.0")
 
@@ -44,3 +44,4 @@ app.include_router(lnk_jobspecs_benefits.router)
 app.include_router(lnk_offers_benefits.router)
 app.include_router(lnk_jobspecs_tags.router)
 app.include_router(stages.router)
+app.include_router(ollama.router)

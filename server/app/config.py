@@ -24,5 +24,14 @@ def ollama_model_tag() -> str:
 def ollama_sys_prompt_tag() -> str:
     return 'OLLAMA_SYSTEM_PROMPT';
 
+def ollama_prompt_analyse_jobspec_tag() -> str:
+    return 'OLLAMA_PROMPT_ANALYSE_JOBSPEC';
+
+def ollama_prompt_match_profile_tag() -> str:
+    return 'OLLAMA_PROMPT_MATCH_PROFILE';
+
+def ollama_prompt_generater_cover_letter_tag() -> str:
+    return 'OLLAMA_PROMPT_GENERATE_COVER_LETTER';
+
 def ollama_knowledge_source_tag() -> str:
     return 'OLLAMA_KNOWLEDGE_SOURCE';

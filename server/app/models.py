@@ -221,6 +221,7 @@ class rolesJobSpec(SQLModel, table=True):
     )
     Description: Optional[str] = None
     Analysis: Optional[str] = None
+    Profile: Optional[str] = None
     Notes: Optional[str] = None
     Published: Optional[datetime] = None
     Created: datetime = Field(default_factory=datetime.utcnow)

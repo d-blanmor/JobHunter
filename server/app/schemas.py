@@ -67,6 +67,7 @@ class JobSpecBase(BaseModel):
     ContactId: Optional[int] = None
     Description: Optional[str] = None
     Analysis: Optional[str] = None
+    Profile: Optional[str] = None
     Notes: Optional[str] = None
     Published: Optional[datetime] = None
     Created: datetime

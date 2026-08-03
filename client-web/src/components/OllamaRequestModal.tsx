@@ -57,9 +57,7 @@ export default function SourceModal({ response, request, payload, title, onClose
         const resp = await ollamaCheckJobSpec(payload);
 
         if (resp) {
-          alert(resp.state);
           if (resp.state == 200) {
-            alert(resp.outcome);
             setOllamaResponse(resp.outcome);
           }
           else {

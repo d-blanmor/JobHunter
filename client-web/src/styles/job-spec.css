@@ -126,22 +126,6 @@
   margin: 0px 0em 0em 0.5em;
 }
 
-.job-spec-text {
-  margin: 0;
-  padding: 16px;
-  max-width: 960px;
-  background: var(--view-text-background);
-  border-radius: 14px;
-  color: var(--view-values);
-  line-height: 1.7;
-  white-space: pre-wrap;
-  overflow: auto;
-}
-
-.job-spec-textarea-section {
-  padding-top: 0;
-}
-
 .application-row {
   display: grid;
   grid-template-columns: minmax(1em, 0.8em) minmax(1em, 6em) minmax(1em, 8em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em);
@@ -164,4 +148,89 @@
   align-items: center;
   gap: 10px;
   margin: 0em 0em 0em 0.4em;
+}
+
+.job-spec-text {
+  margin: 0;
+  padding: 16px;
+  max-width: 960px;
+  background: var(--view-text-background);
+  border-radius: 14px;
+  color: var(--view-values);
+  line-height: 1.7;
+  /*white-space: pre-wrap;*/
+  overflow: auto;
+}
+
+/* Reset margins for ALL block elements inside markdown */
+.job-spec-text p,
+.job-spec-text h1,
+.job-spec-text h2,
+.job-spec-text h3,
+.job-spec-text h4,
+.job-spec-text h5,
+.job-spec-text h6,
+.job-spec-text ul,
+.job-spec-text ol,
+.job-spec-text li,
+.job-spec-text blockquote,
+.job-spec-text pre,
+.job-spec-text hr {
+  margin-top: 0.3em;
+  margin-bottom: 0.4em;
+}
+
+/* Tighten paragraphs specifically */
+.job-spec-text p {
+  line-height: 1.5;
+}
+
+/* Tighten headings */
+.job-spec-text h1,
+.job-spec-text h2,
+.job-spec-text h3 {
+  margin-top: 0.6em;
+  margin-bottom: 0.4em;
+  font-weight: 700;
+}
+
+/* Tighten lists */
+.job-spec-text ul,
+.job-spec-text ol {
+  margin-left: 1.2em;
+  margin-top: 0.3em;
+  margin-bottom: 0.5em;
+}
+
+.job-spec-text li {
+  margin-bottom: 0.2em;
+  line-height: 1.5;
+}
+
+/* Compact tables */
+.job-spec-text table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.5em 0;
+  font-size: 0.95rem;
+}
+
+.job-spec-text th,
+.job-spec-text td {
+  padding: 0.4em 0.6em;
+  border: 1px solid var(--color-border-default);
+  text-align: left;
+}
+
+.job-spec-text th {
+  background-color: var(--color-background-box);
+  font-weight: 600;
+}
+
+.job-spec-text tr:nth-child(even) {
+  background-color: var(--color-background-box);
+}
+
+.job-spec-textarea-section {
+  padding-top: 0;
 }

@@ -3,6 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FaEdit, FaIdBadge, FaExternalLinkAlt, FaEnvelopeSquare, FaPhoneSquareAlt, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from 'react-icons/fa';
 import { BsInfoCircle } from "react-icons/bs";
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm'; // Adds support for tables, strikethrough, etc.
+import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for security
+
 
 import JobSpecModal from '../components/JobSpecModal';
 import ApplicationModal from '../components/ApplicationModal';
@@ -496,7 +499,11 @@ export default function JobSpecView() {
                     <h4 className="section-heading"><FaRegArrowAltCircleDown /> Description</h4>
                   </div>
                   <div className="job-spec-text">
-                    <ReactMarkdown>{safeValue(jobSpec.Description)}</ReactMarkdown>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeSanitize]}
+                      children={safeValue(jobSpec.Description)}
+                    />
                   </div>
                 </div>
               ) : (jobSpec.Description ? (
@@ -515,7 +522,11 @@ export default function JobSpecView() {
                       tabIndex={0}
                       onClick={() => setShowJsAnalysis(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Analysis and recomendations</h4></div>
                   <div className="job-spec-text">
-                    <ReactMarkdown>{safeValue(jobSpec.Analysis)}</ReactMarkdown>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeSanitize]}
+                      children={safeValue(jobSpec.Analysis)}
+                    />
                   </div>
                 </div>
               ) : (jobSpec.Analysis ? (
@@ -534,7 +545,11 @@ export default function JobSpecView() {
                       tabIndex={0}
                       onClick={() => setShowJsProfile(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Profile match to Job Spec</h4></div>
                   <div className="job-spec-text">
-                    <ReactMarkdown>{safeValue(jobSpec.Profile)}</ReactMarkdown>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeSanitize]}
+                      children={safeValue(jobSpec.Profile)}
+                    />
                   </div>
                 </div>
               ) : (jobSpec.Profile ? (
@@ -553,7 +568,11 @@ export default function JobSpecView() {
                       tabIndex={0}
                       onClick={() => setShowJsNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
                   <div className="job-spec-text">
-                    <ReactMarkdown>{safeValue(jobSpec.Notes)}</ReactMarkdown>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeSanitize]}
+                      children={safeValue(jobSpec.Notes)}
+                    />
                   </div>
                 </div>
               ) : (jobSpec.Notes ? (
@@ -618,7 +637,11 @@ export default function JobSpecView() {
                                 tabIndex={0}
                                 onClick={() => setShowApLetter(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Cover Letter</h4></div>
                             <div className="job-spec-text">
-                              <ReactMarkdown>{safeValue(application.Letter)}</ReactMarkdown>
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeSanitize]}
+                                children={safeValue(application.Letter)}
+                              />
                             </div>
                           </div>
                         ) : (application.Letter ? (
@@ -637,7 +660,11 @@ export default function JobSpecView() {
                                 tabIndex={0}
                                 onClick={() => setShowApCV(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Resume sent</h4></div>
                             <div className="job-spec-text">
-                              <ReactMarkdown>{safeValue(application.CV)}</ReactMarkdown>
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeSanitize]}
+                                children={safeValue(application.CV)}
+                              />
                             </div>
                           </div>
                         ) : (application.CV ? (
@@ -656,7 +683,11 @@ export default function JobSpecView() {
                                 tabIndex={0}
                                 onClick={() => setShowApNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
                             <div className="job-spec-text">
-                              <ReactMarkdown>{safeValue(application.Notes)}</ReactMarkdown>
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                rehypePlugins={[rehypeSanitize]}
+                                children={safeValue(application.Notes)}
+                              />
                             </div>
                           </div>
                         ) : (application.Notes ? (
@@ -776,7 +807,11 @@ export default function JobSpecView() {
                                   tabIndex={0}
                                   onClick={() => setShowInDescription(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Description</h4></div>
                               <div className="job-spec-text">
-                                <ReactMarkdown>{safeValue(interview.Description)}</ReactMarkdown>
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkGfm]}
+                                  rehypePlugins={[rehypeSanitize]}
+                                  children={safeValue(interview.Description)}
+                                />
                               </div>
                             </div>
                           ) : (interview.Description ? (
@@ -795,7 +830,11 @@ export default function JobSpecView() {
                                   tabIndex={0}
                                   onClick={() => setShowInAnalysis(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Recomendations</h4></div>
                               <div className="job-spec-text">
-                                <ReactMarkdown>{safeValue(interview.Analysis)}</ReactMarkdown>
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkGfm]}
+                                  rehypePlugins={[rehypeSanitize]}
+                                  children={safeValue(interview.Analysis)}
+                                />
                               </div>
                             </div>
                           ) : (interview.Analysis ? (
@@ -814,7 +853,11 @@ export default function JobSpecView() {
                                   tabIndex={0}
                                   onClick={() => setShowInNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
                               <div className="job-spec-text">
-                                <ReactMarkdown>{safeValue(interview.Notes)}</ReactMarkdown>
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkGfm]}
+                                  rehypePlugins={[rehypeSanitize]}
+                                  children={safeValue(interview.Notes)}
+                                />
                               </div>
                             </div>
                           ) : (interview.Notes ? (
@@ -833,7 +876,11 @@ export default function JobSpecView() {
                                   tabIndex={0}
                                   onClick={() => setShowInOutcome(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Outcome</h4></div>
                               <div className="job-spec-text">
-                                <ReactMarkdown>{safeValue(interview.Outcome)}</ReactMarkdown>
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkGfm]}
+                                  rehypePlugins={[rehypeSanitize]}
+                                  children={safeValue(interview.Outcome)}
+                                />
                               </div>
                             </div>
                           ) : (interview.Outcome ? (
@@ -852,7 +899,11 @@ export default function JobSpecView() {
                                   tabIndex={0}
                                   onClick={() => setShowInFeedback(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Feedback</h4></div>
                               <div className="job-spec-text">
-                                <ReactMarkdown>{safeValue(interview.Feedback)}</ReactMarkdown>
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkGfm]}
+                                  rehypePlugins={[rehypeSanitize]}
+                                  children={safeValue(interview.Feedback)}
+                                />
                               </div>
                             </div>
                           ) : (interview.Feedback ? (
@@ -944,7 +995,11 @@ export default function JobSpecView() {
                                   tabIndex={0}
                                   onClick={() => setShowOfNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
                               <div className="job-spec-text">
-                                <ReactMarkdown>{safeValue(offer.Notes)}</ReactMarkdown>
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkGfm]}
+                                  rehypePlugins={[rehypeSanitize]}
+                                  children={safeValue(offer.Notes)}
+                                />
                               </div>
                             </div>
                           ) : (

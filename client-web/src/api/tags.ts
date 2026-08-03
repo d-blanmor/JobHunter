@@ -3,7 +3,7 @@ import { API_BASE } from '../config';
 export async function listTags(IsActve: boolean = true) {
   const res = await fetch(`${API_BASE}/tags?active_only=${IsActve}`);
   if (!res.ok) {
-    if (res.status != 404) throw new Error(`Failed to delete tag: ${res.status}`);
+    if (res.status != 404) throw new Error(`Failed to list tags: ${res.status}`);
     return "()";
   }
   return res.json();

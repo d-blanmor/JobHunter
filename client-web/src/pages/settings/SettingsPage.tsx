@@ -24,6 +24,10 @@ export default function SettingsPage() {
         <div className="setting-card"><Link to="/settings/lu_roletypes" className="settings-link settings-link--primary">Role Types</Link></div>
         <div className="setting-card"><Link to="/settings/lu_workmodels" className="settings-link settings-link--primary">Work Models</Link></div>
       </div>
+      <h2 className="settings-title mt-8">Integrations</h2>
+      <div className="setting-grid">
+        <div className="setting-card"><Link to="/settings/ollama" className="settings-link settings-link--primary">Ollama Integration</Link></div>
+      </div>
     </section>
   );
 }

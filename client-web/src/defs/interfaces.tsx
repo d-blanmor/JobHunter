@@ -77,6 +77,7 @@ export interface JobSpecItem {
   ContactId?: number | null;
   Description?: string | null;
   Analysis?: string | null;
+  Profile?: string | null;
   Notes?: string | null;
   Published?: string | null;
   Created: string | null;
@@ -228,6 +229,7 @@ export interface newJobSpecItem {
   ContactId?: number | null;
   Description?: string | null;
   Analysis?: string | null;
+  Profile?: string | null;
   Notes?: string | null;
   Published?: string | null;
   Created: string | null;

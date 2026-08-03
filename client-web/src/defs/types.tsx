@@ -86,6 +86,7 @@ export type JobSpec = {
   ContactId?: number | null;
   Description?: string | null;
   Analysis?: string | null;
+  Profile?: string | null;
   Notes?: string | null;
   Published?: string | null;
   Created: string | null;

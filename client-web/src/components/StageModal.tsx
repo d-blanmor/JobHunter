@@ -134,7 +134,6 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       setRoleTypes(roleTypeData);
       setWorkModels(workModelData);
       setTags(tagData);
-
       const stageJobSpecs = await loadStageSpecs(stage);
 
       if (!mounted) return;
@@ -442,9 +441,11 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                       value={selectedTagIds[0] ? String(selectedTagIds[0]) : ''}
                       onChange={(event) => handleDropdownChange(event, setSelectedTagIds)}>
                 <option value="">All Tags</option>
+                {/*
                 {tags.map((tag) => (
                   <option key={tag.Id} value={tag.Id}>{tag.Name}</option>
                 ))}
+                */}
               </select>
             </div>
           </div>

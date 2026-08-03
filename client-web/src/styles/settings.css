@@ -1,14 +1,187 @@
-/*
-.settings-link,
-.button {
-  display: inline-block;
-  text-decoration: none;
-  padding: 10px 16px;
-  border-radius: 10px;
-  background: #2563eb;
-  color: white;
+.settings-view {
+  display: grid;
+  gap: 22px;
 }
-*/
+
+.settings {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.settings-discarded {
+  background: var(--view-labels-discarded);
+  border-radius: 18px;
+}
+
+.settings-decorated {
+  border-radius: 18px;
+  background: var(--color-background-page);
+  margin: 0em 0.4em 0.4em 0.4em;
+  padding: 0.1em 0.5em 0.5em 0.5em;
+}
+
+.settings-decorated-discarded {
+  border-radius: 18px;
+  background: var(--view-labels-discarded);
+  margin: 0em 0.4em 0.4em 0.4em;
+  padding: 0.1em 0.5em 0.5em 0.5em;
+}
+
+.settings-title {
+  margin: 0rem 1rem 0rem 0rem;
+  font-size: 2rem;
+  line-height: 1.1;
+  color: var(--view-values);
+}
+
+.settings-title-link {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-size: 1.1em;
+}
+
+.settings-subtitle {
+  inherits: false;
+  margin: 0.7em 0 0;
+  color: var(--view-values);
+  font-size: 1rem;
+} 
+
+.settings-subtitle-link {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0em 0em 0.5em 0em;
+}
+
+.settings-section-clickable {
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin: 0.5em 0em 0.5em 0.2em;
+}
+
+.settings-row {
+
+}
+
+.settings-field-row {
+  display: grid;
+  grid-template-columns: minmax(2em, 8em) minmax(0, 1fr);
+  align-items: start;
+  margin: 0em 5em 0em 0em;
+}
+.settings-field-row > span:last-child {
+  /*color: var(--color-brand-primary);*/
+}
+
+.settings-field {
+  margin-bottom: 0;
+  min-width: 0;
+}
+.settings-field label {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--color-brand-primary);
+}
+.settings-field input {
+  width: 917px;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+}
+.settings-field-date input {
+  width: 823px;
+  height: 1.1em;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+}
+.settings-field-date label {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--color-brand-primary);
+  margin: 0px 10px 0px 0px;
+}
+.settings-field select {
+  width: 940px;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+}
+.settings-field textarea {
+  width: 897px;
+  min-height: 75px;
+  margin: 5px 0px 5px 5px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+  resize: vertical;
+}
+.settings-field-expanded textarea {
+  width: 897px;
+  min-height: 200px;
+  margin: 5px 0px 5px 5px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+  resize: vertical;
+}
+
+.settings-label {
+  color: var(--view-labels);
+  font-weight: 700;
+  font-size: 0.9em;
+  margin: 0px 0.5em 0em 0em;
+}
+
+.settings-label-link {
+  font-weight: 700;
+  font-size: 1em;
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--view-labels);
+}
+
+.settings-value {
+  color: var(--view-values);
+  font-weight: 600;
+  font-size: 1em;
+  margin: 0px 0em 0em 0.5em;
+}
+
+.settings-text {
+  margin: 0;
+  padding: 16px;
+  max-width: 960px;
+  background: var(--view-text-background);
+  border-radius: 14px;
+  color: var(--view-values);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow: auto;
+}
+
+.settings-textarea-section {
+  padding-top: 0;
+}
 
 .settings-grid {
   /* Use a 3‑column layout */
@@ -69,8 +242,6 @@
   align-items: start;
   margin: 0.2em 0em 0em 0em;
 }
-
-
 
 .lookup-action-buttons {
   display: grid;

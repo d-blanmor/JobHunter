@@ -53,7 +53,66 @@ def init_db() -> None:
             session.add(benefit)
             session.flush()
 
-            setting = models.appSetting(Key="db_version", Value="1.0.0", Notes="Version control of the last deployed database", IsActive=True);
+            setting = models.appSetting(Key="db_version", 
+                                        Value="1.0.0", 
+                                        Notes="Version control of the last deployed database.", 
+                                        IsActive=True);
+            session.add(setting)
+            setting = models.appSetting(Key="OLLAMA_URL", 
+                                        Value="http://localhost:11434", 
+                                        Notes="Ollama API listening URL.", 
+                                        IsActive=True);
+            session.add(setting)
+            setting = models.appSetting(Key="OLLAMA_API_KEY", 
+                                        Value="", 
+                                        Notes="Security API key for calling Ollama.", 
+                                        IsActive=True);
+            session.add(setting)
+            setting = models.appSetting(Key="OLLAMA_MODEL", 
+                                        Value="gemma4:latest", 
+                                        Notes="LLM model installed in Ollama.", 
+                                        IsActive=True);
+            session.add(setting)
+            setting = models.appSetting(Key="OLLAMA_SYSTEM_PROMPT", 
+                                        Value="""You are an an expert career manager, your goal is to help the user analysing job specifications and preparing applications and interviews. 
+Follow these steps to provide effective guidance:
+- Keep messages brief, clear and professional, never use emoticons or images, keep it in text with markdown format.
+- Your first goal is to help the user selecting the roles to apply, be hobest and realistic, never try to please the user.
+- When the user decides to apply to a jobspect, your goal is to help the user preparing the application, may include helping writting cover letter or other documents to support the application.
+- Always be realistic on your analysis.
+- You must provide citations to the job spec, resume, or any other source for your statements.
+- Remember to keep personal information confidential and secure at all times.""", 
+                                        Notes="System prompt for Ollama requests.", 
+                                        IsActive=True);
+            session.add(setting)
+            setting = models.appSetting(Key="OLLAMA_PROMPT_ANALYSE_JOBSPEC", 
+                                        Value="""Analyse the following jobspec providing the following sections in markdown format:
+- Details about the role, company, sector, place of work, role type, work model and offered salary and benefits.
+- Simple list of technologies and experience required for the job.
+- List of red flags and concerns about the specifications.
+- Score the role from 1 to 10 based on the description and requirements.
+                                        """, 
+                                        Notes="Prompt used to analyse JobSpecs.", 
+                                        IsActive=True);
+            session.add(setting)
+            setting = models.appSetting(Key="OLLAMA_PROMPT_MATCH_PROFILE", 
+                                        Value="""
+Match the user profile with the following jobspec, and provide the user with a honest description of strengths and weaknesses for the user to apply.
+                                        """, 
+                                        Notes="Prompt used to match a jobspec with a CV.", 
+                                        IsActive=True);
+            session.add(setting)
+            setting = models.appSetting(Key="OLLAMA_PROMPT_GENERATE_COVER_LETTER", 
+                                        Value="""
+Having in mind the user profile, write a cover letter for the user to use on an application to the following job spec.
+                                        """, 
+                                        Notes="Prompt used to write a cover letter for a specific job based on the user profile.", 
+                                        IsActive=True);
+            session.add(setting)
+            setting = models.appSetting(Key="OLLAMA_KNOWLEDGE_SOURCE", 
+                                        Value="", 
+                                        Notes="Full name of text file with the users resume to be used in queries.", 
+                                        IsActive=True);
             session.add(setting)
             session.flush()
 

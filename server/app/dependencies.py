@@ -84,7 +84,7 @@ def _upsert_entity(session: Session, model: type[Any], payload: dict[str, Any]) 
     Create or update an entity.
     
     * `payload` may be a Pydantic model (e.g. JobSpecCreate) or
-      a plain dictionary.  We normalise it to a dict for uniform handling.
+    a plain dictionary.  We normalise it to a dict for uniform handling.
     """
     # Normalise payload → dict
     if isinstance(payload, BaseModel):

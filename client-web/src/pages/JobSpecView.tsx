@@ -61,6 +61,7 @@ export default function JobSpecView() {
   const [showContactDetails, setShowContactDetails] = useState(false);
   const [showJsDescription, setShowJsDescription] = useState(true);
   const [showJsAnalysis, setShowJsAnalysis] = useState(false);
+  const [showJsProfile, setShowJsProfile] = useState(false);
   const [showJsNotes, setShowJsNotes] = useState(false);
   const [showApplications, setShowApplications] = useState(false);
   const [showApLetter, setShowApLetter] = useState(false);
@@ -484,7 +485,7 @@ export default function JobSpecView() {
             ) : null}
           </div>
 
-          {jobSpec.Description || jobSpec.Analysis || jobSpec.Notes ? (
+          {jobSpec.Description || jobSpec.Analysis || jobSpec.Profile || jobSpec.Notes ? (
             <div className="job-spec">
               {jobSpec.Description && showJsDescription ? (
                 <div className="job-spec job-spec-textarea-section">
@@ -523,6 +524,25 @@ export default function JobSpecView() {
                       role="button"
                       tabIndex={0}
                       onClick={() => setShowJsAnalysis(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Analysis and recomendations</h4></div>
+                </div>
+              ) : null )}
+
+              {jobSpec.Profile && showJsProfile ? (
+                <div className="job-spec job-spec-textarea-section">
+                  <div className="job-spec-section-clickable"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setShowJsProfile(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Profile match to Job Spec</h4></div>
+                  <div className="job-spec-text">
+                    <ReactMarkdown>{safeValue(jobSpec.Profile)}</ReactMarkdown>
+                  </div>
+                </div>
+              ) : (jobSpec.Profile ? (
+                <div className="job-spec job-spec-textarea-section">
+                  <div className="job-spec-section-clickable"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setShowJsProfile(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Profile match to Job Spec</h4></div>
                 </div>
               ) : null )}
 

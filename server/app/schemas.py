@@ -144,3 +144,6 @@ class OllamaJobspecResponse(BaseModel):
     outcome: str
     state: int
     message: Optional[str] = None
+
+class OllamaJobspecRequest(BaseModel):
+    jobspec: str

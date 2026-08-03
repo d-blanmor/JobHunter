@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 import { FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
-import Modal from './Modal';
+
+import { setting_keys } from '../config';
 import { getJobSpec } from '../api/jobSpecs';
 import { getApplication, saveApplication} from '../api/applications';
 import { newApplicationItem, ApplicationItem, JobSpecItem } from '../defs/interfaces';
 import { formatFieldDate } from '../defs/tools'
 import { isDirty, setIsDirty } from '../App';
+
+import Modal from './Modal';
+import OllamaRequestModal from '../components/OllamaRequestModal'
 
 type Props = {
   /** id of the application to edit; null or undefined means create new */
@@ -21,14 +25,15 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
   const [isLoading, setIsLoading] = useState<boolean>(!!applicationId);
   const [error, setError] = useState<string | null>(null);
 
+  const [modalOpenOllamaLetter, setModalOpenOllamaLetter] = useState(false);
   const [showLetter, setShowLetter] = useState(false);
   const [showCV, setShowCV] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [showCallAI, setShowCallAI] = useState(false);
 
   // form fields – initialise to empty values
   // Entities
   const [jobSpec, setJobSpec] = useState<JobSpecItem | null>(null);
-  //const [application, setApplication] = useState<ApplicationItem | null>(null);
 
   const [applied, setApplied] = useState('');
   const [confirmed, setConfirmed] = useState('');
@@ -177,6 +182,13 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
                             placeholder="Application letter used" 
                             onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
                 </span>
+                <span className="modal-field">
+                  <button className="button" 
+                          onClick={() => {
+                                    setModalOpenOllamaLetter(true);
+                                  }}
+                  >Ask AI</button>
+                </span>
                 <span className="modal-field"></span>
               </span>
             ) : (
@@ -193,6 +205,13 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
                             value={letter} 
                             placeholder="Application letter used" 
                             onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                </span>
+                <span className="modal-field">
+                  <button className="button" 
+                          onClick={() => {
+                                    setModalOpenOllamaLetter(true);
+                                  }}
+                  >Ask AI</button>
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -303,6 +322,20 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
         </div>
         )
       }
+
+      {modalOpenOllamaLetter && (
+        <OllamaRequestModal
+          response={null}
+          request={setting_keys.OLLAMA.PromptGenerateCoverLetter}
+          payload={letter.trim()}
+          title = "Create cover letter to apply"
+          onClose={() => setModalOpenOllamaLetter(false)}
+          onSuccess={async (response?: string) => {
+            if (response) setLetter(response);
+            setModalOpenOllamaLetter(false);
+          }}
+        />
+      )}
     </Modal>
   );
 }

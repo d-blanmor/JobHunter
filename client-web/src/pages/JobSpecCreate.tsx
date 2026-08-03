@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
 import { FaPlus, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
-import SourceModal from '../components/SourceModal';
-import ContactModal from '../components/ContactModal';
-import PlaceOfWorkModal from '../components/PlaceOfWorkModal'
 
+import { setting_keys } from '../config';
 import { isDirty, setIsDirty } from '../App';
 import { listLocations } from '../api/lu_locations';
 import { listRoleTypes } from '../api/lu_roletypes';
@@ -15,11 +13,12 @@ import { listContacts } from '../api/contacts';
 import { saveJobSpec } from '../api/jobSpecs';
 import { SourceItem } from '../defs/interfaces';
 import { ollamaCheckJobSpec } from '../api/integrations/ollama';
+import { newJobSpecItem, PlaceOfWorkItem } from '../defs/interfaces';
 
-import { 
-  newJobSpecItem,
-  PlaceOfWorkItem,
-} from '../defs/interfaces';
+import SourceModal from '../components/SourceModal';
+import ContactModal from '../components/ContactModal';
+import PlaceOfWorkModal from '../components/PlaceOfWorkModal'
+import OllamaRequestModal from '../components/OllamaRequestModal'
 
 export default function JobSpecCreate() {
   const navigate = useNavigate();
@@ -29,10 +28,13 @@ export default function JobSpecCreate() {
   const [modalOpenSource, setModalOpenSource] = useState(false);
   const [modalOpenPlaceOfWork, setModalOpenPlaceOfWork] = useState(false);
   const [modalOpenContact, setModalOpenContact] = useState(false);
+  const [modalOpenOllamaAnalysis, setModalOpenOllamaAnalysis] = useState(false);
+  const [modalOpenOllamaProfile, setModalOpenOllamaProfile] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
-  const [showCallIAAnalysis, setShowCallIAAnalysis] = useState(false);
+  const [showCallAI, setShowCallAI] = useState(false);
   
   
   // Entities
@@ -44,6 +46,7 @@ export default function JobSpecCreate() {
   const [salaryExpectation, setSalaryExpectation] = useState('');
   const [description, setDescription] = useState('');
   const [analysis, setAnalysis] = useState('');
+  const [profile, setProfile] = useState('');
   const [notes, setNotes] = useState('');
   const [workModelId, setWorkModelId] = useState<number | ''>('');
   const [roleTypeId, setRoleTypeId] = useState<number | ''>('');
@@ -154,6 +157,7 @@ export default function JobSpecCreate() {
       ContactId: Number(contactId) || null,
       Description: description.trim() || null,
       Analysis: analysis.trim() || null,
+      Profile: profile.trim() || null,
       Notes: notes.trim() || null,
       Created: new Date().toISOString(),
       IsActive: true,
@@ -179,6 +183,23 @@ export default function JobSpecCreate() {
       setLoading(false);
     }
   };
+
+  const checkJobSpecOllama = async () => {
+    setLoading(true);
+    try {
+      const analysisJS = await ollamaCheckJobSpec(description);
+
+      if (analysisJS) {
+        setAnalysis(analysisJS);
+      }
+    }
+    catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    } 
+    finally {
+      setLoading(false);
+    }
+  }
 
   const handleFieldEdit = (field: string, value: string) => {
     setIsDirty(true);
@@ -213,11 +234,14 @@ export default function JobSpecCreate() {
     }
     else if (field.toLowerCase() == 'description') {
       setDescription(value);
-      setShowCallIAAnalysis(false);
-      if (value != '') setShowCallIAAnalysis(true);
+      setShowCallAI(false);
+      if (value != '') setShowCallAI(true);
     }
     else if (field.toLowerCase() == 'analysis') {
       setAnalysis(value);
+    }
+    else if (field.toLowerCase() == 'profile') {
+      setProfile(value);
     }
     else if (field.toLowerCase() == 'notes') {
       setNotes(value);
@@ -408,6 +432,7 @@ export default function JobSpecCreate() {
                       onClick={() => {
                         setShowDescription(false);
                         setShowAnalysis(false);
+                        setShowProfile(false);
                         setShowNotes(false)}}>
 
                   <FaRegArrowAltCircleDown />
@@ -426,6 +451,7 @@ export default function JobSpecCreate() {
                       onClick={() => {
                         setShowDescription(true);
                         setShowAnalysis(false);
+                        setShowProfile(false);
                         setShowNotes(false)}}>
 
                   <FaRegArrowAltCircleRight />
@@ -447,6 +473,7 @@ export default function JobSpecCreate() {
                       onClick={() => {
                         setShowDescription(false);
                         setShowAnalysis(false);
+                        setShowProfile(false);
                         setShowNotes(false)}}>
                   <FaRegArrowAltCircleDown />
                 </span>
@@ -456,9 +483,13 @@ export default function JobSpecCreate() {
                             placeholder="Analysis of the role spec" 
                             onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
                 </span>
-                {showCallIAAnalysis ? (
+                {showCallAI ? (
                   <span className="modal-field">
-                    <button className="button" >Ask AI</button>
+                    <button className="button" 
+                            onClick={() => {
+                                      setModalOpenOllamaAnalysis(true);
+                                    }}
+                    >Ask AI</button>
                   </span>
                 ) : ('')}
               </span>
@@ -469,6 +500,7 @@ export default function JobSpecCreate() {
                       onClick={() => {
                         setShowDescription(false);
                         setShowAnalysis(true);
+                        setShowProfile(false);
                         setShowNotes(false)}}>
                   <FaRegArrowAltCircleRight />
                 </span>
@@ -478,9 +510,69 @@ export default function JobSpecCreate() {
                             placeholder="Analysis of the role spec" 
                             onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
                 </span>
-                {showCallIAAnalysis ? (
+                {showCallAI ? (
                   <span className="modal-field">
-                    <button className="button" >Ask AI</button>
+                    <button className="button" 
+                            onClick={() => {
+                                      setModalOpenOllamaAnalysis(true);
+                                    }}
+                    >Ask AI</button>
+                  </span>
+                ) : ('')}
+              </span>
+            )}
+
+            {showProfile ? (
+              <span className="modal-row">
+                <span className='modal-field' 
+                      style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(false);
+                        setShowAnalysis(false);
+                        setShowProfile(false);
+                        setShowNotes(false)}}>
+                  <FaRegArrowAltCircleDown />
+                </span>
+                <span className='modal-field-expanded'>
+                  <textarea id="Profile"
+                            value={profile} 
+                            placeholder="Profile match to the role specification" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                </span>
+                {showCallAI ? (
+                  <span className="modal-field">
+                    <button className="button" 
+                            onClick={() => {
+                                      setModalOpenOllamaProfile(true);
+                                    }}
+                    >Ask AI</button>
+                  </span>
+                ) : ('')}
+              </span>
+            ) : (
+              <span className="modal-row">
+                <span className='modal-field' 
+                      style={{ 'marginTop': '10px' }} 
+                      onClick={() => {
+                        setShowDescription(false);
+                        setShowAnalysis(false);
+                        setShowProfile(true);
+                        setShowNotes(false)}}>
+                  <FaRegArrowAltCircleRight />
+                </span>
+                <span className='modal-field'>
+                  <textarea id="Profile"
+                            value={profile} 
+                            placeholder="Profile match to the role specification" 
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                </span>
+                {showCallAI ? (
+                  <span className="modal-field">
+                    <button className="button" 
+                            onClick={() => {
+                                      setModalOpenOllamaProfile(true);
+                                    }}
+                    >Ask AI</button>
                   </span>
                 ) : ('')}
               </span>
@@ -493,6 +585,7 @@ export default function JobSpecCreate() {
                       onClick={() => {
                         setShowDescription(false);
                         setShowAnalysis(false);
+                        setShowProfile(false);
                         setShowNotes(false)}}>
                   <FaRegArrowAltCircleDown />
                 </span>
@@ -511,6 +604,7 @@ export default function JobSpecCreate() {
                       onClick={() => {
                         setShowDescription(false);
                         setShowAnalysis(false);
+                        setShowProfile(false);
                         setShowNotes(true)}}>
                   <FaRegArrowAltCircleRight />
                 </span>
@@ -568,6 +662,34 @@ export default function JobSpecCreate() {
             await fetchContacts(true); // refresh portal list after modal close
             setModalOpenContact(false);
             setContactId(contactId);
+          }}
+        />
+      )}
+
+      {modalOpenOllamaAnalysis && (
+        <OllamaRequestModal
+          response={null}
+          request={setting_keys.OLLAMA.PromptAnalyseJobspec}
+          payload={description.trim()}
+          title = "Analyse Job Specification"
+          onClose={() => setModalOpenOllamaAnalysis(false)}
+          onSuccess={async (response?: string) => {
+            if (response) setAnalysis(response);
+            setModalOpenOllamaAnalysis(false);
+          }}
+        />
+      )}
+
+      {modalOpenOllamaProfile && (
+        <OllamaRequestModal
+          response={null}
+          request={setting_keys.OLLAMA.PromptMatchProfile}
+          payload={description.trim()}
+          title = "Profile match to the job spec"
+          onClose={() => setModalOpenOllamaProfile(false)}
+          onSuccess={async (response?: string) => {
+            if (response) setProfile(response);
+            setModalOpenOllamaProfile(false);
           }}
         />
       )}

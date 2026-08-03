@@ -5,7 +5,6 @@ import { FaEdit, FaIdBadge, FaExternalLinkAlt, FaEnvelopeSquare, FaPhoneSquareAl
 import { isDirty, setIsDirty } from '../../App';
 import { getSetting, saveSetting } from '../../api/app_settings';
 import { ollamaListModels } from '../../api/integrations/ollama';
-import { fromEvent } from "file-selector";
 
 export default function OllamaIntegrationPage() {
   const navigate = useNavigate();
@@ -320,13 +319,7 @@ export default function OllamaIntegrationPage() {
               </div>
 
               <div className="settings-field">
-                <input id="ProfilePath" 
-                      type="file" 
-                      placeholder="Profesional Profile Path" 
-                      name="Select file" 
-                      accept=".txt, .md" 
-                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
-                <span className='settings-field-file'>{profilePath}</span>
+                <input id="ProfilePath" value={profilePath} placeholder="Profesional profile full path" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
               </div>
             </>
           ) : (

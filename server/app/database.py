@@ -97,7 +97,7 @@ Follow these steps to provide effective guidance:
             session.add(setting)
             setting = models.appSetting(Key="OLLAMA_PROMPT_MATCH_PROFILE", 
                                         Value="""
-Match the user profile with the following jobspec, and provide the user with a honest description of strengths and weaknes for the user to apply.
+Match the user profile with the following jobspec, and provide the user with a honest description of strengths and weaknesses for the user to apply.
                                         """, 
                                         Notes="Prompt used to match a jobspec with a CV.", 
                                         IsActive=True);

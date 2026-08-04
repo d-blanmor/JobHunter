@@ -224,11 +224,10 @@ export default function SourcesPage() {
                       ) : (
                         <span className="source-expand-span-empty"></span>
                       )}
-                      <span className="source-item">{parent.Name}</span>
-                      <span className="source-item">{parent.PortalURL || '—'}</span>
-                      <span className="source-item">{parent.Details || '—'}</span>
-                      <span className="lookup-action-buttons" 
-                            style={{ display: 'flex', gap: '0.25rem' }}>
+                      <span className="lookup-row">{parent.Name}</span>
+                      {/*<span className="source-item">{parent.PortalURL || '—'}</span>*/}
+                      <span className="lookup-subrow">{parent.Details || '—'}</span>
+                      <span className="lookup-action-buttons">
                         {index > 0 ? (
                           <button
                             type="button"
@@ -279,9 +278,7 @@ export default function SourcesPage() {
                               <span className="source-item">{child.Name}</span>
                               <span className="source-item">{child.PortalURL || '—'}</span>
                               <span className="source-item">{child.Details || '—'} </span>
-                              <span className="lookup-action-buttons" 
-                                    style={{ display: 'flex', gap: '0.25rem' }}>
-
+                              <span className="lookup-action-buttons">
                                 {index > 0 ? (
                                   <button
                                     type="button"

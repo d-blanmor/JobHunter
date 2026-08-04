@@ -1,11 +1,79 @@
+.modal-filters {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(6, minmax(120px, 1fr));
+  margin-bottom: 18px;
+  align-items: end;
+}
+.modal-filter {
+  margin-bottom: 0;
+  min-width: 0;
+  padding: 0.1em 0.1em 0.1em 0.1em;
+}
+.modal-filter:hover {
+  margin-bottom: 0;
+  min-width: 0;
+  box-shadow: 0 1px 10px var(--color-brand-secondary);
+  border-radius: 10px;
+}
+.modal-filter input {
+  width: 175px;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+  border-radius: 10px;
+}
+.modal-filter-date input {
+  width: 175px;
+  height: 1.1em;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+  border-radius: 10px;
+}
+.modal-filter-date label {
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--color-brand-primary);
+  margin: 0px 10px 0px 0px;
+}
+.modal-filter select {
+  width: 195px;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+  border-radius: 10px;
+}
+.modal-filter select:hover {
+  width: 195px;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+  border-radius: 10px;
+  transform: translateY(-1px);
+}
+
 .stage-table {
   display: grid;
-  gap: 6px;
-  width: 100%;
-  margin-top: 14px;
-  max-height: 60vh;
+  flex-shrink: 0;
+  /*gap: 6px;*/
+  /*width: 100%;*/
+  height: 380px;
+  /*margin-top: 14px;*/
+  max-height: 380px;
   overflow-y: auto;
-  overflow-x: hidden;
+  /*overflow-x: hidden;*/
+  grid-template-columns: repeat(1, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  grid-gap: 10px;
 }
 
 .stage-row {
@@ -22,7 +90,7 @@
   color: var(--stage-grid-header-front);
   background: var(--stage-grid-header-back);
   border-radius: 12px;
-  padding: 12px 10px;
+  padding: 5px 10px;
 }
 
 .stage-row-clickable {
@@ -156,22 +224,25 @@
   cursor: default;
 }
 
-.empty-row .stage-cell {
+.stage-empty-row .stage-cell {
   padding: 18px 10px;
   text-align: center;
   color: var(--stage-row-empty);
 }
 
 .stage-pagination {
+  position: relative;
+  bottom: 0px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: 20px;
 }
 
-.modal-actions {
-  justify-content: center;
+.stage-actions {
+  display: flex;
+  justify-content: right;
 }
 
 .stage-button {

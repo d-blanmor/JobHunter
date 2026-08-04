@@ -244,7 +244,7 @@
 }
 
 .lookup-action-buttons {
-  display: grid;
+  display: flex;
   grid-template-columns: repeat(4, auto);
   gap: 0.25rem;               /* spacing between icons */
   align-items: center;        /* vertical centering of icons */

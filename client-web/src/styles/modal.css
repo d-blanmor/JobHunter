@@ -15,7 +15,7 @@
   overflow: hidden;
   max-width: 1500px;
   max-height: 700px;
-  width: min(100%, 1300px);
+  width: min(100%, 1000px);
   height: min(100%, 600px);
   border-radius: 18px;
   padding: 50px;

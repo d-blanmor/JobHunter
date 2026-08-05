@@ -1,4 +1,7 @@
-/* Styles specific to JobSpecCreate page */
+.job-spec-create {
+  overflow-y: auto;
+}
+
 .job-spec-flex {
   display: flex;
   gap: 8px;

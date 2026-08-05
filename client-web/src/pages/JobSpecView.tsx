@@ -339,7 +339,7 @@ export default function JobSpecView() {
                 {safeValue(jobSpec.Position)}
               </span>
               {jobSpec.Link ? (
-                <span className="job-spec-title-link  ">
+                <span className="job-spec-title-link">
                   <a className="job-spec-label" title={`link to: ${jobSpec.Link}`} href={jobSpec.Link} target="_blank" rel="noreferrer">
                     <FaExternalLinkAlt aria-hidden="true" />
                   </a>

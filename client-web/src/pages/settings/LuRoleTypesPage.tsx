@@ -158,65 +158,62 @@ export default function LuRoleTypesPage() {
       {!loading && !error && (
         <>
           <div className="settings-button">
-            <Link to="" className="button settings-link" onClick={openCreateModal}>
-              Create new role type
-            </Link>
+            <button className="settings-button" onClick={() => openCreateModal}>Create new role type</button>
           </div>
 
           {orderedRoleTypes.length != 0 ? (
-            <table className="lookup-table">
-              <tbody>
-                {orderedRoleTypes.map((roletype, index) => (
-                  <tr key={roletype.Id}>
-                    <td> <GoDotFill /> </td>
-                    <td>{roletype.Name}</td>
-                    <td className="cell-actions">
-                      <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
+            <div className="lookup-table">
+              {orderedRoleTypes.map((roletype, index) => (
+                <div key={roletype.Id} className="lookup-row">
+                  <div className="lookup-icon-cell"><GoDotFill /></div>
+                  <div className="lookup-cell">{roletype.Name}</div>
+                  <div className="lookup-description-cell"></div>
+                  <div className="lookup-action-buttons-cell">
+                    <span className="lookup-action-buttons">
+                      <button
+                        type="button"
+                        className="lookup-action-button lookup-action-edit"
+                        onClick={() => openEditModal(roletype)}
+                        aria-label="Edit role type">
+                        <FaEdit />
+                      </button>
+                      <button
+                        type="button"
+                        className="lookup-action-button lookup-action-delete"
+                        onClick={() => handleDeleteRoleType(roletype)}
+                        aria-label="Delete role type">
+                        <FaTrashAlt />
+                      </button>
+                      {index > 0 ? (
                         <button
                           type="button"
-                          className="lookup-action-button lookup-action-edit"
-                          onClick={() => openEditModal(roletype)}
-                          aria-label="Edit role type">
-                          <FaEdit />
+                          className="lookup-action-button lookup-action-up"
+                          onClick={() => moveRoleType(roletype, 'up')}
+                          aria-label="Move up"
+                        >
+                          <FaArrowCircleUp />
                         </button>
+                      ) : (
+                        <div className="action-placeholder" />
+                      )}
+                      {roletype.Order}
+                      {index < orderedRoleTypes.length - 1 ? (
                         <button
                           type="button"
-                          className="lookup-action-button lookup-action-delete"
-                          onClick={() => handleDeleteRoleType(roletype)}
-                          aria-label="Delete role type">
-                          <FaTrashAlt />
+                          className="lookup-action-button lookup-action-down"
+                          onClick={() => moveRoleType(roletype, 'down')}
+                          aria-label="Move down"
+                        >
+                          <FaArrowCircleDown />
                         </button>
-                        {index > 0 ? (
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-up"
-                            onClick={() => moveRoleType(roletype, 'up')}
-                            aria-label="Move up"
-                          >
-                            <FaArrowCircleUp />
-                          </button>
-                        ) : (
-                          <div className="action-placeholder" />
-                        )}
-                        {roletype.Order}
-                        {index < orderedRoleTypes.length - 1 ? (
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-down"
-                            onClick={() => moveRoleType(roletype, 'down')}
-                            aria-label="Move down"
-                          >
-                            <FaArrowCircleDown />
-                          </button>
-                        ) : (
-                          <div className="action-placeholder" />
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      ) : (
+                        <div className="action-placeholder" />
+                      )}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             ''
           )}

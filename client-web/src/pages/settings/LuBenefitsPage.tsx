@@ -158,65 +158,66 @@ export default function LuBenefitsPage() {
       {!loading && !error && (
         <>
           <div className="settings-button">
-            <Link to="" className="button settings-link" onClick={openCreateModal}>
-              Create new benefit
-            </Link>
+            <button className="settings-button" onClick={() => openCreateModal}>Create new benefit</button>
           </div>
 
           {orderedBenefits.length != 0 ? (
-            <table className="lookup-table">
-              <tbody>
-                {orderedBenefits.map((benefit, index) => (
-                  <tr key={benefit.Id}>
-                    <td> <GoDotFill /> </td>
-                    <td>{benefit.Name}</td>
-                    <td className="cell-actions">
-                      <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
+            <div className="lookup-table">
+              {orderedBenefits.map((benefit, index) => (
+                <div key={benefit.Id} className="lookup-row">
+                  <div className="lookup-icon-cell">
+                    <GoDotFill />
+                  </div>
+                  <div className="lookup-cell">
+                    {benefit.Name}
+                  </div>
+                  <div className="lookup-description-cell"></div>
+                  <div className="lookup-action-buttons-cell">
+                    <span className="lookup-action-buttons">
+                      <button
+                        type="button"
+                        className="lookup-action-button lookup-action-edit"
+                        onClick={() => openEditModal(benefit)}
+                        aria-label="Edit benefit">
+                        <FaEdit />
+                      </button>
+                      <button
+                        type="button"
+                        className="lookup-action-button lookup-action-delete"
+                        onClick={() => handleDeleteBenefit(benefit)}
+                        aria-label="Delete benefit">
+                        <FaTrashAlt />
+                      </button>
+                      {index > 0 ? (
                         <button
                           type="button"
-                          className="lookup-action-button lookup-action-edit"
-                          onClick={() => openEditModal(benefit)}
-                          aria-label="Edit benefit">
-                          <FaEdit />
+                          className="lookup-action-button lookup-action-up"
+                          onClick={() => moveBenefit(benefit, 'up')}
+                          aria-label="Move up"
+                        >
+                          <FaArrowCircleUp />
                         </button>
+                      ) : (
+                        <div className="action-placeholder" />
+                      )}
+                      {benefit.Order}
+                      {index < orderedBenefits.length - 1 ? (
                         <button
                           type="button"
-                          className="lookup-action-button lookup-action-delete"
-                          onClick={() => handleDeleteBenefit(benefit)}
-                          aria-label="Delete benefit">
-                          <FaTrashAlt />
+                          className="lookup-action-button lookup-action-down"
+                          onClick={() => moveBenefit(benefit, 'down')}
+                          aria-label="Move down"
+                        >
+                          <FaArrowCircleDown />
                         </button>
-                        {index > 0 ? (
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-up"
-                            onClick={() => moveBenefit(benefit, 'up')}
-                            aria-label="Move up"
-                          >
-                            <FaArrowCircleUp />
-                          </button>
-                        ) : (
-                          <div className="action-placeholder" />
-                        )}
-                        {benefit.Order}
-                        {index < orderedBenefits.length - 1 ? (
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-down"
-                            onClick={() => moveBenefit(benefit, 'down')}
-                            aria-label="Move down"
-                          >
-                            <FaArrowCircleDown />
-                          </button>
-                        ) : (
-                          <div className="action-placeholder" />
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      ) : (
+                        <div className="action-placeholder" />
+                      )}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             ''
           )}

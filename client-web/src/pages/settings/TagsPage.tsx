@@ -160,66 +160,62 @@ export default function TagsPage() {
       {!loading && !error && (
         <>
           <div className="settings-button">
-            <Link to="" className="button settings-link" onClick={openCreateModal}>
-              Create new tag
-            </Link>
+            <button className="settings-button" onClick={() => openCreateModal()}>Create new tag</button>
           </div>
 
           {orderedTags.length != 0 ? (
-            <table className="lookup-table">
-              <tbody>
-                {orderedTags.map((tag, index) => (
-                  <tr key={tag.Id}>
-                    <td> <GoDotFill /> </td>
-                    <td>{tag.Name}</td>
-                    <td>{tag.Context || '—'}</td>
-                    <td className="cell-actions">
-                      <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
+            <div className="lookup-table">
+              {orderedTags.map((tag, index) => (
+                <div key={tag.Id} className="lookup-row">
+                  <div className="lookup-icon-cell"><GoDotFill /></div>
+                  <div className="lookup-cell">{tag.Name}</div>
+                  <div className="lookup-description-cell">{tag.Context || '—'}</div>
+                  <div className="lookup-action-buttons-cell">
+                    <span className="lookup-action-buttons">
+                      <button
+                        type="button"
+                        className="lookup-action-button lookup-action-edit"
+                        onClick={() => openEditModal(tag)}
+                        aria-label="Edit tag">
+                        <FaEdit />
+                      </button>
+                      <button
+                        type="button"
+                        className="lookup-action-button lookup-action-delete"
+                        onClick={() => handleDeleteTag(tag)}
+                        aria-label="Delete tag">
+                        <FaTrashAlt />
+                      </button>
+                      {index > 0 ? (
                         <button
                           type="button"
-                          className="lookup-action-button lookup-action-edit"
-                          onClick={() => openEditModal(tag)}
-                          aria-label="Edit tag">
-                          <FaEdit />
+                          className="lookup-action-button lookup-action-up"
+                          onClick={() => moveTag(tag, 'up')}
+                          aria-label="Move up"
+                        >
+                          <FaArrowCircleUp />
                         </button>
+                      ) : (
+                        <div className="action-placeholder" />
+                      )}
+                      {tag.Order}
+                      {index < orderedTags.length - 1 ? (
                         <button
                           type="button"
-                          className="lookup-action-button lookup-action-delete"
-                          onClick={() => handleDeleteTag(tag)}
-                          aria-label="Delete tag">
-                          <FaTrashAlt />
+                          className="lookup-action-button lookup-action-down"
+                          onClick={() => moveTag(tag, 'down')}
+                          aria-label="Move down"
+                        >
+                          <FaArrowCircleDown />
                         </button>
-                        {index > 0 ? (
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-up"
-                            onClick={() => moveTag(tag, 'up')}
-                            aria-label="Move up"
-                          >
-                            <FaArrowCircleUp />
-                          </button>
-                        ) : (
-                          <div className="action-placeholder" />
-                        )}
-                        {tag.Order}
-                        {index < orderedTags.length - 1 ? (
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-down"
-                            onClick={() => moveTag(tag, 'down')}
-                            aria-label="Move down"
-                          >
-                            <FaArrowCircleDown />
-                          </button>
-                        ) : (
-                          <div className="action-placeholder" />
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      ) : (
+                        <div className="action-placeholder" />
+                      )}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             ''
           )}

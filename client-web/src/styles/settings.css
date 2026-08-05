@@ -65,10 +65,6 @@
   margin: 0.5em 0em 0.5em 0.2em;
 }
 
-.settings-row {
-
-}
-
 .settings-field-row {
   display: grid;
   grid-template-columns: minmax(2em, 8em) minmax(0, 1fr);
@@ -179,6 +175,20 @@
   overflow: auto;
 }
 
+.settings-subtext {
+  align-items: start;
+  margin: 0.2em 0em 0em 0em;
+}
+
+.settings-text-link {
+  margin-left: 0.5em;
+  font-weight: 700;
+  font-size: 1em;
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--view-labels);
+}
+
 .settings-textarea-section {
   padding-top: 0;
 }
@@ -225,29 +235,81 @@
 
 .lookup-table {
   display: grid;
+  /*
   width: 100%;
   gap: 6px;
   overflow-y: auto;
   overflow-x: hidden;
+  */
+  /*flex-shrink: 0;*/
+  height: 380px;
+  max-height: 380px;
+  overflow-y: auto;
+  grid-template-columns: repeat(1, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  grid-gap: 10px;
 }
 .lookup-row {
-  display: grid;
+/*
   grid-template-columns: minmax(0, 16px) minmax(0, 900px) minmax(0, 80px);
   align-items: start;
   margin: 0.2em 0em 0em 0em;
+*/
+  display: grid;
+  grid-template-columns: 15px minmax(100px, 1fr) minmax(200px, 1fr) 150px;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--stage-border-bottom);
 }
-.lookup-subrow {
-  display: grid;
-  grid-template-columns: minmax(0, 16px) minmax(0, 900px) minmax(0, 80px);
-  align-items: start;
-  margin: 0.2em 0em 0em 0em;
+.lookup-icon-cell {
+  font-size: 0.88rem;
+  line-height: 1.4;
+  width: 15px;
+}
+
+.lookup-cell {
+  font-size: 0.88rem;
+  line-height: 1.4;
+  width: 250px;
+}
+
+.lookup-description-cell {
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.lookup-action-buttons-cell {
+  width: 150px;
+}
+
+.lookup-expand-span {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+  cursor: pointer;
+}
+.lookup-expand-span-empty {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background-page);
+  color: var(--color-background-page);
+  cursor: default;
 }
 
 .lookup-action-buttons {
   display: flex;
-  grid-template-columns: repeat(4, auto);
-  gap: 0.25rem;               /* spacing between icons */
-  align-items: center;        /* vertical centering of icons */
+  gap: 0.25rem;
+  align-items: center;
 }
 
 .lookup-action-button {

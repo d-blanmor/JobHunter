@@ -450,17 +450,17 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
             </div>
           </div>
 
+          <div className="stage-row stage-row-header">
+            <div className="stage-cell">{stageDateLabel}</div>
+            <div className="stage-cell">Job Position</div>
+            <div className="stage-cell">Role Type</div>
+            <div className="stage-cell">Work Model</div>
+            <div className="stage-cell">Tags</div>
+            <div className="stage-cell">Actions</div>
+          </div>
           <div className="stage-table">
-            <div className="stage-row stage-row-header">
-              <div className="stage-cell stage-cell-date">{stageDateLabel}</div>
-              <div className="stage-cell">Job Position</div>
-              <div className="stage-cell">Role Type</div>
-              <div className="stage-cell">Work Model</div>
-              <div className="stage-cell">Tags</div>
-              <div className="stage-cell stage-cell-actions">Actions</div>
-            </div>
             {pagedItems.length === 0 && (
-              <div className="stage-row empty-row">
+              <div className="stage-row stage-empty-row">
                 <div className="stage-cell stage-paged-cell">
                   No job specs match the selected filters.
                 </div>
@@ -523,7 +523,6 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
                       <button type="button"
                               className={`stage-action-button${actionLoadingId === item.JobSpecId ? ' disabled' : ''}`}
                               title="Create application for this job spec"
-
                               onClick={(e) => {
                                 e.stopPropagation();
                                 if (actionLoadingId !== item.JobSpecId) {
@@ -701,26 +700,28 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
               </div>
             ))}
           </div>
-          <div className="stage-pagination">
-            <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(1)} disabled={page === 1}>
-              First
-            </button>
-            <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(page - 1)} disabled={page === 1}>
-              Previous
-            </button>
-            <span>
-              Page {page} / {totalPages}
-            </span>
-            <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(page + 1)} disabled={page === totalPages}>
-              Next
-            </button>
-            <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(totalPages)} disabled={page === totalPages}>
-              Last
-            </button>
-          </div>
+          {totalPages && totalPages > 1 ? (
+            <div className="stage-pagination">
+              <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(1)} disabled={page === 1}>
+                First
+              </button>
+              <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(page - 1)} disabled={page === 1}>
+                Previous
+              </button>
+              <span>
+                Page {page} / {totalPages}
+              </span>
+              <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(page + 1)} disabled={page === totalPages}>
+                Next
+              </button>
+              <button className="stage-button stage-secondary-button" onClick={() => handlePageChange(totalPages)} disabled={page === totalPages}>
+                Last
+              </button>
+            </div>
+          ) : ( <div className="stage-pagination"/> )}
         </>
       )}
-      <div className="modal-actions">
+      <div className="stage-actions">
         <button className="stage-button stage-secondary-button" onClick={onClose}>Close</button>
       </div>
 

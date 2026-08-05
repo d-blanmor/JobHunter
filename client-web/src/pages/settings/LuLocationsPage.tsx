@@ -160,66 +160,62 @@ export default function LocationsPage() {
       {!loading && !error && (
         <>
           <div className="settings-button">
-            <Link to="" className="button settings-link" onClick={openCreateModal}>
-              Create new Location
-            </Link>
+            <button className="settings-button" onClick={() => openCreateModal}>Create new Location</button>
           </div>
 
           {orderedLocations.length != 0 ? (
-            <table className="lookup-table">
-              <tbody>
-                {orderedLocations.map((location, index) => (
-                  <tr key={location.Id}>
-                    <td> <GoDotFill /> </td>
-                    <td>{location.Country}</td>
-                    <td>{location.City || '—'}</td>
-                    <td className="cell-actions">
-                      <div className="lookup-action-buttons" style={{ display: 'flex', gap: '0.25rem' }}>
+            <div className="lookup-table">
+              {orderedLocations.map((location, index) => (
+                <div key={location.Id} className="lookup-row">
+                  <div className="lookup-icon-cell"><GoDotFill /></div>
+                  <div className="lookup-cell">{location.Country}</div>
+                  <div className="lookup-description-cell">{location.City || '—'}</div>
+                  <div className="lookup-action-buttons-cell">
+                    <span className="lookup-action-buttons">
+                      <button
+                        type="button"
+                        className="lookup-action-button lookup-action-edit"
+                        onClick={() => openEditModal(location)}
+                        aria-label="Edit location">
+                        <FaEdit />
+                      </button>
+                      <button
+                        type="button"
+                        className="lookup-action-button lookup-action-delete"
+                        onClick={() => handleDeleteLocation(location)}
+                        aria-label="Delete location">
+                        <FaTrashAlt />
+                      </button>
+                      {index > 0 ? (
                         <button
                           type="button"
-                          className="lookup-action-button lookup-action-edit"
-                          onClick={() => openEditModal(location)}
-                          aria-label="Edit location">
-                          <FaEdit />
+                          className="lookup-action-button lookup-action-up"
+                          onClick={() => moveLocation(location, 'up')}
+                          aria-label="Move up"
+                        >
+                          <FaArrowCircleUp />
                         </button>
+                      ) : (
+                        <div className="action-placeholder" />
+                      )}
+                      {location.Order}
+                      {index < orderedLocations.length - 1 ? (
                         <button
                           type="button"
-                          className="lookup-action-button lookup-action-delete"
-                          onClick={() => handleDeleteLocation(location)}
-                          aria-label="Delete location">
-                          <FaTrashAlt />
+                          className="lookup-action-button lookup-action-down"
+                          onClick={() => moveLocation(location, 'down')}
+                          aria-label="Move down"
+                        >
+                          <FaArrowCircleDown />
                         </button>
-                        {index > 0 ? (
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-up"
-                            onClick={() => moveLocation(location, 'up')}
-                            aria-label="Move up"
-                          >
-                            <FaArrowCircleUp />
-                          </button>
-                        ) : (
-                          <div className="action-placeholder" />
-                        )}
-                        {location.Order}
-                        {index < orderedLocations.length - 1 ? (
-                          <button
-                            type="button"
-                            className="lookup-action-button lookup-action-down"
-                            onClick={() => moveLocation(location, 'down')}
-                            aria-label="Move down"
-                          >
-                            <FaArrowCircleDown />
-                          </button>
-                        ) : (
-                          <div className="action-placeholder" />
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      ) : (
+                        <div className="action-placeholder" />
+                      )}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             ''
           )}

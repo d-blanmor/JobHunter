@@ -263,7 +263,7 @@ export default function OllamaIntegrationPage() {
             </div>
 
             {ollamaUrl && ollamaUrl != '' ? (
-              <div className="settings-field">
+              <div className="settings-button">
                 <button className="settings-button" onClick={() => loadOllamaModels()}>Test Connection</button>
               </div>
             ) : (

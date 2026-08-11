@@ -8,7 +8,7 @@ from ollama import Client, Message
 from app.config import ollama_url_tag, ollama_api_key_tag, ollama_model_tag, ollama_sys_prompt_tag, ollama_knowledge_source_tag
 from app.models import appSetting
 from app.schemas import ollamaModelBase, OllamaModelsResponse, OllamaJobspecResponse
-from app.dependencies import _get_appSetting_or_404
+from app.dependencies import get_appSetting_or_404
 
 def __ollama_helper (ollamaHost: str, ollamaApiKey: str | None) -> Client:
     if (ollamaApiKey and ollamaApiKey != ''):
@@ -23,7 +23,7 @@ def __ollama_helper (ollamaHost: str, ollamaApiKey: str | None) -> Client:
     return oClient
 
 def __getKnowledge (session: Session) -> str:
-    knowledgeSource = _get_appSetting_or_404(session, appSetting, ollama_knowledge_source_tag(), True).Value
+    knowledgeSource = get_appSetting_or_404(session, appSetting, ollama_knowledge_source_tag(), True).Value
 
     if os.path.exists(knowledgeSource):
         with open(knowledgeSource, 'r') as file:
@@ -33,7 +33,7 @@ def __getKnowledge (session: Session) -> str:
 
 def _get_ollama_models_or_404(session: Session) -> OllamaModelsResponse:
     models: list[ollamaModelBase] = []
-    ollamaHost = _get_appSetting_or_404(session, appSetting, ollama_url_tag(), True).Value
+    ollamaHost = get_appSetting_or_404(session, appSetting, ollama_url_tag(), True).Value
     client = __ollama_helper(ollamaHost, None)
 
     try:
@@ -61,9 +61,9 @@ def _get_ollama_models_or_404(session: Session) -> OllamaModelsResponse:
 
 def _get_ollama_generate_or_404(session: Session, request: str, payload: str, addKnowledge: bool | None = None) -> OllamaJobspecResponse:
     try:
-        ollamaHost = _get_appSetting_or_404(session, appSetting, ollama_url_tag(), True).Value
-        ollamaModel = _get_appSetting_or_404(session, appSetting, ollama_model_tag(), True).Value
-        systemPrompt = _get_appSetting_or_404(session, appSetting, ollama_sys_prompt_tag(), True).Value
+        ollamaHost = get_appSetting_or_404(session, appSetting, ollama_url_tag(), True).Value
+        ollamaModel = get_appSetting_or_404(session, appSetting, ollama_model_tag(), True).Value
+        systemPrompt = get_appSetting_or_404(session, appSetting, ollama_sys_prompt_tag(), True).Value
         userPrompt = ''
         knowledge = ''
         client = __ollama_helper(ollamaHost, None)

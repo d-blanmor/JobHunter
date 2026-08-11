@@ -6,26 +6,26 @@ from sqlmodel import Session, select
 
 from app.database import get_session
 from app.schemas import vwWorkflowBase
-from app.dependencies import _workflow_get_received, _workflow_get_applied, _workflow_get_interview, _workflow_get_offer, _workflow_get_discarded
+from app.dependencies import workflow_get_received, workflow_get_applied, workflow_get_interview, workflow_get_offer, workflow_get_discarded
 
 router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/workflow/stages/received", response_model=list[vwWorkflowBase])
 def list_jobspecs_received(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return _workflow_get_received(session)
+    return workflow_get_received(session)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/applied", response_model=list[vwWorkflowBase])
 def list_jobspecs_applied(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return _workflow_get_applied(session)
+    return workflow_get_applied(session)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/interview", response_model=list[vwWorkflowBase])
 def list_jobspecs_interview(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return _workflow_get_interview(session)
+    return workflow_get_interview(session)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/offer", response_model=list[vwWorkflowBase])
 def list_jobspecs_offer(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return _workflow_get_offer(session)
+    return workflow_get_offer(session)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/discarded", response_model=list[vwWorkflowBase])
 def list_jobspecs_discarded(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return _workflow_get_discarded(session)
+    return workflow_get_discarded(session)

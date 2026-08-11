@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlmodel import Field, SQLModel, Relationship, select
+from sqlmodel import Field, SQLModel, Relationship
 
 class tag (SQLModel, table=True):
     __tablename__ = "tags"
@@ -182,7 +182,7 @@ class rolesApplication(SQLModel, table=True):
 
     JobSpec: "rolesJobSpec" = Relationship(back_populates="Applications")
     Interviews: list["rolesInterview"] = Relationship(back_populates="Application")
-    Offer: list["rolesOffer"] = Relationship(back_populates="Application")
+    Offers: list["rolesOffer"] = Relationship(back_populates="Application")
 
 class rolesJobSpec(SQLModel, table=True):
     __tablename__ = "roles_job_specs"
@@ -272,7 +272,7 @@ class rolesOffer(SQLModel, table=True):
     Notes: Optional[str] = None
     IsActive: bool = True
 
-    Application: Optional["rolesApplication"] = Relationship(back_populates="Offer")
+    Application: Optional["rolesApplication"] = Relationship(back_populates="Offers")
 
     Benefits: list["rolesLnkOfferBenefit"] = Relationship(back_populates="Offer")
 
@@ -324,19 +324,19 @@ def _delete_vwWorkflow_table(engine: Engine) -> None:
 def _create_vwWorkflow_view(engine: Engine) -> None:
     create_view_sql = """
         CREATE VIEW IF NOT EXISTS vwWorkflow AS
-        SELECT "JobSpecs"."Id"                 AS "JobSpecId"
-             , "Applications"."ApplicationId"  AS "ApplicationId"
-             , "Interviews"."InterviewId"      AS "InterviewId"
-             , "Offers"."OfferId"              AS "OfferId"
-             , "JobSpecs"."Position"           AS "Position"
-             , "JobSpecs"."Company"            AS "Company"
-             , "JobSpecs"."RoleTypeId"         AS "RoleTypeId"
-             , "JobSpecs"."WorkModelId"        AS "WorkModelId"
-             , "JobSpecs"."Created"            AS "Created"
-             , "Applications"."Applied"        AS "Applied"
-             , "Applications"."Discarded"      AS "Discarded"
-             , "Interviews"."Scheduled"        AS "Scheduled"
-             , "Offers"."Offered"              AS "Offered"
+        SELECT "JobSpecs"."Id"                AS "JobSpecId"
+            , "Applications"."ApplicationId"  AS "ApplicationId"
+            , "Interviews"."InterviewId"      AS "InterviewId"
+            , "Offers"."OfferId"              AS "OfferId"
+            , "JobSpecs"."Position"           AS "Position"
+            , "JobSpecs"."Company"            AS "Company"
+            , "JobSpecs"."RoleTypeId"         AS "RoleTypeId"
+            , "JobSpecs"."WorkModelId"        AS "WorkModelId"
+            , "JobSpecs"."Created"            AS "Created"
+            , "Applications"."Applied"        AS "Applied"
+            , "Applications"."Discarded"      AS "Discarded"
+            , "Interviews"."Scheduled"        AS "Scheduled"
+            , "Offers"."Offered"              AS "Offered"
         FROM   roles_job_specs AS JobSpecs
         LEFT JOIN (SELECT MAX("roles_applications"."JobSpecId") AS "JobSpecId"
                         , "roles_applications"."Id"             AS "ApplicationId"

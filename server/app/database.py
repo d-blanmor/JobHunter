@@ -58,6 +58,11 @@ def init_db() -> None:
                                         Notes="Version control of the last deployed database.", 
                                         IsActive=True);
             session.add(setting)
+            setting = models.appSetting(Key="BACKUP_REPOSITORY", 
+                                        Value="", 
+                                        Notes="Repository directory for exporting and importing backups.", 
+                                        IsActive=True);
+            session.add(setting)
             setting = models.appSetting(Key="OLLAMA_URL", 
                                         Value="http://localhost:11434", 
                                         Notes="Ollama API listening URL.", 

@@ -34,7 +34,7 @@ def list_files(path: str, filter: str | None = None) -> genericResponse:
         else:
             dir_list = []
         return genericResponse(
-            outcome=str(dir_list),
+            outcome=dir_list,
             state=200,
             message=None
         )

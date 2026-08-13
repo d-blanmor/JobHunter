@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any, Union
 
 from pydantic import BaseModel
 
@@ -133,7 +133,7 @@ class vwWorkflowBase(BaseModel):
     Offered: Optional[datetime] = None
 
 class genericResponse(BaseModel):
-    outcome: str
+    outcome: Any
     state: int
     message: Optional[str] = None
 

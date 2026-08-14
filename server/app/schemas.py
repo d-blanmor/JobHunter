@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any, Union
 
 from pydantic import BaseModel
 
@@ -132,17 +132,17 @@ class vwWorkflowBase(BaseModel):
     Scheduled: Optional[datetime] = None
     Offered: Optional[datetime] = None
 
+class genericResponse(BaseModel):
+    outcome: Any
+    state: int
+    message: Optional[str] = None
+
 class ollamaModelBase(BaseModel):
     Key: str = None
     Name: str = None
 
 class OllamaModelsResponse(BaseModel):
     models: list[ollamaModelBase]
-    state: int
-    message: Optional[str] = None
-
-class OllamaJobspecResponse(BaseModel):
-    outcome: str
     state: int
     message: Optional[str] = None
 

@@ -277,7 +277,7 @@ def import_roles_backup_payload(session: Session, payload: dict[str, Any]) -> di
     if not isinstance(JobSpecs, list):
         raise HTTPException(status_code=400, detail="JobSpecs must be a list")
 
-    for jobSpec in JobSpecs:
+    if (len(JobSpecs) > 0):
         #lTags = _get_tag(session, tag, None, None, None, True)
         lBenefits = _get_entity(session, rolesLuBenefit, None, True)
         lLocations = _get_entity(session, rolesLuLocation, None, True)
@@ -292,135 +292,136 @@ def import_roles_backup_payload(session: Session, payload: dict[str, Any]) -> di
                 return getattr(obj, attr_name)
             return None
 
-        nJobSpec = rolesJobSpec()
-        nJobSpec.Position = jobSpec['Position']
-        nJobSpec.Company = jobSpec['Company']
-        nJobSpec.Link = jobSpec['Link']
-        nJobSpec.SalaryExpectation = jobSpec['SalaryExpectation']
-        nJobSpec.Description = jobSpec['Description']
-        nJobSpec.Analysis = jobSpec['Analysis']
-        nJobSpec.Profile = jobSpec['Profile']
-        nJobSpec.Notes = jobSpec['Notes']
-        if jobSpec['Published']: nJobSpec.Published = _str_to_date(jobSpec['Published'])
-        if jobSpec['Created']: nJobSpec.Created = _str_to_date(jobSpec['Created'])
-        nJobSpec.IsActive = jobSpec['IsActive']
+        for jobSpec in JobSpecs:
+            nJobSpec = rolesJobSpec()
+            if ('Position' in jobSpec): nJobSpec.Position = jobSpec['Position']
+            if ('Company' in jobSpec): nJobSpec.Company = jobSpec['Company']
+            if ('Link' in jobSpec): nJobSpec.Link = jobSpec['Link']
+            if ('SalaryExpectation' in jobSpec): nJobSpec.SalaryExpectation = jobSpec['SalaryExpectation']
+            if ('Description' in jobSpec): nJobSpec.Description = jobSpec['Description']
+            if ('Analysis' in jobSpec): nJobSpec.Analysis = jobSpec['Analysis']
+            if ('Profile' in jobSpec): nJobSpec.Profile = jobSpec['Profile']
+            if ('Notes' in jobSpec): nJobSpec.Notes = jobSpec['Notes']
+            if ('Published' in jobSpec) and jobSpec['Published'] and jobSpec['Published'] != '': nJobSpec.Published = _str_to_date(jobSpec['Published'])
+            if ('Created' in jobSpec) and jobSpec['Created'] and jobSpec['Created'] != '': nJobSpec.Created = _str_to_date(jobSpec['Created'])
+            nJobSpec.IsActive = jobSpec['IsActive']
 
-        if jobSpec.get('Source'):
-            foundItem = next((item for item in lSources 
-                            if get_attr(item, 'Name') == jobSpec["Source"].get('Name') and get_attr(item, 'PortalURL') == jobSpec["Source"].get('PortalURL')), None)
-            if foundItem: nJobSpec.SourceId = get_attr(foundItem, 'Id')
-        if jobSpec.get('PlaceOfWork'):
-            PlaceOfWorkId = None
-            LocationId = None
-            
-            if jobSpec['PlaceOfWork'].get('Location'):
-                foundItem = next((item for item in lLocations 
-                                if get_attr(item, 'Country') == jobSpec["PlaceOfWork"]["Location"].get('Country') and get_attr(item, 'City') == jobSpec["PlaceOfWork"]["Location"].get('City')), None)
-                if foundItem: 
-                    LocationId = get_attr(foundItem, 'Id')
+            if jobSpec.get('Source'):
+                foundItem = next((item for item in lSources 
+                                if get_attr(item, 'Name') == jobSpec["Source"].get('Name') and get_attr(item, 'PortalURL') == jobSpec["Source"].get('PortalURL')), None)
+                if foundItem: nJobSpec.SourceId = get_attr(foundItem, 'Id')
+            if jobSpec.get('PlaceOfWork'):
+                PlaceOfWorkId = None
+                LocationId = None
+                
+                if jobSpec['PlaceOfWork'].get('Location'):
+                    foundItem = next((item for item in lLocations 
+                                    if get_attr(item, 'Country') == jobSpec["PlaceOfWork"]["Location"].get('Country') and get_attr(item, 'City') == jobSpec["PlaceOfWork"]["Location"].get('City')), None)
+                    if foundItem: 
+                        LocationId = get_attr(foundItem, 'Id')
+                        foundItem = next((item for item in lPlacesOfWork 
+                                        if get_attr(item, 'Address') == jobSpec["PlaceOfWork"].get('Address') and get_attr(item, 'LocationId') == LocationId), None)
+                        if foundItem: PlaceOfWorkId = get_attr(foundItem, 'Id')
+                else:
                     foundItem = next((item for item in lPlacesOfWork 
-                                    if get_attr(item, 'Address') == jobSpec["PlaceOfWork"].get('Address') and get_attr(item, 'LocationId') == LocationId), None)
+                                    if get_attr(item, 'Address') == jobSpec["PlaceOfWork"].get('Address')), None)
                     if foundItem: PlaceOfWorkId = get_attr(foundItem, 'Id')
-            else:
-                foundItem = next((item for item in lPlacesOfWork 
-                                if get_attr(item, 'Address') == jobSpec["PlaceOfWork"].get('Address')), None)
-                if foundItem: PlaceOfWorkId = get_attr(foundItem, 'Id')
-            if PlaceOfWorkId: nJobSpec.PlaceOfWorkId = PlaceOfWorkId
-        if jobSpec.get('WorkModel'):
-            foundItem = next((item for item in lWorkModels 
-                            if get_attr(item, 'Name') == jobSpec["WorkModel"].get('Name')), None)
-            if foundItem: nJobSpec.WorkModelId = get_attr(foundItem, 'Id')
-        if jobSpec.get('RoleType'):
-            foundItem = next((item for item in lRoleTypes 
-                            if get_attr(item, 'Name') == jobSpec["RoleType"].get('Name')), None)
-            if foundItem: nJobSpec.RoleTypeId = get_attr(foundItem, 'Id')
-        if jobSpec.get('Contact'):
-            foundItem = next((item for item in lContacts 
-                            if get_attr(item, 'Name') == jobSpec["Contact"].get('Name') and get_attr(item, 'Email') == jobSpec["Contact"].get('Email')), None)
-            if foundItem: nJobSpec.ContactId = get_attr(foundItem, 'Id')
+                if PlaceOfWorkId: nJobSpec.PlaceOfWorkId = PlaceOfWorkId
+            if jobSpec.get('WorkModel'):
+                foundItem = next((item for item in lWorkModels 
+                                if get_attr(item, 'Name') == jobSpec["WorkModel"].get('Name')), None)
+                if foundItem: nJobSpec.WorkModelId = get_attr(foundItem, 'Id')
+            if jobSpec.get('RoleType'):
+                foundItem = next((item for item in lRoleTypes 
+                                if get_attr(item, 'Name') == jobSpec["RoleType"].get('Name')), None)
+                if foundItem: nJobSpec.RoleTypeId = get_attr(foundItem, 'Id')
+            if jobSpec.get('Contact'):
+                foundItem = next((item for item in lContacts 
+                                if get_attr(item, 'Name') == jobSpec["Contact"].get('Name') and get_attr(item, 'Email') == jobSpec["Contact"].get('Email')), None)
+                if foundItem: nJobSpec.ContactId = get_attr(foundItem, 'Id')
 
-        nJobSpec.Id = upsert_entity(session, rolesJobSpec, nJobSpec).Id
+            nJobSpec.Id = upsert_entity(session, rolesJobSpec, nJobSpec).Id
 
-        if jobSpec.get('Benefits') and len(jobSpec['Benefits']) > 0:
-            order = 0
-            for benefit in jobSpec['Benefits']:
-                nLink = rolesLnkJobSpecBenefit()
-                nLink.JobSpecId = jobSpec['Id']
-                nLink.Order = order
-                order += 1
-                foundItem = next((item for item in lBenefits 
-                                if get_attr(item, 'Name') == benefit.get('Name')), None)
-                if foundItem: 
-                    nLink.LuBenefitId = get_attr(foundItem, 'Id')
-                    upsert_link(session, rolesLnkJobSpecBenefit, nLink)
+            if jobSpec.get('Benefits') and len(jobSpec['Benefits']) > 0:
+                order = 0
+                for benefit in jobSpec['Benefits']:
+                    nLink = rolesLnkJobSpecBenefit()
+                    nLink.JobSpecId = jobSpec['Id']
+                    nLink.Order = order
+                    order += 1
+                    foundItem = next((item for item in lBenefits 
+                                    if get_attr(item, 'Name') == benefit.get('Name')), None)
+                    if foundItem: 
+                        nLink.LuBenefitId = get_attr(foundItem, 'Id')
+                        upsert_link(session, rolesLnkJobSpecBenefit, nLink)
 
-        #if jobSpec.get('Tags') and len(jobSpec['Tags']):
-        #    order = 0
-        #    for tag in jobSpec['Tags']:
-        #        nLink: rolesLnkJobSpecTags()
-        #        nLink.JobSpecId = jobSpec['Id']
-        #        nLink.Order = order
-        #        order += 1
-        #        foundItem = next((item for item in lTags if get_attr(item, 'Name') == tag.get('Name') and get_attr(item, 'Context') == tag.get('Context')), None)
-        #        if foundItem: 
-        #            nLink.TagId = get_attr(foundItem, 'Id')
-        #            upsert_link(session, rolesLnkJobSpecTags, nLink)
+            #if jobSpec.get('Tags') and len(jobSpec['Tags']):
+            #    order = 0
+            #    for tag in jobSpec['Tags']:
+            #        nLink: rolesLnkJobSpecTags()
+            #        nLink.JobSpecId = jobSpec['Id']
+            #        nLink.Order = order
+            #        order += 1
+            #        foundItem = next((item for item in lTags if get_attr(item, 'Name') == tag.get('Name') and get_attr(item, 'Context') == tag.get('Context')), None)
+            #        if foundItem: 
+            #            nLink.TagId = get_attr(foundItem, 'Id')
+            #            upsert_link(session, rolesLnkJobSpecTags, nLink)
 
-        if (jobSpec['Applications'] and len(jobSpec['Applications']) > 0):
-            for application in jobSpec['Applications']:
-                nApplication = rolesApplication()
-                nApplication.JobSpecId = nJobSpec.Id
-                nApplication.Letter = application['Letter']
-                nApplication.CV = application['CV']
-                nApplication.Notes = application['Notes']
-                nApplication.IsActive = application['IsActive']
-                if application['Applied']: nApplication.Applied = _str_to_date(application['Applied'])
-                if application['Confirmed']: nApplication.Confirmed = _str_to_date(application['Confirmed'])
-                if application['Discarded']: nApplication.Discarded = _str_to_date(application['Discarded'])
+            if jobSpec.get('Applications') and len(jobSpec['Applications']) > 0:
+                for application in jobSpec['Applications']:
+                    nApplication = rolesApplication()
+                    nApplication.JobSpecId = nJobSpec.Id
+                    if 'Letter' in application: nApplication.Letter = application['Letter']
+                    if 'CV' in application: nApplication.CV = application['CV']
+                    if 'Notes' in application: nApplication.Notes = application['Notes']
+                    if 'IsActive' in application: nApplication.IsActive = application['IsActive']
+                    if 'Applied' in application and application['Applied'] and application['Applied'] != '': nApplication.Applied = _str_to_date(application['Applied'])
+                    if 'Confirmed' in application and application['Confirmed'] and application['Confirmed'] != '': nApplication.Confirmed = _str_to_date(application['Confirmed'])
+                    if 'Discarded' in application and application['Discarded'] and application['Discarded'] != '': nApplication.Discarded = _str_to_date(application['Discarded'])
 
-                nApplication.Id = upsert_entity(session, rolesApplication, nApplication).Id
+                    nApplication.Id = upsert_entity(session, rolesApplication, nApplication).Id
 
-                if application.get('Interviews') and len(application['Interviews']) > 0:
-                    for interview in application['Interviews']:
-                        nInterview = rolesInterview()
-                        nInterview.ApplicationId = nApplication.Id
-                        nInterview.Description = interview['Description']
-                        nInterview.Analysis = interview['Analysis']
-                        nInterview.Notes = interview['Notes']
-                        nInterview.Outcome = interview['Outcome']
-                        nInterview.Feedback = interview['Feedback']
-                        nInterview.IsActive = interview['IsActive']
-                        if interview['Scheduled']: nInterview.Scheduled = _str_to_date(interview['Scheduled'])
-                        if interview.get('Contact'):
-                            foundItem = next((item for item in lContacts 
-                                            if get_attr(item, 'Name') == interview["Contact"].get('Name') and get_attr(item, 'Email') == interview["Contact"].get('Email')), None)
-                            if foundItem: nInterview.ContactId = get_attr(foundItem, 'Id')
+                    if application.get('Interviews') and len(application['Interviews']) > 0:
+                        for interview in application['Interviews']:
+                            nInterview = rolesInterview()
+                            nInterview.ApplicationId = nApplication.Id
+                            if 'Description' in interview: nInterview.Description = interview['Description']
+                            if 'Analysis' in interview: nInterview.Analysis = interview['Analysis']
+                            if 'Notes' in interview: nInterview.Notes = interview['Notes']
+                            if 'Outcome' in interview: nInterview.Outcome = interview['Outcome']
+                            if 'Feedback' in interview: nInterview.Feedback = interview['Feedback']
+                            if 'IsActive' in interview: nInterview.IsActive = interview['IsActive']
+                            if 'Scheduled' in interview and interview['Scheduled'] and interview['Scheduled'] != '': nInterview.Scheduled = _str_to_date(interview['Scheduled'])
+                            if interview.get('Contact'):
+                                foundItem = next((item for item in lContacts 
+                                                if get_attr(item, 'Name') == interview["Contact"].get('Name') and get_attr(item, 'Email') == interview["Contact"].get('Email')), None)
+                                if foundItem: nInterview.ContactId = get_attr(foundItem, 'Id')
 
-                        nInterview.Id = upsert_entity(session, rolesInterview, nInterview).Id
+                            nInterview.Id = upsert_entity(session, rolesInterview, nInterview).Id
 
-                if application.get('Offers') and len(application['Offers']) > 0:
-                    for offer in application['Offers']:
-                        nOffer = rolesOffer()
-                        nOffer.ApplicationId = nApplication.Id
-                        nOffer.Salary = offer['Salary']
-                        nOffer.Description = offer['Description']
-                        nOffer.Notes = offer['Notes']
-                        nOffer.IsActive = offer['IsActive']
-                        if offer['Offered']: nOffer.Offered = _str_to_date(offer['Offered'])
+                    if application.get('Offers') and len(application['Offers']) > 0:
+                        for offer in application['Offers']:
+                            nOffer = rolesOffer()
+                            nOffer.ApplicationId = nApplication.Id
+                            if 'Salary' in offer: nOffer.Salary = offer['Salary']
+                            if 'Description' in offer: nOffer.Description = offer['Description']
+                            if 'Notes' in offer: nOffer.Notes = offer['Notes']
+                            if 'IsActive' in offer: nOffer.IsActive = offer['IsActive']
+                            if 'Offered' in offer and offer['Offered'] and offer['Offered'] != '': nOffer.Offered = _str_to_date(offer['Offered'])
 
-                        nOffer.Id = upsert_entity(session, rolesOffer, nOffer).Id
-                        if offer.get('Benefits') and len(offer['Benefits']) > 0:
-                            order = 0
-                            for benefit in offer['Benefits']:
-                                nLink = rolesLnkOfferBenefit()
-                                nLink.JobSpecId = nOffer.Id
-                                nLink.Order = order
-                                order += 1
-                                foundItem = next((item for item in lBenefits 
-                                                if get_attr(item, 'Name') == benefit.get('Name')), None)
-                                if foundItem: 
-                                    nLink.LuBenefitId = get_attr(foundItem, 'Id')
-                                    upsert_link(session, rolesLnkOfferBenefit, nLink)
+                            nOffer.Id = upsert_entity(session, rolesOffer, nOffer).Id
+                            if offer.get('Benefits') and len(offer['Benefits']) > 0:
+                                order = 0
+                                for benefit in offer['Benefits']:
+                                    nLink = rolesLnkOfferBenefit()
+                                    nLink.JobSpecId = nOffer.Id
+                                    nLink.Order = order
+                                    order += 1
+                                    foundItem = next((item for item in lBenefits 
+                                                    if get_attr(item, 'Name') == benefit.get('Name')), None)
+                                    if foundItem: 
+                                        nLink.LuBenefitId = get_attr(foundItem, 'Id')
+                                        upsert_link(session, rolesLnkOfferBenefit, nLink)
 
     return {
         "state": 200,

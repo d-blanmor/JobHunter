@@ -6,6 +6,9 @@ from .routers import (
     appSettings,
     backup,
 )
+from .routers.system import(
+    fileSystem,
+)
 from .routers.roles import (
     lu_benefits, 
     lu_locations, 
@@ -45,5 +48,6 @@ app.include_router(lnk_jobspecs_benefits.router)
 app.include_router(lnk_offers_benefits.router)
 app.include_router(lnk_jobspecs_tags.router)
 app.include_router(stages.router)
+app.include_router(fileSystem.router)
 app.include_router(backup.router)
 app.include_router(ollama.router)

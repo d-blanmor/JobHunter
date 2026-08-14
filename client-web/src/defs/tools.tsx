@@ -107,4 +107,6 @@ export async function getPlaceOfWorkLabel(placeOfWorkId: number) {
   } 
 }
 
-
+export function encodeURI(str: string): string {
+  return encodeURIComponent(str);
+}

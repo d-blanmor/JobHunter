@@ -16,6 +16,9 @@ export const setting_keys = {
     'PromptMatchProfile': 'OLLAMA_PROMPT_MATCH_PROFILE',
     'PromptGenerateCoverLetter': 'OLLAMA_PROMPT_GENERATE_COVER_LETTER',
     'KnowledgeSource': 'OLLAMA_KNOWLEDGE_SOURCE',
+  },
+  'BACKUP': {
+    'Repository': 'BACKUP_REPOSITORY'
   }
 }
 

@@ -27,6 +27,10 @@ def get_tag(tag_Name: str, session: Session = Depends(get_session), active_only:
 def get_tag(tag_Context: str, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[TagBase]:
     return get_tag_or_404(session, tag, None, None, tag_Context, active_only)
 
+@router.get(conf_pathname()+"/v1/tags/by-name-context/{tag_Name}/{tag_Context}", response_model=list[TagBase])
+def get_tag(tag_Name: str, tag_Context: str, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[TagBase]:
+    return get_tag_or_404(session, tag, None, tag_Name, tag_Context, active_only)
+
 @router.post(conf_pathname()+"/v1/tags", response_model=TagBase)
 def create_or_update_tag(payload: TagBase, session: Session = Depends(get_session)) -> TagBase:
     return upsert_tag(session, tag, payload)

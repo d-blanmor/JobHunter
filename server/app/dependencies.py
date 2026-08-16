@@ -11,7 +11,7 @@ def _get_link_key_columns(model: type[Any]) -> list[str]:
 def _get_tag(session: Session, model: type[Any], tag_id: int | None = None, tag_name: str | None = None, tag_context: str | None = None, IsActive: bool | None = None) -> Any:
     if tag_id is not None:
         tags = session.get(model, (tag_id))
-    elif tag_name is None or tag_context is None:
+    elif tag_name is not None or tag_context is not None:
         statement = select(model)
         if IsActive:
             statement = statement.where(model.IsActive == True)

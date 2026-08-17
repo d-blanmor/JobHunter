@@ -1,18 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaEdit, FaIdBadge, FaExternalLinkAlt, FaEnvelopeSquare, FaPhoneSquareAlt, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from 'react-icons/fa';
+import { FaEdit, FaIdBadge, FaExternalLinkAlt, FaEnvelopeSquare, FaPhoneSquareAlt, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown, FaTags } from 'react-icons/fa';
 import { BsInfoCircle } from "react-icons/bs";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm'; // Adds support for tables, strikethrough, etc.
 import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for security
-
 
 import JobSpecModal from '../components/JobSpecModal';
 import ApplicationModal from '../components/ApplicationModal';
 import InterviewModal from '../components/InterviewModal';
 import OfferModal from '../components/OfferModal';
 
-import { getJobSpec, getJobSpecBenefits, getJobSpecTags } from '../api/jobSpecs';
+import { getJobSpec, getJobSpecTags } from '../api/jobSpecs';
 import { getApplicationsByJobSpec, getApplication } from '../api/applications';
 import { getInterviewByJobSpec } from '../api/interviews';
 import { getOfferByJobSpec, getOfferBenefits } from '../api/offers';
@@ -23,7 +22,6 @@ import { listBenefits } from '../api/lu_benefits';
 import { listLocations } from '../api/lu_locations';
 import { listSources } from '../api/sources';
 import { listContacts } from '../api/contacts';
-import { listTags } from '../api/tags';
 
 import { 
   formatDate, 
@@ -48,15 +46,15 @@ import {
   luWorkModelItem,
   luRoleTypeItem,
   ContactItem, 
-  TagItem,
-  luBenefitItem,
   } from '../defs/interfaces';
+import { Tag } from '../defs/types';
 
 export default function JobSpecView() {
   const { id } = useParams();
 
   const navigate = useNavigate();
 
+  const tagContext: string = 'JobSpecs';
   const [modalEditJobSpec, setModalEditJobSpec] = useState(false);
   const [modalEditApplication, setModalEditApplication] = useState(false);
   const [modalEditInterview, setModalEditInterview] = useState(false);
@@ -82,22 +80,14 @@ export default function JobSpecView() {
 
   // Entities
   const [jobSpec, setJobSpec] = useState<JobSpecItem | null>(null);
-  const [jsBenefits, setJsBenefits] = useState<luBenefitItem[]>([]);
-  const [jsTags, setJSTags] = useState<TagItem[]>([]);
-  const [inContact, setInContact] = useState< any > (null);
   const [applicationId, setApplicationId] = useState<number | null>(null);
-  const [application, setApplication] = useState<ApplicationItem | null>(null);
   const [interviewId, setInterviewId] = useState<number | null>(null);
   const [offerId, setOfferId] = useState<number | null>(null);
   // Lookups
-  const [lPlacesOfWork, setPlacesOfWork] = useState<PlaceOfWorkItem[]>([]);
   const [lSources, setSources] = useState<SourceItem[]>([]);
-  const [lLocations, setLocations] = useState<luLocationItem[]>([]);
   const [lWorkModels, setWorkModels] = useState<luWorkModelItem[]>([]);
   const [lRoleTypes, setRoleTypes] = useState<luRoleTypeItem[]>([]);
   const [lContacts, setContacts] = useState<ContactItem[]>([]);
-  const [lBenefits, setBenefits] = useState<luBenefitItem[]>([]); 
-  const [lTags, setTags] = useState<TagItem[]>([]);
   const [placeOfWorkLabel, setPlaceOfWorkLabel] = useState<string | ''>('');
   // Behaviour
   const [loading, setLoading] = useState(true);
@@ -114,53 +104,34 @@ export default function JobSpecView() {
       try {
         const [
           jobSpec, 
-          jsBenefits,
-          jsTags,
           applications, 
           interviews, 
           offers,
-          placesOfWork,
           luSources, 
-          luLocations,
           luWorkModels, 
           luRoleTypes, 
           luContacts,
-          luBenefits,
-          luTags,
         ] = await Promise.all([
           getJobSpec(Number(id)),
-          getJobSpecBenefits(Number(id)).catch(() => []),
-          getJobSpecTags(Number(id)).catch(() => []),
           getApplicationsByJobSpec(Number(id)).catch(() => []),
           getInterviewByJobSpec(Number(id)).catch(() => []),
           getOfferByJobSpec(Number(id)).catch(() => []),
-          listPlacesOfWork().catch(() => []),
           listSources().catch(() => []),
-          listLocations().catch(() => []),
           listWorkModels().catch(() => []),
           listRoleTypes().catch(() => []),
           listContacts().catch(() => []),
-          listBenefits().catch(() => []),
-          listTags().catch(() => []),
         ]);
 
         if (!mounted) return;
-
-        setPlacesOfWork(Array.isArray(placesOfWork) ? placesOfWork : []);
         setSources(Array.isArray(luSources) ? luSources : []);
-        setLocations(Array.isArray(luLocations) ? luLocations : []);
         setWorkModels(Array.isArray(luWorkModels) ? luWorkModels : []);
         setRoleTypes(Array.isArray(luRoleTypes) ? luRoleTypes : []);
         setContacts(Array.isArray(luContacts) ? luContacts : []);
-        setBenefits(Array.isArray(luBenefits) ? luBenefits : []);
-        setTags(Array.isArray(luTags) ? luTags : []);
 
         setJobSpec(jobSpec);
-        setJsBenefits(jsBenefits || []);
+        jobSpec.Tags = []
+        if (jobSpec && jobSpec.Id > 0) jobSpec.Tags = await getJobSpecTags(jobSpec.Id);
         if (jobSpec.PlaceOfWorkId) setPlaceOfWorkLabel(await getPlaceOfWorkLabel(jobSpec.PlaceOfWorkId));
-        jobSpec.Benefits = jsBenefits;
-        setJSTags(jsTags || []);
-        jobSpec.Tags = jsTags;
         jobSpec.Applications = [];
         if (applications && applications.length > 0) {
           jobSpec.Applications = applications;
@@ -208,34 +179,24 @@ export default function JobSpecView() {
   const workModel = useMemo(() => (jobSpec ? getWorkModelItem(jobSpec, lWorkModels) : null), [jobSpec,lWorkModels]);
   const contact = useMemo(() => (jobSpec ? getContactItem(jobSpec.ContactId, lContacts) : null), [jobSpec]);
   // TODO: Get assigned benefits in jsBenefits to jobspec
-  // TODO: Get assigned tags in jsTags to jobspec
 
   const salary = jobSpec?.SalaryExpectation ||  '—';
-  const benefits = normalizeBenefits(jobSpec?.Benefits ?? jobSpec?.Benefits);
 
   const refreshJobSpec = async (mounted: boolean = true) => {
     try {
       const [
         jobSpec, 
-        jsBenefits,
-        jsTags,
         applications, 
         interviews, 
         offers
       ] = await Promise.all([
         getJobSpec(Number(id)),
-        getJobSpecBenefits(Number(id)).catch(() => []),
-        getJobSpecTags(Number(id)).catch(() => []),
         getApplicationsByJobSpec(Number(id)).catch(() => []),
         getInterviewByJobSpec(Number(id)).catch(() => []),
         getOfferByJobSpec(Number(id)).catch(() => [])
       ]);
       setJobSpec(jobSpec);
-      setJsBenefits(jsBenefits || []);
       jobSpec.PlacesOfWork = placeOfWorkLabel;
-      jobSpec.Benefits = jsBenefits;
-      setJSTags(jsTags || []);
-      jobSpec.Tags = jsTags;
       jobSpec.Applications = applications;
       setInterviewId(null);
       if (jobSpec.Applications && jobSpec.Applications.length > 0) {
@@ -333,6 +294,7 @@ export default function JobSpecView() {
             </span>
             <button className="action-button" onClick={() => navigate(-1)}>Back</button>
           </div>
+
           <div className="page-header-row">
             <div>
               <span className="job-spec-title">
@@ -352,6 +314,19 @@ export default function JobSpecView() {
               )}
             </div>
           </div>
+
+          {jobSpec.Tags && jobSpec.Tags.length > 0 ? (
+            <div className="job-spec-tags-area">
+              <div className="job-spec-tags-header"><FaTags /></div>
+              <div className="job-spec-tags-list">
+                {jobSpec.Tags.length ? jobSpec.Tags.map((tag: Tag) => (
+                  <span className="job-spec-tags-list" key={tag.Id}>
+                    <span style={{'border': 'none'}}>{tag.Name}</span>
+                  </span>
+                )) : <></>}
+              </div>
+            </div>
+          ) : ( '' )}
 
           <div className="job-spec">
             {jobSpec.SourceId ? (
@@ -454,7 +429,7 @@ export default function JobSpecView() {
               </div>
             ) : null}
 
-            {jobSpec.RoleTypeId || jobSpec.WorkModelId || jobSpec.SalaryExpectation || (jobSpec.Benefits && jobSpec.Benefits.length > 0) ? (
+            {jobSpec.RoleTypeId || jobSpec.WorkModelId || jobSpec.SalaryExpectation ? (
               <div className="job-spec-row">
                 {jobSpec.RoleTypeId && roleType ? (
                   <div className="job-spec-field-row">
@@ -470,18 +445,12 @@ export default function JobSpecView() {
                 ) : null}
               </div>
             ) : null}
-            {jobSpec.RoleTypeId || jobSpec.WorkModelId || jobSpec.SalaryExpectation || (jobSpec.Benefits && jobSpec.Benefits.length > 0) ? (
+            {jobSpec.RoleTypeId || jobSpec.WorkModelId || jobSpec.SalaryExpectation ? (
               <div className="job-spec-row">
                 {jobSpec.SalaryExpectation ? (
                   <div className="job-spec-field-row">
                     <span className="job-spec-label">Salary Expectation</span>
                     <span className="job-spec-value">{safeValue(salary)}</span>
-                  </div>
-                ) : null}
-                {jobSpec.Benefits && jobSpec.Benefits.length > 0 ? (
-                  <div className="job-spec-field-row">
-                    <span className="job-spec-label">Benefits</span>
-                    <span className="job-spec-value">{normalizeBenefits(jobSpec.Benefits)}</span>
                   </div>
                 ) : null}
               </div>
@@ -976,13 +945,6 @@ export default function JobSpecView() {
                         <div className="job-spec-field-row">
                           <span className="job-spec-label">Salary</span>
                           <span className="job-spec-value">{safeValue(offer.Salary)}</span>
-                        </div>
-                      ) : (null)}
-
-                      {offer.Benefits ? (
-                        <div className="job-spec-field-row">
-                          <span className="job-spec-label">Benefits</span>
-                          <span className="job-spec-value">{normalizeBenefits(offer.Benefits)}</span>
                         </div>
                       ) : (null)}
 

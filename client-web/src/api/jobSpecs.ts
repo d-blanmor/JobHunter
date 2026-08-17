@@ -1,4 +1,5 @@
 import { API_BASE } from '../config';
+import { Tag } from '../defs/types';
 
 export async function listAllJobSpecs(IsActve: boolean = true) {
   const res = await fetch(`${API_BASE}/roles/job-specs?active_only=${IsActve}`);
@@ -90,9 +91,12 @@ export async function getJobSpecTag(jobSpecId: number, tagId: number) {
   return res.json();
 }
 
-export async function getJobSpecTags(jobSpecId: number) {
-  const res = await fetch(`${API_BASE}/roles/lnk/jobspec-tags/${jobSpecId}`);
-  if (!res.ok) throw new Error('Failed to load job spec tags');
+export async function getJobSpecTags(jobSpecId: number): Promise<Tag[]> {
+  const res = await fetch(`${API_BASE}//roles/job-specs/get_tags/${jobSpecId}`);
+  if (!res.ok) {
+    if (res.status == 404) return [];
+    throw new Error(`Failed to load job spec tags`);
+  }
   return res.json();
 }
 

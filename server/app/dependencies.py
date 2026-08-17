@@ -21,6 +21,12 @@ def _get_tag(session: Session, model: type[Any], tag_id: int | None = None, tag_
             statement = statement.where(model.Context == tag_context)
         statement = statement.order_by(model.Order.desc())
         tags = session.exec(statement).all()
+    else:
+        statement = select(model)
+        if IsActive:
+            statement = statement.where(model.IsActive == True)
+        statement = statement.order_by(model.Order.desc())
+        tags = session.exec(statement).all()
     return tags
 
 def _get_entity(session: Session, model: type[Any], entity_id: int | None = None, IsActive: bool | None = None) -> Any:
@@ -63,7 +69,6 @@ def _get_appSetting(session: Session, model: type[Any], settingKey: str | None =
         statement = statement.order_by(model.Key)
         appSettings = session.exec(statement).all()
     return appSettings
-
 
 def get_tag_or_404(session: Session, model: type[Any], tag_id: int | None = None, tag_name: str | None = None, tag_context: str | None = None, IsActive: bool | None = None) -> Any:
     tags = _get_tag(session, model, tag_id, tag_name, tag_context, IsActive)
@@ -356,6 +361,25 @@ def get_offers_by_job_spec(session: Session, job_spec_id: int) -> list[OfferBase
     statement = statement.order_by(rolesApplication.Applied.desc())
     statement = statement.order_by(rolesOffer.Offered.desc())
     return session.exec(statement).all()
+
+def get_tags_by_entity(session: Session, lnk_model: type[Any], model: type[Any], entity_id: int, active_only: bool = True) -> list[type[Any]]:
+    output: list[type[Any]] = []
+
+    for lnk in get_link_or_404(session, lnk_model, entity_id):
+        tag = _get_entity(session, model, lnk.TagId)
+        if (active_only and tag.IsActive) or (not active_only):
+            output.append(tag)
+    return output
+
+def get_benefits_by_entity(session: Session, lnk_model: type[Any], model: type[Any], job_spec_id: int, active_only: bool = True) -> list[type[Any]]:
+    output: list[type[Any]] = []
+
+    for lnk in get_link_or_404(session, lnk_model, job_spec_id):
+        benefit = _get_entity(session, model, lnk.LuBenefitId)
+        benefit.Notes = lnk.Notes
+        if (active_only and benefit.IsActive) or (not active_only):
+            output.append(benefit)
+    return output
 
 #####################
 #  Workflow logic

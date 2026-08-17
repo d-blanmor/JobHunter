@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
 
 from app.database import get_session
-from app.models import rolesOffer
+from app.models import rolesOffer, rolesLnkOfferBenefit, rolesLuBenefit
 from app.schemas import OfferBase
-from app.dependencies import get_entity_or_404, upsert_entity, soft_delete_entity, get_offers_by_job_spec
+from app.dependencies import get_entity_or_404, upsert_entity, soft_delete_entity, get_offers_by_job_spec, get_benefits_by_entity
 
 router = APIRouter()
 
@@ -30,3 +30,7 @@ def create_or_update_offer(payload: OfferBase, session: Session = Depends(get_se
 @router.delete(conf_pathname()+"/v1/roles/offers/{offer_id}", response_model=OfferBase)
 def delete_offer_v1(offer_id: int, session: Session = Depends(get_session)) -> OfferBase:
     return soft_delete_entity(session, rolesOffer, offer_id)
+
+@router.get(conf_pathname()+"/v1/roles/offers/get_benefits/{offer_id}", response_model=list[Any])
+def get_job_spec_benefits_v1(offer_id: int, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[Any]:
+    return get_benefits_by_entity(session, rolesLnkOfferBenefit, rolesLuBenefit, offer_id, active_only)

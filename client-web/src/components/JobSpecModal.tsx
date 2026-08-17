@@ -326,7 +326,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
       {isLoading && <p>Loading…</p>}
       {error && <p className="error">{error}</p>}
       {!isLoading && (
-        <div>
+        <div className="modal-envelope">
           <div className="modal-field-date">
             <label>* Tracked since</label>
             <input id="Created"

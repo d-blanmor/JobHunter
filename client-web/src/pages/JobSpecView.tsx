@@ -129,9 +129,9 @@ export default function JobSpecView() {
         setContacts(Array.isArray(luContacts) ? luContacts : []);
 
         setJobSpec(jobSpec);
+        if (jobSpec.PlaceOfWorkId) setPlaceOfWorkLabel(await getPlaceOfWorkLabel(jobSpec.PlaceOfWorkId));
         jobSpec.Tags = []
         if (jobSpec && jobSpec.Id > 0) jobSpec.Tags = await getJobSpecTags(jobSpec.Id);
-        if (jobSpec.PlaceOfWorkId) setPlaceOfWorkLabel(await getPlaceOfWorkLabel(jobSpec.PlaceOfWorkId));
         jobSpec.Applications = [];
         if (applications && applications.length > 0) {
           jobSpec.Applications = applications;
@@ -183,6 +183,9 @@ export default function JobSpecView() {
   const salary = jobSpec?.SalaryExpectation ||  '—';
 
   const refreshJobSpec = async (mounted: boolean = true) => {
+    setLoading(true);
+    setError(null);
+
     try {
       const [
         jobSpec, 
@@ -198,6 +201,8 @@ export default function JobSpecView() {
       setJobSpec(jobSpec);
       jobSpec.PlacesOfWork = placeOfWorkLabel;
       jobSpec.Applications = applications;
+      jobSpec.Tags = []
+      if (jobSpec && jobSpec.Id > 0) jobSpec.Tags = await getJobSpecTags(jobSpec.Id);
       setInterviewId(null);
       if (jobSpec.Applications && jobSpec.Applications.length > 0) {
         setApplicationId(jobSpec.Applications[0].Id);
@@ -228,7 +233,10 @@ export default function JobSpecView() {
           err instanceof Error ? err.message : 'Failed to load contacts',
         );
     } 
-    finally {}
+    finally {
+      if (!mounted) return;
+      setLoading(false);
+    }
   };
 
   const getModalTitle = (modal: string) => {

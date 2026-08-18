@@ -238,8 +238,7 @@
 .job-spec-tags-area {
   display: block ruby;
   margin-bottom: 12px;
-  align-items: center;
-  flex-wrap: wrap;
+  margin-top: 10px;
 }
 
 .job-spec-tags-header {

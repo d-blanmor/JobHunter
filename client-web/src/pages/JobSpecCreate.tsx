@@ -16,7 +16,6 @@ import { listContacts } from '../api/contacts';
 import { saveJobSpec, getJobSpecTags, saveJobSpecTag } from '../api/jobSpecs';
 import { getTagByContext, getTagByNameContext, saveTag } from '../api/tags';
 import { SourceItem } from '../defs/interfaces';
-import { listTags } from '../api/tags';
 import { ollamaCheckJobSpec } from '../api/integrations/ollama';
 
 import SourceModal from '../components/SourceModal';
@@ -41,8 +40,10 @@ export default function JobSpecCreate() {
   const [showCallAI, setShowCallAI] = useState(false);
     
   // Entities
+  //const [jobSpecId, setJobSpecId] = useState<number | null>(null);
   const [position, setPosition] = useState('');
   const [company, setCompany] = useState('');
+  const [sourceId, setSourceId] = useState<number | ''>('');
   const [link, setLink] = useState('');
   const [published, setPublished] = useState('');
   const [contactId, setContactId] = useState<number | null>(null);
@@ -56,23 +57,21 @@ export default function JobSpecCreate() {
   const [placeOfWorkId, setPlaceOfWorkId] = useState<number | ''>('');
 
   // Lookups
+  const tagContext: string = 'JobSpecs';
   const [contacts, setContacts] = useState<any[]>([]);
-  
-  const [filter, setFilter] = useState('');
-  const [tags, setTags] = useState<Tag[]>([]);
+  //const [filter, setFilter] = useState('');
+  //const filteredParents = parents.filter((s)=> s.Name.toLowerCase().includes(filter.toLowerCase()));
+  const [luTags, setLuTags] = useState<Tag[]>([]);
   const [sources, setSources] = useState<Source[]>([]);
   const [parents, setParents] = useState<SourceItem[]>([]);
-  const filteredParents = parents.filter((s)=> s.Name.toLowerCase().includes(filter.toLowerCase()));
   const [workModels, setWorkModels] = useState<luWorkModel[]>([]);
   const [roleTypes, setRoleTypes] = useState<luRoleType[]>([]);
   const [placesOfWork, setPlacesOfWork] = useState<PlaceOfWork[]>([]);
   const [locations, setLocations] = useState<luLocation[]>([]);
   const [benefits, setBenefits] = useState<luBenefit[]>([]);
 
+  // Floating values
   const [lAddTags, setLAddTags] = useState<string[]>([]);
-  const [sourceId, setSourceId] = useState<number | ''>('');
-  const tagContext: string = 'JobSpecs';
-  const [jobSpecId, setJobSpecId] = useState<number | null>(null);
   const [tagInput, setTagInput] = useState<string>('');
   const [tagSuggestions, setTagSuggestions] = useState<any[]>([]);
   const [tagEditorOpen, setTagEditorOpen] = useState(false);
@@ -105,7 +104,8 @@ export default function JobSpecCreate() {
   useEffect(() => {
     function handelOnBeforeUnload(event: BeforeUnloadEvent) {
       event.preventDefault();
-      return (event.returnValue = '');
+      //return (event.returnValue = '');
+      return (event.preventDefault());
     }
     window.addEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
     return () => {
@@ -140,7 +140,7 @@ export default function JobSpecCreate() {
         if (!mounted) return;
 
         const tags = Array.isArray(lTags) ? lTags : (lTags?.data ?? []);
-        setTags(tags);
+        setLuTags(tags);
         const sources = Array.isArray(lSources) ? lSources : (lSources?.data ?? []);
         setSources(sources);
         setParents(sources.filter((s: SourceItem) => s.ParentId == null));
@@ -167,14 +167,32 @@ export default function JobSpecCreate() {
     return () => { mounted = false; };
   }, []);
 
-  const handleCancel = () => {
-    if (isDirty()) {
-      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
-        return;
+  async function fetchTag(tagName: string) {
+    let tagId: number;
+
+    try {
+      let addTag = await getTagByNameContext(tagName, tagContext);
+
+      if (!addTag) {
+        const payload: Tag = {
+          Name: tagName,
+          Context: tagContext,
+          Order: tags.length,
+          IsActive: true
+        }
+        addTag = await saveTag(payload);
+        tagId = addTag.Id;
+      }
+      else {
+        tagId = addTag[0].Id;
+      }
+      return tagId;
     }
-    navigate('/');
-    setIsDirty(false);
-    return;
+    catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to get tag',
+      );
+    }
   };
 
   const handleSubmit = async () => {
@@ -213,7 +231,7 @@ export default function JobSpecCreate() {
     {
       const savedJobSpec = await saveJobSpec(payload);
 
-      setJobSpecId(savedJobSpec?.Id ?? savedJobSpec?.id ?? null);
+      //setJobSpecId(savedJobSpec?.Id ?? savedJobSpec?.id ?? null);
       if (savedJobSpec && savedJobSpec.Id) {
         if (lAddTags.length > 0) {
           for (const t of lAddTags) {
@@ -239,6 +257,16 @@ export default function JobSpecCreate() {
       setLoading(false);
       setIsDirty(false);
     }
+  };
+
+  const handleCancel = () => {
+    if (isDirty()) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        return;
+    }
+    navigate('/');
+    setIsDirty(false);
+    return;
   };
 
   const handleAddTag = async () => {
@@ -344,34 +372,6 @@ export default function JobSpecCreate() {
     }
   };
 
-  async function fetchTag(tagName: string) {
-    let tagId: number;
-
-    try {
-      let addTag = await getTagByNameContext(tagName, tagContext);
-
-      if (!addTag) {
-        const payload: Tag = {
-          Name: tagName,
-          Context: tagContext,
-          Order: tags.length,
-          IsActive: true
-        }
-        addTag = await saveTag(payload);
-        tagId = addTag.Id;
-      }
-      else {
-        tagId = addTag[0].Id;
-      }
-      return tagId;
-    }
-    catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to get tag',
-      );
-    }
-  };
-
   const fetchSources = async (mounted: boolean = true) => {
     try {
       const data = await listSources();
@@ -436,6 +436,7 @@ export default function JobSpecCreate() {
     return locationLabel;
   }
 
+  /* ---------- Render --------------------------------------------------- */
   return (
     <section className="page job-spec-create">
       <h2>Create Job Spec</h2>
@@ -476,7 +477,7 @@ export default function JobSpecCreate() {
                 list="tags-list"
               />
               <datalist id="tags-list">
-                {tags.map((tag: any, index) => (
+                {luTags.map((tag: any, index) => (
                   <option key={index || tag.Id} value={tag.Name} />
                 ))}
               </datalist>

@@ -92,7 +92,7 @@ export async function getJobSpecTag(jobSpecId: number, tagId: number) {
 }
 
 export async function getJobSpecTags(jobSpecId: number): Promise<Tag[]> {
-  const res = await fetch(`${API_BASE}//roles/job-specs/get_tags/${jobSpecId}`);
+  const res = await fetch(`${API_BASE}/roles/job-specs/get_tags/${jobSpecId}`);
   if (!res.ok) {
     if (res.status == 404) return [];
     throw new Error(`Failed to load job spec tags`);

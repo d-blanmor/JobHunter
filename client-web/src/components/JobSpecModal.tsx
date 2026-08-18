@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react';
-import { FaPlus, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
+import { FaPlus, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown, FaTags, FaTimes } from "react-icons/fa";
 
 import { setting_keys } from '../config';
+import { newJobSpecItem, SourceItem, PlaceOfWorkItem } from '../defs/interfaces';
+import { luBenefit, Tag, lnkJobSpecTag, lnkJobSpecBenefit } from '../defs/types';
+import { formatFieldDate } from '../defs/tools'
+import { isDirty, setIsDirty } from '../App';
+
 import { listLocations } from '../api/lu_locations';
 import { listRoleTypes } from '../api/lu_roletypes';
 import { listWorkModels } from '../api/lu_workmodels';
 import { listPlacesOfWork } from '../api/place_of_work';
 import { listSources } from '../api/sources';
 import { listContacts } from '../api/contacts';
-import { getJobSpec, saveJobSpec } from '../api/jobSpecs';
-import { newJobSpecItem, SourceItem, PlaceOfWorkItem } from '../defs/interfaces';
-import { formatFieldDate } from '../defs/tools'
-import { isDirty, setIsDirty } from '../App';
+import { getJobSpec, saveJobSpec, getJobSpecTags, deleteJobSpecTags, saveJobSpecTag } from '../api/jobSpecs';
+import { getTagByContext, getTagByNameContext, saveTag } from '../api/tags';
+import { ollamaCheckJobSpec } from '../api/integrations/ollama';
 
 import Modal from './Modal';
 import SourceModal from '../components/SourceModal';
@@ -29,7 +33,7 @@ type Props = {
 
 export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = () => {}, }: Props) {
   /* ---------- State --------------------------------------------------- */
-  const [isLoading, setIsLoading] = useState<boolean>(!!jobSpecId);
+  const [loading, setLoading] = useState<boolean>(!!jobSpecId);
   const [error, setError] = useState<string | null>(null);
 
   const [modalOpenSource, setModalOpenSource] = useState(false);
@@ -41,6 +45,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
   const [showAnalysis, setShowAnalysis] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [showCallAI, setShowCallAI] = useState(false);
 
   // form fields – initialise to empty values
   // Entities
@@ -60,54 +65,97 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
   const [placeOfWorkId, setPlaceOfWorkId] = useState<number | ''>('');
   const [created, setCreated] = useState('');
   const [isActive, setIsActive] = useState<boolean>(true);
+  const [origTags, setOrigTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+
   // Lookups
+  const tagContext: string = 'JobSpecs';
   const [contacts, setContacts] = useState<any[]>([]);
-  
-  const [filter, setFilter] = useState('');
+  const [luTags, setLuTags] = useState<Tag[]>([]);
   const [sources, setSources] = useState<any[]>([]);
   const [parents, setParents] = useState<SourceItem[]>([]);
+  const [filter, setFilter] = useState('');
   const filteredParents = parents.filter((s)=> s.Name.toLowerCase().includes(filter.toLowerCase()));
   const [workModels, setWorkModels] = useState<any[]>([]);
   const [roleTypes, setRoleTypes] = useState<any[]>([]);
   const [placesOfWork, setPlacesOfWork] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
+  const [benefits, setBenefits] = useState<luBenefit[]>([]);
+
+  // Floating values
+  const [tagInput, setTagInput] = useState<string>('');
+  const [tagSuggestions, setTagSuggestions] = useState<any[]>([]);
+  const [tagEditorOpen, setTagEditorOpen] = useState(false);
+  const [tagError, setTagError] = useState<string | null>(null);
 
   /* ---------- Load data for editing ----------------------------------- */
+  const fetchAllTags = async () => {
+    try {
+      const data = await getTagByContext(tagContext);
+      if (data === '()' || data == null) {
+        setTagSuggestions([]);
+        return [] as any[];
+      }
+      const tags = Array.isArray(data) ? data : (data?.data ?? []);
+      setTagSuggestions(tags);
+      return tags;
+    } catch (err) {
+      setTagError(err instanceof Error ? err.message : 'Failed to load tags');
+      return [] as any[];
+    }
+  };
+
+  useEffect(() => {
+    const loadSuggestions = async () => {
+      if (!tagEditorOpen) return;
+      await fetchAllTags();
+    };
+    void loadSuggestions();
+  }, [tagEditorOpen]);
+
   useEffect(() => {
     let mounted = true;
 
     async function load() {
-      setIsLoading(true);
-      try {
-        const [
-          lSources,
-          lWorkModels,
-          lRoleTypes,
-          lPlacesOfWork,
-          lLocations,
-          lContacts
-        ] = await Promise.all([
-          listSources(),
-          listWorkModels(),
-          listRoleTypes(),
-          listPlacesOfWork(),
-          listLocations(),
-          listContacts()
-        ]);
-        const sources = Array.isArray(lSources) ? lSources : (lSources?.data ?? []);
-        setSources(sources);
-        setParents(sources.filter((s: SourceItem) => s.ParentId == null));
-        const workModels = Array.isArray(lWorkModels) ? lWorkModels : (lWorkModels?.data ?? []);
-        setWorkModels(workModels);
-        const roleTypes = Array.isArray(lRoleTypes) ? lRoleTypes : (lRoleTypes?.data ?? []);
-        setRoleTypes(roleTypes);
-        const places = Array.isArray(lPlacesOfWork) ? lPlacesOfWork : (lPlacesOfWork?.data ?? []);
-        setPlacesOfWork(places);
-        const locations = Array.isArray(lLocations) ? lLocations : (lLocations?.data ?? []);
-        setLocations(locations);
-        const contacts = Array.isArray(lContacts) ? lContacts : (lContacts?.data ?? []);
-        setContacts(contacts);
-        if (jobSpecId) { 
+      if (jobSpecId) { 
+        setLoading(true);
+        try {
+          const [
+            lTags,
+            lSources,
+            lWorkModels,
+            lRoleTypes,
+            lPlacesOfWork,
+            lLocations,
+            lContacts,
+            jspecTags
+          ] = await Promise.all([
+            getTagByContext(tagContext),
+            listSources(),
+            listWorkModels(),
+            listRoleTypes(),
+            listPlacesOfWork(),
+            listLocations(),
+            listContacts(),
+            getJobSpecTags(jobSpecId)
+          ]);
+
+          const listTags = Array.isArray(lTags) ? lTags : (lTags?.data ?? []);
+          setLuTags(listTags);
+          const sources = Array.isArray(lSources) ? lSources : (lSources?.data ?? []);
+          setSources(sources);
+          setParents(sources.filter((s: SourceItem) => s.ParentId == null));
+          const workModels = Array.isArray(lWorkModels) ? lWorkModels : (lWorkModels?.data ?? []);
+          setWorkModels(workModels);
+          const roleTypes = Array.isArray(lRoleTypes) ? lRoleTypes : (lRoleTypes?.data ?? []);
+          setRoleTypes(roleTypes);
+          const places = Array.isArray(lPlacesOfWork) ? lPlacesOfWork : (lPlacesOfWork?.data ?? []);
+          setPlacesOfWork(places);
+          const locations = Array.isArray(lLocations) ? lLocations : (lLocations?.data ?? []);
+          setLocations(locations);
+          const contacts = Array.isArray(lContacts) ? lContacts : (lContacts?.data ?? []);
+          setContacts(contacts);
+
           // load the Application to be editted
           const src: newJobSpecItem | undefined = await getJobSpec(jobSpecId);
           if (mounted && src) {
@@ -127,13 +175,18 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
             if (src.Published) setPublished(src.Published);
             if (src.Created) setCreated(src.Created);
             if (src.IsActive) setIsActive(src.IsActive);
+            setOrigTags(jspecTags);
+            if (jspecTags && jspecTags.length > 0) {
+              const nTags: string[] = jspecTags.map((t: Tag) => t.Name);
+              setTags(nTags);
+            }
           }
+        } catch (err) {
+          if (mounted)
+            setError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
+          if (mounted) setLoading(false);
         }
-      } catch (err) {
-        if (mounted)
-          setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        if (mounted) setIsLoading(false);
       }
     }
 
@@ -142,6 +195,156 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
       mounted = false;
     };
   }, [jobSpecId]);
+
+  async function fetchTag(tagName: string) {
+    let tagId: number;
+
+    try {
+      let addTag = await getTagByNameContext(tagName, tagContext);
+
+      if (!addTag) {
+        const payload: Tag = {
+          Name: tagName,
+          Context: tagContext,
+          Order: tags.length,
+          IsActive: true
+        }
+        addTag = await saveTag(payload);
+        tagId = addTag.Id;
+      }
+      else {
+        tagId = addTag[0].Id;
+      }
+      return tagId;
+    }
+    catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to get tag',
+      );
+    }
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError(null);
+    // Basic client‑side validation
+    if (!jobSpecId || !position || !created) {
+      if (!jobSpecId) setError('A job spec is required');
+      if (!position) setError('A Postion is required');
+      if (!created) setError('Tracked since date is required')
+      return;
+    }
+
+    const payload: newJobSpecItem = {
+      Position: position,
+      Company: company,
+      Link: link,
+      SalaryExpectation: salaryExpectation,
+      ContactId: contactId,
+      Description: description,
+      Analysis: analysis,
+      Profile: profile,
+      Notes: notes,
+      Created: created,
+      IsActive: isActive,
+    };
+    if (jobSpecId) payload.Id = jobSpecId;
+    if (sourceId != '') payload.SourceId = sourceId;
+    if (workModelId != '') payload.WorkModelId = workModelId;
+    if (roleTypeId != '') payload.RoleTypeId = roleTypeId;
+    if (placeOfWorkId != '') payload.PlaceOfWorkId = placeOfWorkId;
+    if (published) payload.Published = published;
+
+    try {
+      const savedJobSpec = await saveJobSpec(payload);
+
+      if (savedJobSpec && savedJobSpec.Id) {
+        // clean jobspec tags
+        await deleteJobSpecTags(savedJobSpec.Id);
+        if (tags.length > 0) {
+          // Add new tags
+          for (const t of tags) {
+            const tagId = await fetchTag(t);
+
+            if (tagId != null) {
+              const payload: lnkJobSpecTag = {
+                JobSpecId: savedJobSpec.Id,
+                TagId: tagId,
+                Order: tags.findIndex((s: string) => t === s)
+              };
+              await saveJobSpecTag(payload);
+            }
+          }
+        }
+      }
+      setIsDirty(false);
+      onSuccess();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save job spec');
+    }
+  };
+
+  const handleCancel = () => {
+    setPosition('');
+    setCompany('');
+    setSourceId('');
+    setLink('');
+    setPlaceOfWorkId('');
+    setWorkModelId('');
+    setRoleTypeId('');
+    setSalaryExpectation('');
+    setContactId(null);
+    setDescription('');
+    setAnalysis('');
+    setProfile('');
+    setNotes('');
+    setPublished('');
+    setCreated('');
+    setIsActive(true);
+    setTags([]);
+    setIsDirty(false);
+    onClose();
+  };
+
+  const handleAddTag = async () => {
+    if (tagInput) {
+      let newLTags = tags;
+
+      if (tags.length > 0) {
+        let found = false;
+
+        tags.forEach((t: string) => {
+          if (t.toLowerCase() == tagInput.toLowerCase()) {
+            found = true;
+          }
+        });
+        if (!found) {
+          newLTags.push(tagInput);
+          setTags(newLTags);
+        }
+      }
+      else {
+        newLTags.push(tagInput);
+        setTags(newLTags);
+      }
+    }
+    setTagInput('');
+    setTagEditorOpen(false);
+  };
+
+  const handleRemoveTag = (deletedTag: string) => {
+    if (tags.length > 0) {
+      let newLTags: string[] = [];
+      
+      tags.forEach((t: string) => {
+        if (t.toLowerCase() != deletedTag.toLowerCase()) {
+          newLTags.push(t);
+        }
+      });
+      setTags(newLTags);
+    }
+  };
 
   const handleFieldEdit = (field: string, value: string) => {
     setIsDirty(true);
@@ -194,67 +397,6 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
       setIsActive(value? Boolean(value) : true);
     }
   }
-
-  const handleSubmit = async () => {
-    setError(null);
-    // Basic client‑side validation
-    if (!jobSpecId || !position || !created) {
-      if (!jobSpecId) setError('A job spec is required');
-      if (!position) setError('A Postion is required');
-      if (!created) setError('Tracked since date is required')
-      return;
-    }
-
-    const payload: newJobSpecItem = {
-      Position: position,
-      Company: company,
-      Link: link,
-      SalaryExpectation: salaryExpectation,
-      ContactId: contactId,
-      Description: description,
-      Analysis: analysis,
-      Profile: profile,
-      Notes: notes,
-      Created: created,
-      IsActive: isActive,
-    };
-    if (jobSpecId) payload.Id = jobSpecId;
-    if (sourceId != '') payload.SourceId = sourceId;
-    if (workModelId != '') payload.WorkModelId = workModelId;
-    if (roleTypeId != '') payload.RoleTypeId = roleTypeId;
-    if (placeOfWorkId != '') payload.PlaceOfWorkId = placeOfWorkId;
-    if (published) payload.Published = published;
-
-    try {
-      await saveJobSpec(payload);
-      setIsDirty(false);
-      onSuccess();
-      onClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save job spec');
-    }
-  };
-
-  const handleCancel = () => {
-    setPosition('');
-    setCompany('');
-    setSourceId('');
-    setLink('');
-    setPlaceOfWorkId('');
-    setWorkModelId('');
-    setRoleTypeId('');
-    setSalaryExpectation('');
-    setContactId(null);
-    setDescription('');
-    setAnalysis('');
-    setProfile('');
-    setNotes('');
-    setPublished('');
-    setCreated('');
-    setIsActive(true);
-    setIsDirty(false);
-    onClose();
-  };
 
   const fetchSources = async (mounted: boolean = true) => {
     try {
@@ -323,13 +465,54 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
   /* ---------- Render --------------------------------------------------- */
   return (
     <Modal title={title} onClose={onClose}>
-      {isLoading && <p>Loading…</p>}
+      {loading && <p>Loading…</p>}
       {error && <p className="error">{error}</p>}
-      {!isLoading && (
+      {!loading && (
         <div className="modal-envelope">
+          <div className="job-spec-tags-area">
+            <div className="job-spec-tags-header"><FaTags /></div>
+            {!tagEditorOpen && (
+              <button type="button" className="job-spec-tags-list-button" onClick={() => { setTagEditorOpen(true); setTagError(null); }}>
+                <FaPlus />
+              </button>
+            )}
+            <div className="job-spec-tags-list">
+              {tags.length ? tags.map((tag: string) => (
+                <span className="job-spec-tags-list" key={tag}>
+                  <span style={{'border': 'none'}}>{tag}</span>
+                  <button type="button" 
+                          className="job-spec-tag-button" 
+                          onClick={() => handleRemoveTag(tag)}>
+                    <FaTimes />
+                  </button>
+                </span>
+              )) : <></>}
+            </div>
+          </div>
+          {tagEditorOpen && (
+            <div className="job-spec-tag-editor">
+              <input
+                className="job-spec-tag-editor"
+                value={tagInput}
+                placeholder="Type tag name"
+                onChange={(e) => setTagInput(e.target.value)}
+                type="text"
+                list="tags-list"
+              />
+              <datalist id="tags-list">
+                {luTags.map((tag: any, index) => (
+                  <option key={index || tag.Id} value={tag.Name} />
+                ))}
+              </datalist>
+              <button type="button" className="job-spec-tag-editor" onClick={handleAddTag}><FaPlus /></button>
+            </div>
+          )}
+          {tagError && <p className="job-spec-tagserror">{tagError}</p>}
+
           <div className="modal-field-date">
-            <label>* Tracked since</label>
-            <input id="Created"
+            <label>Tracked since</label>
+            <input required
+              id="Created"
               type="date"
               placeholder="Tracked since"
               value={formatFieldDate(created)}
@@ -337,14 +520,14 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
           </div>
 
           <div className="modal-field">
-            * <input id="Position" required value={position} placeholder="Position" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+            <input required id="Position" value={position} placeholder="Position" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
             <input id="Company" value={company} placeholder="Company" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
-          <div className="modal-field">
+          <div className="modal-field-add">
             <select id="Source" value={sourceId} onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
               <option value="">No source selected</option>
               {parents.map((s) => (<option key={s.Id} value={s.Id}>{s.Name}</option>))}
@@ -397,7 +580,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
             <input id="SalaryExpectation" value={salaryExpectation} placeholder="Salary range" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
-          <div className="modal-field">
+          <div className="modal-field-add">
             <select id="PlaceOfWork"
                     value={placeOfWorkId} 
                     onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
@@ -419,7 +602,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
             </button>
           </div>
 
-          <div className="modal-field">
+          <div className="modal-field-add">
             <div onClick={(e) => e.stopPropagation()}>
               <select id="Contact"
                       value={contactId ?? ''}

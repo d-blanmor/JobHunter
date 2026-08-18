@@ -35,8 +35,8 @@ def create_or_update_jobspec_tag(payload: LnkJobSpecTagBase, session: Session = 
 def delete_jobspec_tag(jobspec_id: int, tag_id: int, session: Session = Depends(get_session)) -> LnkJobSpecTagBase:
     return delete_link(session, rolesLnkJobSpecTags, jobspec_id, tag_id)
 
-@router.delete(conf_pathname()+"/v1/roles/lnk/jobspec-tags/{jobspec_id}", response_model=LnkJobSpecTagBase)
-def delete_jobspec_tag(jobspec_id: int, session: Session = Depends(get_session)) -> LnkJobSpecTagBase:
+@router.delete(conf_pathname()+"/v1/roles/lnk/jobspec-tags/{jobspec_id}", response_model=list[LnkJobSpecTagBase])
+def delete_jobspec_tag(jobspec_id: int, session: Session = Depends(get_session)) -> list[LnkJobSpecTagBase]:
     return delete_link(session, rolesLnkJobSpecTags, jobspec_id, None)
 
 @router.delete(conf_pathname()+"/v1/roles/lnk/jobspecs-tag/{tag_id}", response_model=LnkJobSpecTagBase)

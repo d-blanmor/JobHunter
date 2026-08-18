@@ -244,17 +244,10 @@ def delete_link(session: Session, model: type[Any], pk1: int | None = None, pk2:
         statement = statement.where(skey == pk2)
 
     rows = session.exec(statement).all()
-    if not rows:
-        raise HTTPException(
-            status_code=404,
-            detail=f"{model.__name__} link(s) not found",
-        )
-
-    for row in rows:
-        session.delete(row)
-
-    session.commit()
-
+    if rows and len(rows) > 0:
+        for row in rows:
+            session.delete(row)
+        session.commit()
     return rows
 
 def get_appSetting_or_404(session: Session, model: type[Any], settingKey: str | None = None, IsActive: bool | None = None) -> Any:

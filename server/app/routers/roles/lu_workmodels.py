@@ -13,16 +13,16 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/roles/lookup/work-models", response_model=list[StandardLookupBase])
 def list_work_models(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[StandardLookupBase]:
-    return get_entity_or_404(session, rolesLuWorkModel, None, active_only)
+    return get_entity_or_404(session = session, model = rolesLuWorkModel, IsActive = active_only)
 
 @router.get(conf_pathname()+"/v1/roles/lookup/work-models/{work_model_id}", response_model=StandardLookupBase)
 def get_work_model(work_model_id: int, session: Session = Depends(get_session)) -> StandardLookupBase:
-    return get_entity_or_404(session, rolesLuWorkModel, work_model_id)
+    return get_entity_or_404(session = session, model = rolesLuWorkModel, entity_id = work_model_id)
 
 @router.post(conf_pathname()+"/v1/roles/lookup/work-models", response_model=StandardLookupBase)
 def create_or_update_work_model(payload: StandardLookupBase, session: Session = Depends(get_session)) -> StandardLookupBase:
-    return upsert_entity(session, rolesLuWorkModel, payload)
+    return upsert_entity(session = session, model = rolesLuWorkModel, payload = payload)
 
 @router.delete(conf_pathname()+"/v1/roles/lookup/work-models/{work_model_id}", response_model=StandardLookupBase)
 def delete_work_model(work_model_id: int, session: Session = Depends(get_session)) -> StandardLookupBase:
-    return soft_delete_entity(session, rolesLuWorkModel, work_model_id)
+    return soft_delete_entity(session = session, model = rolesLuWorkModel, entity_id = work_model_id)

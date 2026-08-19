@@ -13,24 +13,24 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/roles/offers", response_model=list[OfferBase])
 def list_offers(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[OfferBase]:
-    return get_entity_or_404(session, rolesOffer, None, active_only)
+    return get_entity_or_404(session = session, model = rolesOffer, IsActive = active_only)
 
 @router.get(conf_pathname()+"/v1/roles/offers/{offer_id}", response_model=OfferBase)
 def get_offer_v1(offer_id: int, session: Session = Depends(get_session)) -> OfferBase:
-    return get_entity_or_404(session, rolesOffer, offer_id)
+    return get_entity_or_404(session = session, model = rolesOffer, entity_id = offer_id)
 
 @router.get(conf_pathname()+"/v1/roles/offers-by-jobspec/{jobspec_id}", response_model=list[OfferBase])
 def get_jobspec_benefit(jobspec_id: int, session: Session = Depends(get_session)) -> list[OfferBase]:
-    return get_offers_by_job_spec(session, jobspec_id)
+    return get_offers_by_job_spec(session = session, job_spec_id = jobspec_id)
 
 @router.post(conf_pathname()+"/v1/roles/offers", response_model=OfferBase)
 def create_or_update_offer(payload: OfferBase, session: Session = Depends(get_session)) -> OfferBase:
-    return upsert_entity(session, rolesOffer, payload)
+    return upsert_entity(session = session, model = rolesOffer, payload = payload)
 
 @router.delete(conf_pathname()+"/v1/roles/offers/{offer_id}", response_model=OfferBase)
 def delete_offer_v1(offer_id: int, session: Session = Depends(get_session)) -> OfferBase:
-    return soft_delete_entity(session, rolesOffer, offer_id)
+    return soft_delete_entity(session = session, model = rolesOffer, entity_id = offer_id)
 
 @router.get(conf_pathname()+"/v1/roles/offers/get_benefits/{offer_id}", response_model=list[Any])
 def get_job_spec_benefits_v1(offer_id: int, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[Any]:
-    return get_benefits_by_entity(session, rolesLnkOfferBenefit, rolesLuBenefit, offer_id, active_only)
+    return get_benefits_by_entity(session = session, lnk_model = rolesLnkOfferBenefit, model = rolesLuBenefit, entity_id = offer_id, active_only = active_only)

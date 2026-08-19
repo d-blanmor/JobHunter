@@ -12,20 +12,20 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/workflow/stages/received", response_model=list[vwWorkflowBase])
 def list_jobspecs_received(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return workflow_get_received(session)
+    return workflow_get_received(session = session)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/applied", response_model=list[vwWorkflowBase])
 def list_jobspecs_applied(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return workflow_get_applied(session)
+    return workflow_get_applied(session = session)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/interview", response_model=list[vwWorkflowBase])
 def list_jobspecs_interview(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return workflow_get_interview(session)
+    return workflow_get_interview(session = session)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/offer", response_model=list[vwWorkflowBase])
 def list_jobspecs_offer(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return workflow_get_offer(session)
+    return workflow_get_offer(session = session)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/discarded", response_model=list[vwWorkflowBase])
 def list_jobspecs_discarded(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return workflow_get_discarded(session)
+    return workflow_get_discarded(session = session)

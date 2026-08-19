@@ -13,16 +13,16 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/roles/lookup/locations", response_model=list[LuLocationBase])
 def list_locations(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[LuLocationBase]:
-    return get_entity_or_404(session, rolesLuLocation, None, active_only)
+    return get_entity_or_404(session = session, model = rolesLuLocation, IsActive = active_only)
 
 @router.get(conf_pathname()+"/v1/roles/lookup/locations/{location_id}", response_model=LuLocationBase)
 def get_location(location_id: int, session: Session = Depends(get_session)) -> LuLocationBase:
-    return get_entity_or_404(session, rolesLuLocation, location_id)
+    return get_entity_or_404(session = session, model = rolesLuLocation, IsActive = location_id)
 
 @router.post(conf_pathname()+"/v1/roles/lookup/locations", response_model=LuLocationBase)
 def create_or_update_location(payload: LuLocationBase, session: Session = Depends(get_session)) -> LuLocationBase:
-    return upsert_entity(session, rolesLuLocation, payload)
+    return upsert_entity(session = session, model = rolesLuLocation, payload = payload)
 
 @router.delete(conf_pathname()+"/v1/roles/lookup/locations/{location_id}", response_model=LuLocationBase)
 def delete_location(location_id: int, session: Session = Depends(get_session)) -> LuLocationBase:
-    return soft_delete_entity(session, rolesLuLocation, location_id)
+    return soft_delete_entity(session = session, model = rolesLuLocation, entity_id = location_id)

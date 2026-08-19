@@ -13,9 +13,9 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/system/check/filesystem/{path}", response_model=genericResponse)
 def check_file(*, path: str) -> genericResponse:
-    return check_file_exists(path)
+    return check_file_exists(path = path)
 
 @router.get(conf_pathname()+"/v1/system/list/files/{path}/{filter}", response_model=genericResponse)
 def list_settings(*, path: str, filter: str | None = None) -> genericResponse:
-    return list_files(path, filter)
+    return list_files(path = path, filter = filter)
 

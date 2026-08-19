@@ -13,32 +13,32 @@ router = APIRouter()
 
 @router.get(conf_pathname()+"/v1/roles/lnk/jobspecs-tags", response_model=list[LnkJobSpecTagBase])
 def list_jobspecs_tags(*, session: Session = Depends(get_session)) -> list[LnkJobSpecTagBase]:
-    return get_link_or_404(session, rolesLnkJobSpecTags, None, None)
+    return get_link_or_404(session = session, model = rolesLnkJobSpecTags)
 
 @router.get(conf_pathname()+"/v1/roles/lnk/jobspec-tag/{jobspec_id}/{tag_id}", response_model=LnkJobSpecTagBase)
 def get_jobspec_tag(jobspec_id: int, tag_id: int, session: Session = Depends(get_session)) -> LnkJobSpecTagBase:
-    return get_link_or_404(session, rolesLnkJobSpecTags, jobspec_id, tag_id)
+    return get_link_or_404(session = session, model = rolesLnkJobSpecTags, pk1 = jobspec_id, pk2 = tag_id)
 
 @router.get(conf_pathname()+"/v1/roles/lnk/jobspec-tags/{jobspec_id}", response_model=list[LnkJobSpecTagBase])
 def get_jobspec_tags(jobspec_id: int, session: Session = Depends(get_session)) -> list[LnkJobSpecTagBase]:
-    return get_link_or_404(session, rolesLnkJobSpecTags, jobspec_id, None)
+    return get_link_or_404(session = session, model = rolesLnkJobSpecTags, pk1 = jobspec_id)
 
 @router.get(conf_pathname()+"/v1/roles/lnk/jobspecs-tag/{tag_id}", response_model=list[LnkJobSpecTagBase])
 def get_jobspecs_tag(tag_id: int, session: Session = Depends(get_session)) -> list[LnkJobSpecTagBase]:
-    return get_link_or_404(session, rolesLnkJobSpecTags, None, tag_id)
+    return get_link_or_404(session = session, model = rolesLnkJobSpecTags, pk2 = tag_id)
 
 @router.post(conf_pathname()+"/v1/roles/lnk/jobspec-tag", response_model=LnkJobSpecTagBase)
 def create_or_update_jobspec_tag(payload: LnkJobSpecTagBase, session: Session = Depends(get_session)) -> LnkJobSpecTagBase:
-    return upsert_link(session, rolesLnkJobSpecTags, payload)
+    return upsert_link(session = session, model = rolesLnkJobSpecTags, payload = payload)
 
 @router.delete(conf_pathname()+"/v1/roles/lnk/jobspec-tag/{jobspec_id}/{tag_id}", response_model=LnkJobSpecTagBase)
 def delete_jobspec_tag(jobspec_id: int, tag_id: int, session: Session = Depends(get_session)) -> LnkJobSpecTagBase:
-    return delete_link(session, rolesLnkJobSpecTags, jobspec_id, tag_id)
+    return delete_link(session = session, model = rolesLnkJobSpecTags, pk1 = jobspec_id, pk2 = tag_id)
 
 @router.delete(conf_pathname()+"/v1/roles/lnk/jobspec-tags/{jobspec_id}", response_model=list[LnkJobSpecTagBase])
 def delete_jobspec_tag(jobspec_id: int, session: Session = Depends(get_session)) -> list[LnkJobSpecTagBase]:
-    return delete_link(session, rolesLnkJobSpecTags, jobspec_id, None)
+    return delete_link(session = session, model = rolesLnkJobSpecTags, pk1 = jobspec_id)
 
 @router.delete(conf_pathname()+"/v1/roles/lnk/jobspecs-tag/{tag_id}", response_model=LnkJobSpecTagBase)
 def delete_jobspec_tag(tag_id: int, session: Session = Depends(get_session)) -> LnkJobSpecTagBase:
-    return delete_link(session, rolesLnkJobSpecTags, None, tag_id)
+    return delete_link(session = session, model = rolesLnkJobSpecTags, pk2 = tag_id)

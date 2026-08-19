@@ -15,6 +15,15 @@ export async function getBenefit(id: number) {
   return res.json();
 }
 
+export async function getBenefitByName(name: string) {
+  const res = await fetch(`${API_BASE}/roles/lookup/benefits/by-name/${name}`);
+  if (!res.ok) {
+    if (res.status != 404) throw new Error(`Failed to load tag: ${res.status}`);
+    return "()";
+  }
+  return res.json();
+}
+
 export async function saveBenefit(payload: any) {
   const res = await fetch(`${API_BASE}/roles/lookup/benefits`, {
     method: 'POST',

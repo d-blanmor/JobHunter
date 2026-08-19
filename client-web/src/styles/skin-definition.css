@@ -1,6 +1,7 @@
 :root {
   /* --- THEME VARIABLES (SYSTEM) --- */
   /* Light Skin Variables (Default): Explicitly defined for robustness */
+  --color-error-message: #f32f2f;
   --color-background-main: #f5f7fb;
   --color-background-page: #ffffff;
   --color-brand-primary: #384768;
@@ -63,6 +64,7 @@
 
 /* DARK MODE EXAMPLE */
 [data-skin="dark"] {
+  --color-error-message: #f32f2f;
   --color-background-main: #111827;
   --color-background-page: #1f2937;
   --color-brand-primary: #6e8ad8;

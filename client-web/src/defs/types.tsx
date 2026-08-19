@@ -178,3 +178,8 @@ export type lnkOfferBenefit = {
   Notes: string | null;
   Order: number | null;
 }
+
+export type benefitWithNotes = {
+  Benefit: string;
+  Notes: string;
+}

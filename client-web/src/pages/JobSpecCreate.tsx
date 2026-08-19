@@ -5,15 +5,16 @@ import { useNavigate } from 'react-router-dom';
 import { setting_keys } from '../config';
 import { isDirty, setIsDirty } from '../App';
 import { newJobSpecItem, PlaceOfWorkItem } from '../defs/interfaces';
-import { Source, luWorkModel, luRoleType, PlaceOfWork, luLocation, luBenefit, Tag, lnkJobSpecTag, lnkJobSpecBenefit } from '../defs/types';
+import { Source, luWorkModel, luRoleType, PlaceOfWork, luLocation, luBenefit, Tag, lnkJobSpecTag, lnkJobSpecBenefit, benefitWithNotes } from '../defs/types';
 
 import { listLocations } from '../api/lu_locations';
 import { listRoleTypes } from '../api/lu_roletypes';
 import { listWorkModels } from '../api/lu_workmodels';
+import { listBenefits, getBenefitByName } from '../api/lu_benefits';
 import { listPlacesOfWork } from '../api/place_of_work';
 import { listSources } from '../api/sources';
 import { listContacts } from '../api/contacts';
-import { saveJobSpec, getJobSpecTags, saveJobSpecTag } from '../api/jobSpecs';
+import { saveJobSpec, saveJobSpecTag, saveJobSpecBenefit } from '../api/jobSpecs';
 import { getTagByContext, getTagByNameContext, saveTag } from '../api/tags';
 import { SourceItem } from '../defs/interfaces';
 import { ollamaCheckJobSpec } from '../api/integrations/ollama';
@@ -62,13 +63,13 @@ export default function JobSpecCreate() {
   //const [filter, setFilter] = useState('');
   //const filteredParents = parents.filter((s)=> s.Name.toLowerCase().includes(filter.toLowerCase()));
   const [luTags, setLuTags] = useState<Tag[]>([]);
+  const [luBenefits, setLuBenefits] = useState<luBenefit[]>([]);
   const [sources, setSources] = useState<Source[]>([]);
   const [parents, setParents] = useState<SourceItem[]>([]);
   const [workModels, setWorkModels] = useState<luWorkModel[]>([]);
   const [roleTypes, setRoleTypes] = useState<luRoleType[]>([]);
   const [placesOfWork, setPlacesOfWork] = useState<PlaceOfWork[]>([]);
   const [locations, setLocations] = useState<luLocation[]>([]);
-  const [benefits, setBenefits] = useState<luBenefit[]>([]);
 
   // Floating values
   const [lAddTags, setLAddTags] = useState<string[]>([]);
@@ -76,6 +77,12 @@ export default function JobSpecCreate() {
   const [tagSuggestions, setTagSuggestions] = useState<any[]>([]);
   const [tagEditorOpen, setTagEditorOpen] = useState(false);
   const [tagError, setTagError] = useState<string | null>(null);
+
+  const [lAddBenefits, setLAddBenefits] = useState<benefitWithNotes[]>([]);
+  const [benefitInput, setBenefitInput] = useState<string>('');
+  const [benefitSuggestions, setBenefitSuggestions] = useState<any[]>([]);
+  const [benefitEditorOpen, setBenefitEditorOpen] = useState(false);
+  const [benefitError, setBenefitError] = useState<string | null>(null);
 
   const fetchAllTags = async () => {
     try {
@@ -101,6 +108,30 @@ export default function JobSpecCreate() {
     void loadSuggestions();
   }, [tagEditorOpen]);
 
+  const fetchAllBenefits = async () => {
+    try {
+      const data = await listBenefits();
+      if (data === '()' || data == null) {
+        setBenefitSuggestions([]);
+        return [] as any[];
+      }
+      const benefits = Array.isArray(data) ? data : (data?.data ?? []);
+      setBenefitSuggestions(benefits);
+      return benefits;
+    } catch (err) {
+      setTagError(err instanceof Error ? err.message : 'Failed to load benefits');
+      return [] as any[];
+    }
+  };
+
+  useEffect(() => {
+    const loadSuggestions = async () => {
+      if (!benefitEditorOpen) return;
+      await fetchAllBenefits();
+    };
+    void loadSuggestions();
+  }, [benefitEditorOpen]);
+
   useEffect(() => {
     function handelOnBeforeUnload(event: BeforeUnloadEvent) {
       event.preventDefault();
@@ -121,6 +152,7 @@ export default function JobSpecCreate() {
       try {
         const [
           lTags,
+          lBenefits,
           lSources,
           lWorkModels,
           lRoleTypes,
@@ -129,6 +161,7 @@ export default function JobSpecCreate() {
           lContacts
         ] = await Promise.all([
           getTagByContext(tagContext),
+          listBenefits(),
           listSources(),
           listWorkModels(),
           listRoleTypes(),
@@ -141,6 +174,8 @@ export default function JobSpecCreate() {
 
         const tags = Array.isArray(lTags) ? lTags : (lTags?.data ?? []);
         setLuTags(tags);
+        const benefits = Array.isArray(lBenefits) ? lBenefits : (lBenefits?.data ?? []);
+        setLuBenefits(benefits);
         const sources = Array.isArray(lSources) ? lSources : (lSources?.data ?? []);
         setSources(sources);
         setParents(sources.filter((s: SourceItem) => s.ParentId == null));
@@ -177,7 +212,7 @@ export default function JobSpecCreate() {
         const payload: Tag = {
           Name: tagName,
           Context: tagContext,
-          Order: tags.length,
+          Order: luTags.length,
           IsActive: true
         }
         addTag = await saveTag(payload);
@@ -195,11 +230,40 @@ export default function JobSpecCreate() {
     }
   };
 
+  async function fetchBenefit(benefitName: string) {
+    let benefitId: number;
+
+    try {
+      let addBenefit = await getBenefitByName(benefitName);
+
+      if (!addBenefit) {
+        const payload: Tag = {
+          Name: benefitName,
+          Order: luBenefits.length,
+          IsActive: true
+        }
+        addBenefit = await saveTag(payload);
+        benefitId = addBenefit.Id;
+      }
+      else {
+        benefitId = addBenefit[0].Id;
+      }
+      return benefitId;
+    }
+    catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to get benefit',
+      );
+    }
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     setError(null);
     if (!position.trim()) {
       setError('Position is required');
+      setLoading(false);
+      window.scrollTo(0, 0);
       return;
     }
     const payload: newJobSpecItem = {
@@ -231,7 +295,6 @@ export default function JobSpecCreate() {
     {
       const savedJobSpec = await saveJobSpec(payload);
 
-      //setJobSpecId(savedJobSpec?.Id ?? savedJobSpec?.id ?? null);
       if (savedJobSpec && savedJobSpec.Id) {
         if (lAddTags.length > 0) {
           for (const t of lAddTags) {
@@ -244,6 +307,22 @@ export default function JobSpecCreate() {
                 Order: lAddTags.findIndex((s: string) => t === s)
               };
               await saveJobSpecTag(payload);
+            }
+          }
+        }
+
+        if (lAddBenefits.length > 0) {
+          for (const bn of lAddBenefits) {
+            const benefitId = await fetchBenefit(bn.Benefit);
+
+            if (benefitId != null) {
+              const payload: lnkJobSpecBenefit = {
+                JobSpecId: savedJobSpec.Id,
+                LuBenefitId: benefitId,
+                Notes: bn.Notes,
+                Order: lAddBenefits.findIndex((s: benefitWithNotes) => bn === s)
+              };
+              await saveJobSpecBenefit(payload);
             }
           }
         }
@@ -295,6 +374,40 @@ export default function JobSpecCreate() {
     setTagEditorOpen(false);
   };
 
+  const handleAddBenefit = async () => {
+    if (benefitInput) {
+      let newLBenefits = lAddBenefits;
+
+      if (lAddBenefits.length > 0) {
+        let found = false;
+
+        lAddBenefits.forEach((bn: benefitWithNotes) => {
+          if (bn.Benefit.toLowerCase() == benefitInput.toLowerCase()) {
+            found = true;
+          }
+        });
+        if (!found) {
+          const nBenefit: benefitWithNotes = {
+            Benefit: benefitInput,
+            Notes: ""
+          }
+          newLBenefits.push(nBenefit);
+          setLAddBenefits(newLBenefits);
+        }
+      }
+      else {
+        const nBenefit: benefitWithNotes = {
+          Benefit: benefitInput,
+          Notes: ""
+        }
+        newLBenefits.push(nBenefit);
+        setLAddBenefits(newLBenefits);
+      }
+    }
+    setBenefitInput('');
+    setBenefitEditorOpen(false);
+  };
+
   const handleRemoveTag = (deletedTag: string) => {
     if (lAddTags.length > 0) {
       let newLTags: string[] = [];
@@ -307,6 +420,28 @@ export default function JobSpecCreate() {
       setLAddTags(newLTags);
     }
   };
+
+  const handleRemoveBenefit = (deletedBenefit: string) => {
+    if (lAddBenefits.length > 0) {
+      let newLBenefits: benefitWithNotes[] = [];
+      
+      lAddBenefits.forEach((bn: benefitWithNotes) => {
+        if (bn.Benefit.toLowerCase() != deletedBenefit.toLowerCase()) {
+          newLBenefits.push(bn);
+        }
+      });
+      setLAddBenefits(newLBenefits);
+    }
+  };
+
+const handleBenefitNoteChange = (index: number, newValue: string) => {
+  const updatedBenefits = [...lAddBenefits];
+  updatedBenefits[index] = {
+    ...updatedBenefits[index],
+    Notes: newValue
+  };
+  setLAddBenefits(updatedBenefits);
+};
 
   const checkJobSpecOllama = async () => {
     setLoading(true);
@@ -442,7 +577,7 @@ export default function JobSpecCreate() {
       <h2>Create Job Spec</h2>
       
       {loading && <p>Loading...</p>}
-      {error && <p className="error">{error}</p>}
+      {error && <div className="job-spec-error"><p className="error">{error}</p></div>}
       {!loading && (
         <div>
 
@@ -477,7 +612,7 @@ export default function JobSpecCreate() {
                 list="tags-list"
               />
               <datalist id="tags-list">
-                {luTags.map((tag: any, index) => (
+                {luTags.filter((tag: any, index) => (!lAddTags.includes(tag.Name))).map((tag: any, index) => (
                   <option key={index || tag.Id} value={tag.Name} />
                 ))}
               </datalist>
@@ -546,6 +681,50 @@ export default function JobSpecCreate() {
           <div className="modal-field">
             <input id="SalaryExpectation" value={salaryExpectation} placeholder="Salary range" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
+
+          <div className="job-spec-benefits-area">
+            <div className="job-spec-benefits-header">Benefits</div>
+            {!benefitEditorOpen && (
+              <button type="button" className="job-spec-benefits-list-button" onClick={() => { setBenefitEditorOpen(true); setBenefitError(null); }}>
+                <FaPlus />
+              </button>
+            )}
+            <div className="job-spec-benefits-list">
+              {lAddBenefits.length ? lAddBenefits.map((benefit: benefitWithNotes, index) => (
+                <span className="job-spec-benefits-list" key={`${benefit.Benefit}-${index}`}>
+                  <span>{benefit.Benefit}</span>
+                  <input id={`benefit-note-${index}`} 
+                        value={benefit.Notes} 
+                        placeholder={"Notes about " + benefit.Benefit} 
+                        onChange={(e) => handleBenefitNoteChange(index, e.target.value)} />
+                  <button type="button" 
+                          className="job-spec-benefit-button" 
+                          onClick={() => handleRemoveBenefit(benefit.Benefit)}>
+                    <FaTimes />
+                  </button>
+                </span>
+              )) : <></>}
+            </div>
+          </div>
+          {benefitEditorOpen && (
+            <div className="job-spec-benefit-editor">
+              <input
+                className="job-spec-benefit-editor"
+                value={benefitInput}
+                placeholder="Type benefit name"
+                onChange={(e) => setBenefitInput(e.target.value)}
+                type="text"
+                list="benefits-list"
+              />
+              <datalist id="benefits-list">
+                {luBenefits.filter((benefit: any, index) => (!lAddBenefits.includes(benefit.Name))).map((benefit: any, index) => (
+                  <option key={index} value={benefit.Name} />
+                ))}
+              </datalist>
+              <button type="button" className="job-spec-benefit-editor" onClick={handleAddBenefit}><FaPlus /></button>
+            </div>
+          )}
+          {benefitError && <p className="job-spec-benefitserror">{benefitError}</p>}
 
           <div className="modal-field">
             <select id="PlaceOfWork"

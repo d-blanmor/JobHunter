@@ -39,7 +39,7 @@ export type luWorkModel = {
 }
 
 export type luBenefit = {
-  Id: number;
+  Id?: number | null;
   Name: string;
   IsActive: boolean | true;
   Order: number | null;
@@ -173,13 +173,14 @@ export type lnkJobSpecBenefit = {
 }
 
 export type lnkOfferBenefit = {
-  OrfferId: number;
+  OfferId: number;
   LuBenefitId: number;
   Notes: string | null;
   Order: number | null;
 }
 
 export type benefitWithNotes = {
+  BenefitId?: number | null;
   Benefit: string;
   Notes: string;
 }

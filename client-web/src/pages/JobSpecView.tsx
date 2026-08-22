@@ -11,7 +11,7 @@ import ApplicationModal from '../components/ApplicationModal';
 import InterviewModal from '../components/InterviewModal';
 import OfferModal from '../components/OfferModal';
 
-import { getJobSpec, getJobSpecTags } from '../api/jobSpecs';
+import { getJobSpec, getJobSpecTags, getJobSpecBenefits } from '../api/jobSpecs';
 import { getApplicationsByJobSpec, getApplication } from '../api/applications';
 import { getInterviewByJobSpec } from '../api/interviews';
 import { getOfferByJobSpec, getOfferBenefits } from '../api/offers';
@@ -47,7 +47,7 @@ import {
   luRoleTypeItem,
   ContactItem, 
   } from '../defs/interfaces';
-import { Tag } from '../defs/types';
+import { Tag, luBenefit, lnkJobSpecBenefit, benefitWithNotes } from '../defs/types';
 
 export default function JobSpecView() {
   const { id } = useParams();
@@ -130,8 +130,12 @@ export default function JobSpecView() {
 
         setJobSpec(jobSpec);
         if (jobSpec.PlaceOfWorkId) setPlaceOfWorkLabel(await getPlaceOfWorkLabel(jobSpec.PlaceOfWorkId));
-        jobSpec.Tags = []
-        if (jobSpec && jobSpec.Id > 0) jobSpec.Tags = await getJobSpecTags(jobSpec.Id);
+        jobSpec.Tags = [];
+        jobSpec.Benefits = [];
+        if (jobSpec && jobSpec.Id > 0) {
+          [jobSpec.Tags, jobSpec.Benefits] = await Promise.all ([getJobSpecTags(jobSpec.Id), getJobSpecBenefits(jobSpec.Id)]);
+        }
+
         jobSpec.Applications = [];
         if (applications && applications.length > 0) {
           jobSpec.Applications = applications;
@@ -178,8 +182,6 @@ export default function JobSpecView() {
   const roleType = useMemo(() =>  (jobSpec ? getRoleTypeItem(jobSpec, lRoleTypes) : null), [jobSpec]);
   const workModel = useMemo(() => (jobSpec ? getWorkModelItem(jobSpec, lWorkModels) : null), [jobSpec,lWorkModels]);
   const contact = useMemo(() => (jobSpec ? getContactItem(jobSpec.ContactId, lContacts) : null), [jobSpec]);
-  // TODO: Get assigned benefits in jsBenefits to jobspec
-
   const salary = jobSpec?.SalaryExpectation ||  '—';
 
   const refreshJobSpec = async (mounted: boolean = true) => {
@@ -200,9 +202,13 @@ export default function JobSpecView() {
       ]);
       setJobSpec(jobSpec);
       jobSpec.PlacesOfWork = placeOfWorkLabel;
+      jobSpec.Tags = [];
+      jobSpec.Benefits = [];
+      if (jobSpec && jobSpec.Id > 0) {
+        [jobSpec.Tags, jobSpec.Benefits] = await Promise.all ([getJobSpecTags(jobSpec.Id), getJobSpecBenefits(jobSpec.Id)]);
+      }
+
       jobSpec.Applications = applications;
-      jobSpec.Tags = []
-      if (jobSpec && jobSpec.Id > 0) jobSpec.Tags = await getJobSpecTags(jobSpec.Id);
       setInterviewId(null);
       if (jobSpec.Applications && jobSpec.Applications.length > 0) {
         setApplicationId(jobSpec.Applications[0].Id);
@@ -463,6 +469,32 @@ export default function JobSpecView() {
                 ) : null}
               </div>
             ) : null}
+            {jobSpec.Benefits && jobSpec.Benefits.length > 0 ? (
+              <div className="job-spec-benefits-area">
+                <span className="job-spec-label">Benefits</span>
+                <div className="job-spec-benefits-list">
+                  {jobSpec.Benefits.map((benefit: any, index) => (
+                    <>
+                      {benefit.Notes != '' ? (
+                        <span className="job-spec-benefits-list">
+                          <span className="job-spec-value">{benefit.Name}: </span>
+                          <span className="job-spec-value">{benefit.Notes} </span>
+                        </span>
+                      ) :
+                      (
+                        <span className="job-spec-benefits-list">
+                          <span className="job-spec-value">{benefit.Name}</span>
+                        </span>
+                      )}
+                    </>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="job-spec-benefits-area">
+                <span className="job-spec-label">Benefits</span>
+              </div>
+            )}
           </div>
 
           {jobSpec.Description || jobSpec.Analysis || jobSpec.Profile || jobSpec.Notes ? (
@@ -955,6 +987,33 @@ export default function JobSpecView() {
                           <span className="job-spec-value">{safeValue(offer.Salary)}</span>
                         </div>
                       ) : (null)}
+
+                      {offer.Benefits && offer.Benefits.length > 0 ? (
+                        <div className="job-spec-benefits-area">
+                          <span className="job-spec-label">Benefits</span>
+                          <div className="job-spec-benefits-list">
+                            {offer.Benefits.map((benefit: any, index) => (
+                              <>
+                                {benefit.Notes != '' ? (
+                                  <span className="job-spec-benefits-list">
+                                    <span className="job-spec-value">{benefit.Name}: </span>
+                                    <span className="job-spec-value">{benefit.Notes} </span>
+                                  </span>
+                                ) :
+                                (
+                                  <span className="job-spec-benefits-list">
+                                    <span className="job-spec-value">{benefit.Name}</span>
+                                  </span>
+                                )}
+                              </>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="job-spec-benefits-area">
+                          <span className="job-spec-label">Benefits</span>
+                        </div>
+                      )}
 
                       {offer.Notes  ? (
                         <div className="job-spec-decorated">

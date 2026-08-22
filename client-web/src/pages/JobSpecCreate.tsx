@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { setting_keys } from '../config';
 import { isDirty, setIsDirty } from '../App';
+import { fetchAllBenefits } from '../defs/tools';
 import { newJobSpecItem, PlaceOfWorkItem } from '../defs/interfaces';
 import { Source, luWorkModel, luRoleType, PlaceOfWork, luLocation, luBenefit, Tag, lnkJobSpecTag, lnkJobSpecBenefit, benefitWithNotes } from '../defs/types';
 
@@ -41,7 +42,6 @@ export default function JobSpecCreate() {
   const [showCallAI, setShowCallAI] = useState(false);
     
   // Entities
-  //const [jobSpecId, setJobSpecId] = useState<number | null>(null);
   const [position, setPosition] = useState('');
   const [company, setCompany] = useState('');
   const [sourceId, setSourceId] = useState<number | ''>('');
@@ -60,8 +60,6 @@ export default function JobSpecCreate() {
   // Lookups
   const tagContext: string = 'JobSpecs';
   const [contacts, setContacts] = useState<any[]>([]);
-  //const [filter, setFilter] = useState('');
-  //const filteredParents = parents.filter((s)=> s.Name.toLowerCase().includes(filter.toLowerCase()));
   const [luTags, setLuTags] = useState<Tag[]>([]);
   const [luBenefits, setLuBenefits] = useState<luBenefit[]>([]);
   const [sources, setSources] = useState<Source[]>([]);
@@ -77,7 +75,6 @@ export default function JobSpecCreate() {
   const [tagSuggestions, setTagSuggestions] = useState<any[]>([]);
   const [tagEditorOpen, setTagEditorOpen] = useState(false);
   const [tagError, setTagError] = useState<string | null>(null);
-
   const [lAddBenefits, setLAddBenefits] = useState<benefitWithNotes[]>([]);
   const [benefitInput, setBenefitInput] = useState<string>('');
   const [benefitSuggestions, setBenefitSuggestions] = useState<any[]>([]);
@@ -108,26 +105,13 @@ export default function JobSpecCreate() {
     void loadSuggestions();
   }, [tagEditorOpen]);
 
-  const fetchAllBenefits = async () => {
-    try {
-      const data = await listBenefits();
-      if (data === '()' || data == null) {
-        setBenefitSuggestions([]);
-        return [] as any[];
-      }
-      const benefits = Array.isArray(data) ? data : (data?.data ?? []);
-      setBenefitSuggestions(benefits);
-      return benefits;
-    } catch (err) {
-      setTagError(err instanceof Error ? err.message : 'Failed to load benefits');
-      return [] as any[];
-    }
-  };
-
   useEffect(() => {
     const loadSuggestions = async () => {
       if (!benefitEditorOpen) return;
-      await fetchAllBenefits();
+      setBenefitSuggestions([]);
+      const benefits = await fetchAllBenefits();
+
+      setBenefitSuggestions(benefits);
     };
     void loadSuggestions();
   }, [benefitEditorOpen]);
@@ -374,8 +358,18 @@ export default function JobSpecCreate() {
     setTagEditorOpen(false);
   };
 
+  function verifyBenefit (benefit: string) {
+    let isValid: boolean = false
+    luBenefits.forEach((item: luBenefit) => {
+      if (item.Name.toLowerCase() == benefit.toLowerCase()){
+        isValid = true;
+      }
+    });
+    return isValid;
+  }
+
   const handleAddBenefit = async () => {
-    if (benefitInput) {
+    if (benefitInput && verifyBenefit(benefitInput)) {
       let newLBenefits = lAddBenefits;
 
       if (lAddBenefits.length > 0) {
@@ -631,14 +625,14 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
           </div>
 
           <div className="modal-field">
-            * <input id="Position" required value={position} placeholder="Position" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+            <input id="Position" required value={position} placeholder="Position" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field">
             <input id="Company" value={company} placeholder="Company" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
-          <div className="modal-field">
+          <div className="modal-field-add">
             <select id="Source" value={sourceId} onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
               <option value="">No source selected</option>
               {parents.map((s) => (<option key={s.Id} value={s.Id}>{s.Name}</option>))}
@@ -656,6 +650,29 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
               value={link} 
               placeholder="URL to the job offer"
               onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+          </div>
+
+          <div className="modal-field-add">
+            <div onClick={(e) => e.stopPropagation()}>
+              <select id="Contact"
+                      value={contactId ?? ''}
+                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
+                <option value="">No contact selected</option>
+                {contacts.map((contact) => (
+                  <option key={contact.Id ?? contact.id} value={contact.Id ?? contact.id}>
+                    {contact.Name || contact.name || contact.Title || contact.Email || contact.EmailAddress || 'Unnamed contact'}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="button"
+                title="Create new contact"
+                onClick={() => {
+                  setContactId(null);
+                  setModalOpenContact(true);
+                }}><FaPlus /></button>
+            </div>
           </div>
 
           <div className="modal-field">
@@ -676,6 +693,28 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
               <option value="">No role type selected</option>
               {roleTypes.map((r) => (<option key={r.Id} value={r.Id}>{r.Name}</option>))}
             </select>
+          </div>
+
+          <div className="modal-field-add">
+            <select id="PlaceOfWork"
+                    value={placeOfWorkId} 
+                    onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
+              <option value="">No place of work selected</option>
+              {placesOfWork.map((p) => {
+                return (
+                  <option key={p.Id} value={p.Id}>{placeOfWorkLabel(p)}</option>
+                );
+              })}
+            </select>
+            <button
+              type="button"
+              className="button"
+              title="Create new place of work"
+              onClick={() => {
+                setPlaceOfWorkId('');
+                setModalOpenPlaceOfWork(true);}}>
+              <FaPlus />
+            </button>
           </div>
 
           <div className="modal-field">
@@ -725,51 +764,6 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
             </div>
           )}
           {benefitError && <p className="job-spec-benefitserror">{benefitError}</p>}
-
-          <div className="modal-field">
-            <select id="PlaceOfWork"
-                    value={placeOfWorkId} 
-                    onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
-              <option value="">No place of work selected</option>
-              {placesOfWork.map((p) => {
-                return (
-                  <option key={p.Id} value={p.Id}>{placeOfWorkLabel(p)}</option>
-                );
-              })}
-            </select>
-            <button
-              type="button"
-              className="button"
-              title="Create new place of work"
-              onClick={() => {
-                setPlaceOfWorkId('');
-                setModalOpenPlaceOfWork(true);}}>
-              <FaPlus />
-            </button>
-          </div>
-
-          <div className="modal-field">
-            <div onClick={(e) => e.stopPropagation()}>
-              <select id="Contact"
-                      value={contactId ?? ''}
-                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
-                <option value="">No contact selected</option>
-                {contacts.map((contact) => (
-                  <option key={contact.Id ?? contact.id} value={contact.Id ?? contact.id}>
-                    {contact.Name || contact.name || contact.Title || contact.Email || contact.EmailAddress || 'Unnamed contact'}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="button"
-                title="Create new contact"
-                onClick={() => {
-                  setContactId(null);
-                  setModalOpenContact(true);
-                }}><FaPlus /></button>
-            </div>
-          </div>
 
           <div className="modal-table">
             {showDescription ? (

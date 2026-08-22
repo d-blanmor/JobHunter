@@ -45,8 +45,8 @@ export async function getJobSpecBenefit(jobSpecId: number, benefitId: number) {
   return res.json();
 }
 
-export async function getJobSpecBenefits(jobSpecId: number) {
-  const res = await fetch(`${API_BASE}/roles/lnk/jobspec-benefits/${jobSpecId}`);
+export async function getJobSpecBenefits(jobSpecId: number, IsActve: boolean = true) {
+  const res = await fetch(`${API_BASE}/roles/job-specs/get_benefits/${jobSpecId}?active_only=${IsActve}`);
   if (!res.ok) throw new Error('Failed to load job spec benefits');
   return res.json();
 }

@@ -3,17 +3,18 @@ import { FaPlus, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown, FaTags, FaTi
 
 import { setting_keys } from '../config';
 import { newJobSpecItem, SourceItem, PlaceOfWorkItem } from '../defs/interfaces';
-import { luBenefit, Tag, lnkJobSpecTag, lnkJobSpecBenefit } from '../defs/types';
+import { Source, luWorkModel, luRoleType, PlaceOfWork, luLocation, luBenefit, Tag, lnkJobSpecTag, lnkJobSpecBenefit, benefitWithNotes } from '../defs/types';
 import { formatFieldDate } from '../defs/tools'
 import { isDirty, setIsDirty } from '../App';
 
 import { listLocations } from '../api/lu_locations';
 import { listRoleTypes } from '../api/lu_roletypes';
 import { listWorkModels } from '../api/lu_workmodels';
+import { listBenefits, getBenefitByName, saveBenefit } from '../api/lu_benefits';
 import { listPlacesOfWork } from '../api/place_of_work';
 import { listSources } from '../api/sources';
 import { listContacts } from '../api/contacts';
-import { getJobSpec, saveJobSpec, getJobSpecTags, deleteJobSpecTags, saveJobSpecTag } from '../api/jobSpecs';
+import { getJobSpec, saveJobSpec, getJobSpecTags, deleteJobSpecTags, saveJobSpecTag, getJobSpecBenefits, deleteJobSpecBenefits, saveJobSpecBenefit } from '../api/jobSpecs';
 import { getTagByContext, getTagByNameContext, saveTag } from '../api/tags';
 import { ollamaCheckJobSpec } from '../api/integrations/ollama';
 
@@ -67,11 +68,13 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
   const [isActive, setIsActive] = useState<boolean>(true);
   const [origTags, setOrigTags] = useState<Tag[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [lAddBenefits, setLAddBenefits] = useState<benefitWithNotes[]>([]);
 
   // Lookups
   const tagContext: string = 'JobSpecs';
   const [contacts, setContacts] = useState<any[]>([]);
   const [luTags, setLuTags] = useState<Tag[]>([]);
+  const [luBenefits, setLuBenefits] = useState<luBenefit[]>([]);
   const [sources, setSources] = useState<any[]>([]);
   const [parents, setParents] = useState<SourceItem[]>([]);
   const [filter, setFilter] = useState('');
@@ -80,13 +83,16 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
   const [roleTypes, setRoleTypes] = useState<any[]>([]);
   const [placesOfWork, setPlacesOfWork] = useState<any[]>([]);
   const [locations, setLocations] = useState<any[]>([]);
-  const [benefits, setBenefits] = useState<luBenefit[]>([]);
 
   // Floating values
   const [tagInput, setTagInput] = useState<string>('');
   const [tagSuggestions, setTagSuggestions] = useState<any[]>([]);
   const [tagEditorOpen, setTagEditorOpen] = useState(false);
   const [tagError, setTagError] = useState<string | null>(null);
+  const [benefitInput, setBenefitInput] = useState<string>('');
+  const [benefitSuggestions, setBenefitSuggestions] = useState<any[]>([]);
+  const [benefitEditorOpen, setBenefitEditorOpen] = useState(false);
+  const [benefitError, setBenefitError] = useState<string | null>(null);
 
   /* ---------- Load data for editing ----------------------------------- */
   const fetchAllTags = async () => {
@@ -122,26 +128,32 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
         try {
           const [
             lTags,
+            lBenefits,
             lSources,
             lWorkModels,
             lRoleTypes,
             lPlacesOfWork,
             lLocations,
             lContacts,
-            jspecTags
+            jspecTags,
+            jsBenefits,
           ] = await Promise.all([
             getTagByContext(tagContext),
+            listBenefits(),
             listSources(),
             listWorkModels(),
             listRoleTypes(),
             listPlacesOfWork(),
             listLocations(),
             listContacts(),
-            getJobSpecTags(jobSpecId)
+            getJobSpecTags(jobSpecId),
+            getJobSpecBenefits(jobSpecId),
           ]);
 
           const listTags = Array.isArray(lTags) ? lTags : (lTags?.data ?? []);
           setLuTags(listTags);
+          const benefits = Array.isArray(lBenefits) ? lBenefits : (lBenefits?.data ?? []);
+          setLuBenefits(benefits);
           const sources = Array.isArray(lSources) ? lSources : (lSources?.data ?? []);
           setSources(sources);
           setParents(sources.filter((s: SourceItem) => s.ParentId == null));
@@ -156,7 +168,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
           const contacts = Array.isArray(lContacts) ? lContacts : (lContacts?.data ?? []);
           setContacts(contacts);
 
-          // load the Application to be editted
+          // load the job spec to be editted
           const src: newJobSpecItem | undefined = await getJobSpec(jobSpecId);
           if (mounted && src) {
             if (src.Position) setPosition(src.Position);
@@ -180,6 +192,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
               const nTags: string[] = jspecTags.map((t: Tag) => t.Name);
               setTags(nTags);
             }
+            setLAddBenefits(ingestBenefits(jsBenefits));
           }
         } catch (err) {
           if (mounted)
@@ -223,6 +236,49 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
       );
     }
   };
+
+  async function fetchBenefit(BenefitName: string) {
+    let benefitId: number;
+
+    try {
+      let addBenefit = await getBenefitByName(BenefitName);
+
+      if (!addBenefit) {
+        const payload: luBenefit = {
+          Name: BenefitName,
+          Order: lAddBenefits.length,
+          IsActive: true
+        }
+        addBenefit = await saveBenefit(payload);
+        benefitId = addBenefit.Id;
+      }
+      else {
+        benefitId = addBenefit[0].Id;
+      }
+      return benefitId;
+    }
+    catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to get benefit',
+      );
+    }
+  };
+
+  const ingestBenefits = (list_benefits: any[]) => {
+    let output: benefitWithNotes[] = [];
+
+    if (list_benefits.length > 0) {
+      for (const bnf of list_benefits) {
+        const outBnf: benefitWithNotes = {
+          BenefitId: bnf.Id,
+          Benefit: bnf.Name,
+          Notes: bnf.Notes
+        };
+        output.push(outBnf);
+      }
+    }
+    return output;
+  }
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -272,7 +328,26 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
                 TagId: tagId,
                 Order: tags.findIndex((s: string) => t === s)
               };
+
               await saveJobSpecTag(payload);
+            }
+          }
+        }
+        // clean jobspec benefits
+        await deleteJobSpecBenefits(savedJobSpec.Id);
+        if (lAddBenefits.length > 0) {
+          // Add new benefits
+          for (const bnf of lAddBenefits) {
+            bnf.BenefitId = await fetchBenefit(bnf.Benefit);
+            if (bnf.BenefitId != null) {
+              const payload: lnkJobSpecBenefit = {
+                JobSpecId: savedJobSpec.Id,
+                LuBenefitId: bnf.BenefitId,
+                Notes: bnf.Notes,
+                Order: lAddBenefits.findIndex((b: any) => bnf === b)
+              };
+
+              await saveJobSpecBenefit(payload);
             }
           }
         }
@@ -303,6 +378,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
     setCreated('');
     setIsActive(true);
     setTags([]);
+    setLAddBenefits([]);
     setIsDirty(false);
     onClose();
   };
@@ -344,6 +420,72 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
       });
       setTags(newLTags);
     }
+  };
+
+  function verifyBenefit (benefit: string) {
+    let isValid: boolean = false
+    luBenefits.forEach((item: luBenefit) => {
+      if (item.Name.toLowerCase() == benefit.toLowerCase()){
+        isValid = true;
+      }
+    });
+    return isValid;
+  }
+
+  const handleAddBenefit = async () => {
+    if (benefitInput && verifyBenefit(benefitInput)) {
+      let newLBenefits = lAddBenefits;
+
+      if (lAddBenefits.length > 0) {
+        let found = false;
+
+        lAddBenefits.forEach((bn: benefitWithNotes) => {
+          if (bn.Benefit.toLowerCase() == benefitInput.toLowerCase()) {
+            found = true;
+          }
+        });
+        if (!found) {
+          const nBenefit: benefitWithNotes = {
+            Benefit: benefitInput,
+            Notes: ""
+          }
+          newLBenefits.push(nBenefit);
+          setLAddBenefits(newLBenefits);
+        }
+      }
+      else {
+        const nBenefit: benefitWithNotes = {
+          Benefit: benefitInput,
+          Notes: ""
+        }
+        newLBenefits.push(nBenefit);
+        setLAddBenefits(newLBenefits);
+      }
+    }
+    setBenefitInput('');
+    setBenefitEditorOpen(false);
+  };
+
+  const handleRemoveBenefit = (deletedBenefit: string) => {
+    if (lAddBenefits.length > 0) {
+      let newLBenefits: benefitWithNotes[] = [];
+      
+      lAddBenefits.forEach((bn: benefitWithNotes) => {
+        if (bn.Benefit.toLowerCase() != deletedBenefit.toLowerCase()) {
+          newLBenefits.push(bn);
+        }
+      });
+      setLAddBenefits(newLBenefits);
+    }
+  };
+
+  const handleBenefitNoteChange = (index: number, newValue: string) => {
+    const updatedBenefits = [...lAddBenefits];
+    updatedBenefits[index] = {
+      ...updatedBenefits[index],
+      Notes: newValue
+    };
+    setLAddBenefits(updatedBenefits);
   };
 
   const handleFieldEdit = (field: string, value: string) => {
@@ -510,6 +652,15 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
           {tagError && <p className="job-spec-tagserror">{tagError}</p>}
 
           <div className="modal-field-date">
+            <label>Published on</label>
+            <input id="Published"
+              type="date"
+              placeholder="Publish Date"
+              value={formatFieldDate(published)}
+              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+          </div>
+
+          <div className="modal-field-date">
             <label>Tracked since</label>
             <input required
               id="Created"
@@ -547,13 +698,27 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
               onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
-          <div className="modal-field-date">
-            <label>Published on</label>
-            <input id="Published"
-              type="date"
-              placeholder="Publish Date"
-              value={formatFieldDate(published)}
-              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+          <div className="modal-field-add">
+            <div onClick={(e) => e.stopPropagation()}>
+              <select id="Contact"
+                      value={contactId ?? ''}
+                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
+                <option value="">No contact selected</option>
+                {contacts.map((contact) => (
+                  <option key={contact.Id ?? contact.id} value={contact.Id ?? contact.id}>
+                    {contact.Name || contact.name || contact.Title || contact.Email || contact.EmailAddress || 'Unnamed contact'}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="button"
+                title="Create new contact"
+                onClick={() => {
+                  setContactId(null);
+                  setModalOpenContact(true);
+                }}><FaPlus /></button>
+            </div>
           </div>
 
           <div className="modal-field">
@@ -574,10 +739,6 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
               <option value="">No role type selected</option>
               {roleTypes.map((r) => (<option key={r.Id} value={r.Id}>{r.Name}</option>))}
             </select>
-          </div>
-
-          <div className="modal-field">
-            <input id="SalaryExpectation" value={salaryExpectation} placeholder="Salary range" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
 
           <div className="modal-field-add">
@@ -602,28 +763,58 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
             </button>
           </div>
 
-          <div className="modal-field-add">
-            <div onClick={(e) => e.stopPropagation()}>
-              <select id="Contact"
-                      value={contactId ?? ''}
-                      onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>
-                <option value="">No contact selected</option>
-                {contacts.map((contact) => (
-                  <option key={contact.Id ?? contact.id} value={contact.Id ?? contact.id}>
-                    {contact.Name || contact.name || contact.Title || contact.Email || contact.EmailAddress || 'Unnamed contact'}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                className="button"
-                title="Create new contact"
-                onClick={() => {
-                  setContactId(null);
-                  setModalOpenContact(true);
-                }}><FaPlus /></button>
+          <div className="modal-field">
+            <input id="SalaryExpectation" value={salaryExpectation} placeholder="Salary range" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+          </div>
+
+          <div className="job-spec-benefits-area">
+            <div className="job-spec-benefits-header">Benefits</div>
+            {!benefitEditorOpen && (
+              <button type="button" 
+                      className="job-spec-benefits-list-button" 
+                      onClick={() => { 
+                        setBenefitEditorOpen(true); 
+                        setBenefitError(null); 
+                      }}>
+                <FaPlus />
+              </button>
+            )}
+            <div className="job-spec-benefits-list">
+              {lAddBenefits.length ? lAddBenefits.map((benefit: benefitWithNotes, index) => (
+                <span className="job-spec-benefits-list" key={`${benefit.Benefit}-${index}`}>
+                  <span>{benefit.Benefit}</span>
+                  <input id={`benefit-note-${index}`} 
+                        value={benefit.Notes} 
+                        placeholder={"Notes about " + benefit.Benefit} 
+                        onChange={(e) => handleBenefitNoteChange(index, e.target.value)} />
+                  <button type="button" 
+                          className="job-spec-benefit-button" 
+                          onClick={() => handleRemoveBenefit(benefit.Benefit)}>
+                    <FaTimes />
+                  </button>
+                </span>
+              )) : <></>}
             </div>
           </div>
+          {benefitEditorOpen && (
+            <div className="job-spec-benefit-editor">
+              <input
+                className="job-spec-benefit-editor"
+                value={benefitInput}
+                placeholder="Type benefit name"
+                onChange={(e) => setBenefitInput(e.target.value)}
+                type="text"
+                list="benefits-list"
+              />
+              <datalist id="benefits-list">
+                {luBenefits.filter((benefit: any, index) => (!lAddBenefits.includes(benefit.Name))).map((benefit: any, index) => (
+                  <option key={index} value={benefit.Name} />
+                ))}
+              </datalist>
+              <button type="button" className="job-spec-benefit-editor" onClick={handleAddBenefit}><FaPlus /></button>
+            </div>
+          )}
+          {benefitError && <p className="job-spec-benefitserror">{benefitError}</p>}
 
           <div className="modal-table">
             {showDescription ? (

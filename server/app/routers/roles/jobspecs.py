@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
 
 from app.database import get_session
-from app.models import rolesJobSpec, rolesLnkJobSpecTags, tag, rolesLnkJobSpecBenefit, rolesLuBenefit
+from app.models import rolesJobSpec, rolesLnkJobSpecTags, tag, vwJobSpecBenefits, rolesLnkJobSpecBenefit, rolesLuBenefit
 from app.schemas import JobSpecBase, TagBase, StandardLookupBase
 from app.dependencies import get_entity_or_404, upsert_entity, soft_delete_entity, get_tags_by_entity, get_benefits_by_entity
 
@@ -33,4 +33,4 @@ def get_job_spec_tags_v1(job_spec_id: int, session: Session = Depends(get_sessio
 
 @router.get(conf_pathname()+"/v1/roles/job-specs/get_benefits/{job_spec_id}", response_model=list[Any])
 def get_job_spec_benefits_v1(job_spec_id: int, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[Any]:
-    return get_benefits_by_entity(session = session, lnk_model = rolesLnkJobSpecBenefit, model = rolesLuBenefit, job_spec_id = job_spec_id, active_only = active_only)
+    return get_benefits_by_entity(session = session, model = vwJobSpecBenefits, entity_id = job_spec_id, active_only = active_only)

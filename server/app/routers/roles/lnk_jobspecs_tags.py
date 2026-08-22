@@ -39,6 +39,6 @@ def delete_jobspec_tag(jobspec_id: int, tag_id: int, session: Session = Depends(
 def delete_jobspec_tag(jobspec_id: int, session: Session = Depends(get_session)) -> list[LnkJobSpecTagBase]:
     return delete_link(session = session, model = rolesLnkJobSpecTags, pk1 = jobspec_id)
 
-@router.delete(conf_pathname()+"/v1/roles/lnk/jobspecs-tag/{tag_id}", response_model=LnkJobSpecTagBase)
-def delete_jobspec_tag(tag_id: int, session: Session = Depends(get_session)) -> LnkJobSpecTagBase:
+@router.delete(conf_pathname()+"/v1/roles/lnk/jobspecs-tag/{tag_id}", response_model=list[LnkJobSpecTagBase])
+def delete_jobspec_tag(tag_id: int, session: Session = Depends(get_session)) -> list[LnkJobSpecTagBase]:
     return delete_link(session = session, model = rolesLnkJobSpecTags, pk2 = tag_id)

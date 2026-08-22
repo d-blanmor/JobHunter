@@ -35,10 +35,10 @@ def create_or_update_offer_benefit(payload: LnkOfferBenefitBase, session: Sessio
 def delete_offer_benefit(offer_id: int, benefit_id: int, session: Session = Depends(get_session)) -> LnkOfferBenefitBase:
     return delete_link(session = session, model = rolesLnkOfferBenefit, pk1 = offer_id, pk2 = benefit_id)
 
-@router.delete(conf_pathname()+"/v1/roles/lnk/offer-benefits/{offer_id}", response_model=LnkOfferBenefitBase)
-def delete_offer_benefit(offer_id: int, session: Session = Depends(get_session)) -> LnkOfferBenefitBase:
+@router.delete(conf_pathname()+"/v1/roles/lnk/offer-benefits/{offer_id}", response_model=list[LnkOfferBenefitBase])
+def delete_offer_benefit(offer_id: int, session: Session = Depends(get_session)) -> list[LnkOfferBenefitBase]:
     return delete_link(session = session, model = rolesLnkOfferBenefit, pk1 = offer_id)
 
-@router.delete(conf_pathname()+"/v1/roles/lnk/offers-benefit/{benefit_id}", response_model=LnkOfferBenefitBase)
-def delete_offer_benefit(benefit_id: int, session: Session = Depends(get_session)) -> LnkOfferBenefitBase:
+@router.delete(conf_pathname()+"/v1/roles/lnk/offers-benefit/{benefit_id}", response_model=list[LnkOfferBenefitBase])
+def delete_offer_benefit(benefit_id: int, session: Session = Depends(get_session)) -> list[LnkOfferBenefitBase]:
     return delete_link(session = session, model = rolesLnkOfferBenefit, pk2 = benefit_id)

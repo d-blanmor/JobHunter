@@ -276,6 +276,24 @@ class rolesOffer(SQLModel, table=True):
 
     Benefits: list["rolesLnkOfferBenefit"] = Relationship(back_populates="Offer")
 
+class vwJobSpecBenefits(SQLModel, table=True):
+    __tablename__ = "vwJobSpecBenefits"
+    Id: int = Field(primary_key=True)
+    JobSpecId: int
+    Name: Optional[str] = None
+    Notes: Optional[str] = None
+    IsActive: bool = True
+    Order: int = 0
+
+class vwOfferBenefits(SQLModel, table=True):
+    __tablename__ = "vwOfferBenefits"
+    Id: int = Field(primary_key=True)
+    OfferId: int
+    Name: Optional[str] = None
+    Notes: Optional[str] = None
+    IsActive: bool = True
+    Order: int = 0
+
 class appSetting(SQLModel, table=True):
     __tablename__ = "app_settings"
     Key: str = Field(primary_key=True)
@@ -312,6 +330,56 @@ class wf_stages(SQLModel):
 # --------------------------------------------------------------------------- #
 from sqlalchemy import text, Engine
 from sqlmodel import SQLModel
+
+def _delete_vwJobSpecBenefits_table(engine: Engine) -> None:
+    delete_table_sql = """
+        DROP TABLE IF EXISTS vwJobSpecBenefits
+    """
+    with engine.connect() as conn:
+        conn.execute(text(delete_table_sql))
+        conn.commit()
+
+def _create_vwJobSpecBenefits_view(engine: Engine) -> None:
+    create_view_sql = """
+        CREATE VIEW IF NOT EXISTS vwJobSpecBenefits AS      
+        SELECT bnf."Id"         AS "Id"
+            , lnk."JobSpecId"   AS "JobSpecId"
+            , bnf."Name"        AS "Name"
+            , lnk."Notes"       AS "Notes"
+            , bnf."IsActive"    AS "IsActive"
+            , lnk."Order"       AS "Order"
+        FROM "roles_lnk_jobspecs_benefits" lnk
+        LEFT JOIN "roles_lu_benefits" bnf ON lnk."LuBenefitId" = bnf."Id"
+        ORDER BY lnk."Order"
+    """
+    with engine.connect() as conn:
+        conn.execute(text(create_view_sql))
+        conn.commit()
+
+def _delete_vwOfferBenefits_table(engine: Engine) -> None:
+    delete_table_sql = """
+        DROP TABLE IF EXISTS vwOfferBenefits
+    """
+    with engine.connect() as conn:
+        conn.execute(text(delete_table_sql))
+        conn.commit()
+
+def _create_vwOfferBenefits_view(engine: Engine) -> None:
+    create_view_sql = """
+        CREATE VIEW IF NOT EXISTS vwOfferBenefits AS      
+        SELECT bnf."Id"         AS "Id"
+            , lnk."OfferId"     AS "OfferId"
+            , bnf."Name"        AS "Name"
+            , lnk."Notes"       AS "Notes"
+            , bnf."IsActive"    AS "IsActive"
+            , lnk."Order"       AS "Order"
+        FROM "roles_lnk_offers_benefits" lnk
+        LEFT JOIN "roles_lu_benefits" bnf ON lnk."LuBenefitId" = bnf."Id"
+        ORDER BY lnk."Order"
+    """
+    with engine.connect() as conn:
+        conn.execute(text(create_view_sql))
+        conn.commit()
 
 def _delete_vwWorkflow_table(engine: Engine) -> None:
     delete_table_sql = """
@@ -384,9 +452,14 @@ def init_models(engine: Engine) -> None:
             SQLModel.metadata.create_all(engine)
 
             # Create views (possibly deleting tables with the same name)
+            _delete_vwJobSpecBenefits_table(engine)
+            _create_vwJobSpecBenefits_view(engine)
+
+            _delete_vwOfferBenefits_table(engine)
+            _create_vwOfferBenefits_view(engine)
+
             _delete_vwWorkflow_table(engine)
             _create_vwWorkflow_view(engine)
         else:
             # Create all SQLAlchemy tables that have a __table__ attribute.
             SQLModel.metadata.create_all(engine)
-

@@ -35,10 +35,10 @@ def create_or_update_jobspec_benefit(payload: LnkJobSpecBenefitBase, session: Se
 def delete_jobspec_benefit(jobspec_id: int, benefit_id: int, session: Session = Depends(get_session)) -> LnkJobSpecBenefitBase:
     return delete_link(session = session, model = rolesLnkJobSpecBenefit, pk1 = jobspec_id, pk2 = benefit_id)
 
-@router.delete(conf_pathname()+"/v1/roles/lnk/jobspec-benefits/{jobspec_id}", response_model=LnkJobSpecBenefitBase)
-def delete_jobspec_benefit(jobspec_id: int, session: Session = Depends(get_session)) -> LnkJobSpecBenefitBase:
+@router.delete(conf_pathname()+"/v1/roles/lnk/jobspec-benefits/{jobspec_id}", response_model=list[LnkJobSpecBenefitBase])
+def delete_jobspec_benefit(jobspec_id: int, session: Session = Depends(get_session)) -> list[LnkJobSpecBenefitBase]:
     return delete_link(session = session, model = rolesLnkJobSpecBenefit, pk1 = jobspec_id)
 
-@router.delete(conf_pathname()+"/v1/roles/lnk/jobspecs-benefit/{benefit_id}", response_model=LnkJobSpecBenefitBase)
-def delete_jobspec_benefit(benefit_id: int, session: Session = Depends(get_session)) -> LnkJobSpecBenefitBase:
+@router.delete(conf_pathname()+"/v1/roles/lnk/jobspecs-benefit/{benefit_id}", response_model=list[LnkJobSpecBenefitBase])
+def delete_jobspec_benefit(benefit_id: int, session: Session = Depends(get_session)) -> list[LnkJobSpecBenefitBase]:
     return delete_link(session = session, model = rolesLnkJobSpecBenefit, pk2 = benefit_id)

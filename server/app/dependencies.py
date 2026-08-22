@@ -324,7 +324,7 @@ def get_sources_by_parent(session: Session, parent_id: int, active_only: bool = 
 #####################
 #  JobSpec functions
 from app.schemas import ApplicationBase, InterviewBase, OfferBase
-from app.models import rolesJobSpec, rolesApplication, rolesInterview, rolesOffer
+from app.models import rolesJobSpec, rolesApplication, rolesInterview, rolesOffer, vwJobSpecBenefits, vwOfferBenefits, rolesLuBenefit
 
 def get_applications_by_job_spec(session: Session, job_spec_id: int) -> list[ApplicationBase]:
     statement = select(rolesApplication)
@@ -366,15 +366,16 @@ def get_tags_by_entity(session: Session, lnk_model: type[Any], model: type[Any],
             output.append(tag)
     return output
 
-def get_benefits_by_entity(session: Session, lnk_model: type[Any], model: type[Any], entity_id: int, active_only: bool = True) -> list[type[Any]]:
-    output: list[type[Any]] = []
-
-    for lnk in get_link_or_404(session = session, model = lnk_model, pk1 = entity_id):
-        benefit = _get_entity(session = session, model = model, entity_id = lnk.LuBenefitId)
-        benefit.Notes = lnk.Notes
-        if (active_only and benefit.IsActive) or (not active_only):
-            output.append(benefit)
-    return output
+def get_benefits_by_entity(session: Session, model: type[Any], entity_id: int, active_only: bool = True) -> list[type[Any]]:
+    statement = select(model)
+    if (hasattr(model, 'JobSpecId')):
+        statement = statement.where(model.JobSpecId == entity_id)
+    elif (hasattr(model, 'OfferId')):
+        statement = statement.where(model.OfferId == entity_id)
+    if (active_only):
+        statement = statement.where(model.IsActive == 1)
+    statement = statement.order_by(model.Order)
+    return session.exec(statement).all()
 
 #####################
 #  Workflow logic

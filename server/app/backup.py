@@ -15,6 +15,7 @@ from app.dependencies import (
     _get_tag, 
     _get_entity, 
     _get_link, 
+    get_benefits_by_entity, 
     get_applications_by_job_spec, 
     get_interviews_by_job_spec, 
     get_offers_by_job_spec
@@ -30,7 +31,9 @@ from app.models import (
     rolesPlaceOfWork,
     rolesContact,
     rolesLnkJobSpecTags,
+    vwJobSpecBenefits,
     rolesLnkJobSpecBenefit,
+    vwOfferBenefits,
     rolesLnkOfferBenefit,
     rolesJobSpec,
     rolesApplication,
@@ -85,7 +88,6 @@ def _get_item_id(model: Any, item: Any, current_list) -> int | None:
     if len(existing_items) > 0:
         id = existing_items[0].Id
     return id
-    id = None
 
 def _str_to_date(strDate: str) -> datetime | None:
     if re.match("^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d+$", strDate): return datetime.strptime(strDate, "%Y-%m-%dT%H:%M:%S.%f")
@@ -132,7 +134,7 @@ def import_system_backup_payload(session: Session, payload: dict[str, Any]) -> d
         raise HTTPException(status_code=400, detail="lookups must be an object")
 
     for item in app_settings:
-        upsert_appSetting(session, appSetting, item)
+        upsert_appSetting(session = session, model = appSetting, payload = item)
 
     for table_name, model in LOOKUP_EXPORT_ORDER.items():
         rows = lookups.get(table_name, [])
@@ -144,7 +146,7 @@ def import_system_backup_payload(session: Session, payload: dict[str, Any]) -> d
         current_lu_values = session.exec(statement).all()
         for row in rows:
             row['Id'] = _get_item_id(model, row, current_lu_values)
-            upsert_entity(session, model, row)
+            upsert_entity(session = session, model = model, payload = row)
     return {
         "state": 200,
         "message": "System settings and lookups imported successfully",
@@ -169,55 +171,49 @@ def export_roles_backup(session: Session, JobSpecId: int | None, IsActive: bool 
     jobSpecs = session.exec(statement).all()
     for jobSpec in jobSpecs:
         job_spec_dict = _json_safe(jobSpec.model_dump())
-        tags: list[dict[str, Any]] = {}
 
         if (jobSpec.SourceId):
-            source = _get_entity(session, rolesSource, jobSpec.SourceId)
+            source = _get_entity(session = session, model = rolesSource, entity_id = jobSpec.SourceId)
             if hasattr(jobSpec, 'Source') and source:
                 job_spec_dict['Source'] = _json_safe(source.model_dump())
         if (jobSpec.PlaceOfWorkId): 
-            placeOfWork = _get_entity(session, rolesPlaceOfWork, jobSpec.PlaceOfWorkId)
+            placeOfWork = _get_entity(session = session, model = rolesPlaceOfWork, entity_id = jobSpec.PlaceOfWorkId)
             if hasattr(jobSpec, 'PlaceOfWork') and placeOfWork:
                 pw_dict = _json_safe(placeOfWork.model_dump())
                 if hasattr(placeOfWork, 'Location') and placeOfWork.LocationId:
-                    location = _get_entity(session, rolesLuLocation, placeOfWork.LocationId)
+                    location = _get_entity(session = session, model = rolesLuLocation, entity_id = placeOfWork.LocationId)
                     if location:
                         pw_dict['Location'] = _json_safe(location.model_dump())
                 job_spec_dict['PlaceOfWork'] = pw_dict
         if (jobSpec.WorkModelId): 
-            workModel = _get_entity(session, rolesLuWorkModel, jobSpec.WorkModelId)
+            workModel = _get_entity(session = session, model = rolesLuWorkModel, entity_id = jobSpec.WorkModelId)
             if hasattr(jobSpec, 'WorkModel') and workModel:
                 job_spec_dict['WorkModel'] = _json_safe(workModel.model_dump())
         if (jobSpec.RoleTypeId): 
-            roleType = _get_entity(session, rolesLuRoleType, jobSpec.RoleTypeId)
+            roleType = _get_entity(session = session, model = rolesLuRoleType, entity_id = jobSpec.RoleTypeId)
             if hasattr(jobSpec, 'RoleType') and roleType:
                 job_spec_dict['RoleType'] = _json_safe(roleType.model_dump())
         if (jobSpec.ContactId): 
-            contact = _get_entity(session, rolesContact, jobSpec.ContactId)
+            contact = _get_entity(session = session, model = rolesContact, entity_id = jobSpec.ContactId)
             if hasattr(jobSpec, 'Contact') and contact:
                 job_spec_dict['Contact'] = _json_safe(contact.model_dump())
-        jobSpecTags = _get_link(session, rolesLnkJobSpecTags, jobSpec.Id, None)
+        jobSpecTags = _get_link(session = session, model = rolesLnkJobSpecTags, pk1 = jobSpec.Id)
         if (len(jobSpecTags) > 0):
+            tags: list[tag] = [];
             for jobSpecTag in jobSpecTags:
-                tag = _get_tag(session, tag, jobSpecTag.TagId)
-                if (IsActive == None) or (not IsActive) or (IsActive and tag.IsActive): tags.append(tag)
+                iTag = _get_tag(session = session, model = tag, tag_id = jobSpecTag.TagId)
+                if (IsActive == None) or (not IsActive) or (IsActive and iTag.IsActive): tags.append(iTag)
             if len(tags) > 0: 
                 if hasattr(jobSpec, 'Tags') and tags:
                     job_spec_dict['Tags'] = [_json_safe(t.model_dump()) for t in tags]
-        jobSpecBenefits = _get_link(session, rolesLnkJobSpecBenefit, jobSpec.Id, None)
+        jobSpecBenefits = get_benefits_by_entity(session = session, model = vwJobSpecBenefits, entity_id = jobSpec.Id, active_only = IsActive)
         if (len(jobSpecBenefits) > 0):
-            benefits: list[dict[str, Any]] = {}
+            if hasattr(jobSpec, 'Benefits') and jobSpecBenefits:
+                job_spec_dict['Benefits'] = [_json_safe(b.model_dump()) for b in jobSpecBenefits]
 
-            for jobSpecBenefit in jobSpecBenefits:
-                benefit = _get_entity(session, rolesLuBenefit, jobSpecBenefit.LuBenefitId)
-                if (IsActive == None) or (not IsActive) or (IsActive and benefit.IsActive): benefits.append(benefit)
-            if len(benefits) > 0: 
-                if hasattr(jobSpec, 'Benefits') and benefits:
-                    job_spec_dict['Benefits'] = [_json_safe(b.model_dump()) for b in benefits]
-
-        applications = get_applications_by_job_spec(session, jobSpec.Id)
-        interviews = get_interviews_by_job_spec(session, jobSpec.Id)
-        offers = get_offers_by_job_spec(session, jobSpec.Id)
+        applications = get_applications_by_job_spec(session = session, job_spec_id = jobSpec.Id)
+        interviews = get_interviews_by_job_spec(session = session, job_spec_id = jobSpec.Id)
+        offers = get_offers_by_job_spec(session = session, job_spec_id = jobSpec.Id)
 
         if (len(applications) > 0):
             app_dicts = []
@@ -231,7 +227,7 @@ def export_roles_backup(session: Session, JobSpecId: int | None, IsActive: bool 
                         if app.Id == interview.ApplicationId: 
                             interview_dict = _json_safe(interview.model_dump())
                             if (interview.ContactId): 
-                                contact = _get_entity(session, rolesContact, interview.ContactId)
+                                contact = _get_entity(session = session, model = rolesContact, entity_id = interview.ContactId)
                                 if hasattr(interview, 'Contact') and contact:
                                     interview_dict['Contact'] = _json_safe(contact.model_dump())
                             interview_dicts.append(interview_dict)
@@ -241,16 +237,11 @@ def export_roles_backup(session: Session, JobSpecId: int | None, IsActive: bool 
                     for offer in offers:
                         if app.Id == offer.ApplicationId:
                             offer_dict = _json_safe(offer.model_dump())
-                            offerBenefits = _get_link(session, rolesLnkOfferBenefit, offer.Id, None)
+                            offerBenefits = get_benefits_by_entity(session = session, model = vwOfferBenefits, entity_id = offer.Id, active_only = IsActive)
                             if (len(offerBenefits) > 0):
-                                benefits: list[dict[str, Any]] = {}
+                                if hasattr(offer, 'Benefits') and offerBenefits:
+                                    offer_dict['Benefits'] = [_json_safe(b.model_dump()) for b in offerBenefits]
 
-                                for offerBenefit in offerBenefits:
-                                    benefit = _get_entity(session, rolesLuBenefit, offerBenefit.LuBenefitId)
-                                    if (IsActive == None) or (not IsActive) or (IsActive and benefit.IsActive): benefits.append(benefit)
-                                if len(benefits) > 0: 
-                                    if hasattr(offer, 'Benefits') and benefits:
-                                        offer_dict['Benefits'] = [_json_safe(b.model_dump()) for b in benefits]
                             offers_dicts.append(offer_dict)
                     if hasattr(app, 'Offers'): app_dict['Offers'] = offers_dicts
                 app_dicts.append(app_dict)
@@ -263,7 +254,7 @@ def export_roles_backup(session: Session, JobSpecId: int | None, IsActive: bool 
     }
 
 def export_roles_backup_to_file(session: Session, file_path: str | Path, JobSpecId: int | None, IsActive: bool | None = None) -> Path:
-    payload = export_roles_backup(session, JobSpecId, IsActive)
+    payload = export_roles_backup(session = session, JobSpecId = JobSpecId, IsActive = IsActive)
     target = Path(file_path)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(payload, indent=2), encoding="utf-8")
@@ -278,14 +269,14 @@ def import_roles_backup_payload(session: Session, payload: dict[str, Any]) -> di
         raise HTTPException(status_code=400, detail="JobSpecs must be a list")
 
     if (len(JobSpecs) > 0):
-        #lTags = _get_tag(session, tag, None, None, None, True)
-        lBenefits = _get_entity(session, rolesLuBenefit, None, True)
-        lLocations = _get_entity(session, rolesLuLocation, None, True)
-        lRoleTypes = _get_entity(session, rolesLuRoleType, None, True)
-        lWorkModels = _get_entity(session, rolesLuWorkModel, None, True)
-        lSources = _get_entity(session, rolesSource, None, True)
-        lPlacesOfWork = _get_entity(session, rolesPlaceOfWork, None, True)
-        lContacts = _get_entity(session, rolesContact, None, True)
+        lTags = _get_tag(session = session, model = tag, IsActive = True)
+        lBenefits = _get_entity(session = session, model = rolesLuBenefit, IsActive = True)
+        lLocations = _get_entity(session = session, model = rolesLuLocation, IsActive = True)
+        lRoleTypes = _get_entity(session = session, model = rolesLuRoleType, IsActive = True)
+        lWorkModels = _get_entity(session = session, model = rolesLuWorkModel, IsActive = True)
+        lSources = _get_entity(session = session, model = rolesSource, IsActive = True)
+        lPlacesOfWork = _get_entity(session = session, model = rolesPlaceOfWork, IsActive = True)
+        lContacts = _get_entity(session = session, model = rolesContact, IsActive = True)
         # Helper function to safely access attributes on ORM objects
         def get_attr(obj, attr_name):
             if hasattr(obj, attr_name):
@@ -340,32 +331,32 @@ def import_roles_backup_payload(session: Session, payload: dict[str, Any]) -> di
                                 if get_attr(item, 'Name') == jobSpec["Contact"].get('Name') and get_attr(item, 'Email') == jobSpec["Contact"].get('Email')), None)
                 if foundItem: nJobSpec.ContactId = get_attr(foundItem, 'Id')
 
-            nJobSpec.Id = upsert_entity(session, rolesJobSpec, nJobSpec).Id
+            nJobSpec.Id = upsert_entity(session = session, model = rolesJobSpec, payload = nJobSpec).Id
 
             if jobSpec.get('Benefits') and len(jobSpec['Benefits']) > 0:
-                order = 0
                 for benefit in jobSpec['Benefits']:
                     nLink = rolesLnkJobSpecBenefit()
+
                     nLink.JobSpecId = jobSpec['Id']
-                    nLink.Order = order
-                    order += 1
+                    nLink.Notes = benefit['Notes']
+                    nLink.Order = benefit['Order']
                     foundItem = next((item for item in lBenefits 
                                     if get_attr(item, 'Name') == benefit.get('Name')), None)
                     if foundItem: 
                         nLink.LuBenefitId = get_attr(foundItem, 'Id')
-                        upsert_link(session, rolesLnkJobSpecBenefit, nLink)
+                        upsert_link(session = session, model = rolesLnkJobSpecBenefit, payload = nLink)
 
-            #if jobSpec.get('Tags') and len(jobSpec['Tags']):
-            #    order = 0
-            #    for tag in jobSpec['Tags']:
-            #        nLink: rolesLnkJobSpecTags()
-            #        nLink.JobSpecId = jobSpec['Id']
-            #        nLink.Order = order
-            #        order += 1
-            #        foundItem = next((item for item in lTags if get_attr(item, 'Name') == tag.get('Name') and get_attr(item, 'Context') == tag.get('Context')), None)
-            #        if foundItem: 
-            #            nLink.TagId = get_attr(foundItem, 'Id')
-            #            upsert_link(session, rolesLnkJobSpecTags, nLink)
+            if jobSpec.get('Tags') and len(jobSpec['Tags']):
+                order = 0
+                for tag_item in jobSpec['Tags']:
+                    nLink = rolesLnkJobSpecTags()
+                    nLink.JobSpecId = jobSpec['Id']
+                    nLink.Order = order
+                    order += 1
+                    foundItem = next((item for item in lTags if get_attr(item, 'Name') == tag_item.get('Name') and get_attr(item, 'Context') == tag_item.get('Context')), None)
+                    if foundItem: 
+                        nLink.TagId = get_attr(foundItem, 'Id')
+                        upsert_link(session = session, model = rolesLnkJobSpecTags, payload = nLink)
 
             if jobSpec.get('Applications') and len(jobSpec['Applications']) > 0:
                 for application in jobSpec['Applications']:
@@ -379,7 +370,7 @@ def import_roles_backup_payload(session: Session, payload: dict[str, Any]) -> di
                     if 'Confirmed' in application and application['Confirmed'] and application['Confirmed'] != '': nApplication.Confirmed = _str_to_date(application['Confirmed'])
                     if 'Discarded' in application and application['Discarded'] and application['Discarded'] != '': nApplication.Discarded = _str_to_date(application['Discarded'])
 
-                    nApplication.Id = upsert_entity(session, rolesApplication, nApplication).Id
+                    nApplication.Id = upsert_entity(session = session, model = rolesApplication, payload = nApplication).Id
 
                     if application.get('Interviews') and len(application['Interviews']) > 0:
                         for interview in application['Interviews']:
@@ -397,7 +388,7 @@ def import_roles_backup_payload(session: Session, payload: dict[str, Any]) -> di
                                                 if get_attr(item, 'Name') == interview["Contact"].get('Name') and get_attr(item, 'Email') == interview["Contact"].get('Email')), None)
                                 if foundItem: nInterview.ContactId = get_attr(foundItem, 'Id')
 
-                            nInterview.Id = upsert_entity(session, rolesInterview, nInterview).Id
+                            nInterview.Id = upsert_entity(session = session, model = rolesInterview, payload = nInterview).Id
 
                     if application.get('Offers') and len(application['Offers']) > 0:
                         for offer in application['Offers']:
@@ -409,19 +400,18 @@ def import_roles_backup_payload(session: Session, payload: dict[str, Any]) -> di
                             if 'IsActive' in offer: nOffer.IsActive = offer['IsActive']
                             if 'Offered' in offer and offer['Offered'] and offer['Offered'] != '': nOffer.Offered = _str_to_date(offer['Offered'])
 
-                            nOffer.Id = upsert_entity(session, rolesOffer, nOffer).Id
+                            nOffer.Id = upsert_entity(session = session, model = rolesOffer, payload = nOffer).Id
                             if offer.get('Benefits') and len(offer['Benefits']) > 0:
-                                order = 0
                                 for benefit in offer['Benefits']:
                                     nLink = rolesLnkOfferBenefit()
                                     nLink.JobSpecId = nOffer.Id
-                                    nLink.Order = order
-                                    order += 1
+                                    nLink.Notes = benefit["Notes"]
+                                    nLink.Order = benefit["Order"]
                                     foundItem = next((item for item in lBenefits 
                                                     if get_attr(item, 'Name') == benefit.get('Name')), None)
                                     if foundItem: 
                                         nLink.LuBenefitId = get_attr(foundItem, 'Id')
-                                        upsert_link(session, rolesLnkOfferBenefit, nLink)
+                                        upsert_link(session = session, model = rolesLnkOfferBenefit, payload = nLink)
 
     return {
         "state": 200,
@@ -434,4 +424,4 @@ def import_roles_backup_from_file(session: Session, file_path: str | Path) -> di
         raise HTTPException(status_code=404, detail=f"Backup file not found: {target}")
 
     payload = json.loads(target.read_text(encoding="utf-8"))
-    return import_roles_backup_payload(session, payload)
+    return import_roles_backup_payload(session = session, payload = payload)

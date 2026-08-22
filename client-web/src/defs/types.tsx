@@ -9,7 +9,7 @@ export type Counts = {
 };
 
 export type Tag = {
-  Id: number;
+  Id?: number | null;
   Name: string;
   Context?: string | null;
   IsActive: boolean | true;
@@ -39,7 +39,7 @@ export type luWorkModel = {
 }
 
 export type luBenefit = {
-  Id: number;
+  Id?: number | null;
   Name: string;
   IsActive: boolean | true;
   Order: number | null;
@@ -155,4 +155,32 @@ export type wfStageItem = {
   Discarded?: string | null;
   Scheduled?: string | null;
   Offered?: string | null;
+  Tags?: Tag[] | null;
+  Benefits?: luBenefit[] | null;
+}
+
+export type lnkJobSpecTag = {
+  JobSpecId: number;
+  TagId: number;
+  Order: number | null;
+}
+
+export type lnkJobSpecBenefit = {
+  JobSpecId: number;
+  LuBenefitId: number;
+  Notes: string | null;
+  Order: number | null;
+}
+
+export type lnkOfferBenefit = {
+  OfferId: number;
+  LuBenefitId: number;
+  Notes: string | null;
+  Order: number | null;
+}
+
+export type benefitWithNotes = {
+  BenefitId?: number | null;
+  Benefit: string;
+  Notes: string;
 }

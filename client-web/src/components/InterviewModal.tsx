@@ -191,7 +191,7 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
             />
           </div>
 
-          <div className="modal-field">
+          <div className="modal-field-add">
             <select id="ContactId"
                     value={contactId} 
                     onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}>

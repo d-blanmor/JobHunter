@@ -15,7 +15,7 @@ router = APIRouter()
 
 @router.get(conf_pathname() + "/v1/backup/system/export")
 def export_system_backup_route(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> dict[str, Any]:
-    return export_system_backup(session, active_only)
+    return export_system_backup(session = session, IsActive = active_only)
 
 @router.get(conf_pathname() + "/v1/backup/system/export-file")
 def export_system_backup_to_file_route(
@@ -23,12 +23,12 @@ def export_system_backup_to_file_route(
     *,
     session: Session = Depends(get_session), active_only: bool = Query(True),
 ) -> dict[str, Any]:
-    target = export_system_backup_to_file(session, file_path, active_only)
+    target = export_system_backup_to_file(session = session, file_path = file_path, IsActive = active_only)
     return {"path": str(target), "message": "Backup exported to file"}
 
 @router.post(conf_pathname() + "/v1/backup/system/import")
 def import_system_backup_route(payload: dict[str, Any], *, session: Session = Depends(get_session)) -> dict[str, str | int]:
-    return import_system_backup_payload(session, payload)
+    return import_system_backup_payload(session = session, payload = payload)
 
 @router.post(conf_pathname() + "/v1/backup/system/import-file")
 def import_system_backup_from_file_route(
@@ -36,11 +36,11 @@ def import_system_backup_from_file_route(
     *,
     session: Session = Depends(get_session)
 ) -> dict[str, str | int]:
-    return import_system_backup_from_file(session, file_path)
+    return import_system_backup_from_file(session = session, file_path = file_path)
 
 @router.get(conf_pathname() + "/v1/backup/roles/export")
 def export_roles_backup_route(*, session: Session = Depends(get_session), jobspec_id: int | None = None, active_only: bool = Query(True)) -> dict[str, Any]:
-    return export_roles_backup(session, jobspec_id, active_only)
+    return export_roles_backup(session = session, JobSpecId = jobspec_id, IsActive = active_only)
 
 @router.get(conf_pathname() + "/v1/backup/roles/export-file")
 def export_roles_backup_to_file_route(
@@ -48,12 +48,12 @@ def export_roles_backup_to_file_route(
     *,
     session: Session = Depends(get_session), jobspec_id: int | None = None, active_only: bool = Query(True),
 ) -> dict[str, Any]:
-    target = export_roles_backup_to_file(session, file_path, jobspec_id, active_only)
+    target = export_roles_backup_to_file(session = session, file_path = file_path, JobSpecId = jobspec_id, IsActive = active_only)
     return {"path": str(target), "message": "Backup exported to file"}
 
 @router.post(conf_pathname() + "/v1/backup/roles/import")
 def import_roles_backup_route(payload: dict[str, Any], *, session: Session = Depends(get_session)) -> dict[str, str | int]:
-    return import_roles_backup_payload(session, payload)
+    return import_roles_backup_payload(session = session, payload = payload)
 
 @router.post(conf_pathname() + "/v1/backup/roles/import-file")
 def import_roles_backup_from_file_route(
@@ -61,4 +61,4 @@ def import_roles_backup_from_file_route(
     *,
     session: Session = Depends(get_session)
 ) -> dict[str, str | int]:
-    return import_roles_backup_from_file(session, file_path)
+    return import_roles_backup_from_file(session = session, file_path = file_path)

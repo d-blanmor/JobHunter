@@ -1,6 +1,7 @@
 :root {
   /* --- THEME VARIABLES (SYSTEM) --- */
   /* Light Skin Variables (Default): Explicitly defined for robustness */
+  --color-error-message: #f32f2f;
   --color-background-main: #f5f7fb;
   --color-background-page: #ffffff;
   --color-brand-primary: #384768;
@@ -53,6 +54,7 @@
   --stage-button-delete: #7c0f0f;
   --stage-button-delete-border: #fecaca;
   /* --- Entity View --- */
+  --view-sections: #444343;
   --view-labels: #757a81;
   --view-labels-discarded: #f0bbbbd2;
   --view-values: #384768;
@@ -63,6 +65,7 @@
 
 /* DARK MODE EXAMPLE */
 [data-skin="dark"] {
+  --color-error-message: #f32f2f;
   --color-background-main: #111827;
   --color-background-page: #1f2937;
   --color-brand-primary: #6e8ad8;
@@ -115,6 +118,7 @@
   --stage-button-delete: #c06666;
   --stage-button-delete-border: #fecaca;
   /* --- Entity View --- */
+  --view-sections: #5b7191;
   --view-labels: #475569;
   --view-labels-discarded: #581414d2;
   --view-values: #9cb5d1;

@@ -1,5 +1,7 @@
 import { listLocations } from '../api/lu_locations';
 import { getPlaceOfWork } from '../api/place_of_work';
+import { listBenefits } from '../api/lu_benefits';
+
 import { 
   JobSpecItem, 
   ApplicationItem,
@@ -110,3 +112,16 @@ export async function getPlaceOfWorkLabel(placeOfWorkId: number) {
 export function encodeURI(str: string): string {
   return encodeURIComponent(str);
 }
+
+export const fetchAllBenefits = async () => {
+  try {
+    const data = await listBenefits();
+    if (data === '()' || data == null) {
+      return [] as any[];
+    }
+    const benefits = Array.isArray(data) ? data : (data?.data ?? []);
+    return benefits;
+  } catch (err) {
+    return (err instanceof Error ? err.message : 'Failed to load benefits');
+  }
+};

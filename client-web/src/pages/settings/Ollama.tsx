@@ -229,7 +229,6 @@ export default function OllamaIntegrationPage() {
           <div>
             <h2 className="settings-title"><p>Loading settings...</p></h2>
           </div>
-          <button className="action-button" onClick={() => navigate(-1)}>Back</button>
         </div>
       )}
       {error && (

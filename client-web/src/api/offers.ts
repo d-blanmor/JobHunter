@@ -51,7 +51,7 @@ export async function getOfferBenefit(offerId: number, benefitId: number) {
 }
 
 export async function getOfferBenefits(offerId: number) {
-  const res = await fetch(`${API_BASE}/roles/lnk/offer-benefits/${offerId}`);
+  const res = await fetch(`${API_BASE}/roles/offers/get_benefits/${offerId}`);
   if (!res.ok) throw new Error('Failed to load offer benefits');
   return res.json();
 }

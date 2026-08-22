@@ -11,7 +11,7 @@ def _get_link_key_columns(model: type[Any]) -> list[str]:
 def _get_tag(session: Session, model: type[Any], tag_id: int | None = None, tag_name: str | None = None, tag_context: str | None = None, IsActive: bool | None = None) -> Any:
     if tag_id is not None:
         tags = session.get(model, (tag_id))
-    elif tag_name is None or tag_context is None:
+    elif tag_name is not None or tag_context is not None:
         statement = select(model)
         if IsActive:
             statement = statement.where(model.IsActive == True)
@@ -21,13 +21,21 @@ def _get_tag(session: Session, model: type[Any], tag_id: int | None = None, tag_
             statement = statement.where(model.Context == tag_context)
         statement = statement.order_by(model.Order.desc())
         tags = session.exec(statement).all()
+    else:
+        statement = select(model)
+        if IsActive:
+            statement = statement.where(model.IsActive == True)
+        statement = statement.order_by(model.Order.desc())
+        tags = session.exec(statement).all()
     return tags
 
-def _get_entity(session: Session, model: type[Any], entity_id: int | None = None, IsActive: bool | None = None) -> Any:
+def _get_entity(session: Session, model: type[Any], entity_id: int | None = None, entity_name: str | None = None, IsActive: bool | None = None) -> Any:
     statement = select(model)
     if entity_id is not None:
         entities = session.get(model, (entity_id))
     else:
+        if entity_name:
+            statement = statement.where(model.Name == entity_name)
         if IsActive:
             statement = statement.where(model.IsActive == True)
         try:
@@ -38,7 +46,7 @@ def _get_entity(session: Session, model: type[Any], entity_id: int | None = None
     return entities
 
 def _get_link(session: Session, model: type[Any], pk1: int | None = None, pk2: int | None = None) -> Any:
-    pk_cols = _get_link_key_columns(model)
+    pk_cols = _get_link_key_columns(model = model)
     pkey = getattr(model, pk_cols[0])
     skey = getattr(model, pk_cols[1])
 
@@ -64,9 +72,8 @@ def _get_appSetting(session: Session, model: type[Any], settingKey: str | None =
         appSettings = session.exec(statement).all()
     return appSettings
 
-
 def get_tag_or_404(session: Session, model: type[Any], tag_id: int | None = None, tag_name: str | None = None, tag_context: str | None = None, IsActive: bool | None = None) -> Any:
-    tags = _get_tag(session, model, tag_id, tag_name, tag_context, IsActive)
+    tags = _get_tag(session = session, model = model, tag_id = tag_id, tag_name = tag_name, tag_context = tag_context, IsActive = IsActive)
     if not tags:
         raise HTTPException(status_code=404, detail=f"{model.__name__} not found")
     return tags
@@ -107,15 +114,15 @@ def upsert_tag(session: Session, model: type[Any], payload: dict[str, Any]) -> A
     return tag
 
 def soft_delete_tag(session: Session, model: type[Any], tag_id: int) -> Any:
-    tag = get_tag_or_404(session, model, tag_id)
+    tag = get_tag_or_404(session = session, model = model, tag_id = tag_id)
     tag.IsActive = False
     session.add(tag)
     session.commit()
     session.refresh(tag)
     return tag
 
-def get_entity_or_404(session: Session, model: type[Any], entity_id: int | None = None, IsActive: bool | None = None) -> Any:
-    entities = _get_entity(session, model, entity_id, IsActive)
+def get_entity_or_404(session: Session, model: type[Any], entity_id: int | None = None, entity_name: str | None = None, IsActive: bool | None = None) -> Any:
+    entities = _get_entity(session = session, model = model, entity_id = entity_id, entity_name = entity_name, IsActive = IsActive)
     if not entities:
         raise HTTPException(status_code=404, detail=f"{model.__name__} not found")
     return entities
@@ -156,7 +163,7 @@ def upsert_entity(session: Session, model: type[Any], payload: dict[str, Any]) -
     return entity
 
 def soft_delete_entity(session: Session, model: type[Any], entity_id: int) -> Any:
-    entity = get_entity_or_404(session, model, entity_id)
+    entity = get_entity_or_404(session = session, model = model, entity_id = entity_id)
     entity.IsActive = False
     session.add(entity)
     session.commit()
@@ -169,7 +176,7 @@ def get_link_or_404(session: Session, model: type[Any], pk1: int | None = None, 
     If only one id is given, the first matching row is returned;
     if none exist → 404.
     """
-    links = _get_link(session, model, pk1, pk2)
+    links = _get_link(session = session, model = model, pk1 = pk1, pk2 = pk2)
     if not links:
         raise HTTPException(status_code=404, detail=f"{model.__name__} link not found")
     return links
@@ -185,7 +192,7 @@ def upsert_link(session: Session, model: type[Any], payload: BaseModel | dict[st
         if isinstance(payload, BaseModel)
         else payload
     )
-    pk_cols = _get_link_key_columns(model)
+    pk_cols = _get_link_key_columns(model = model)
     pval = data.get(pk_cols[0])
     sval = data.get(pk_cols[1])
 
@@ -223,12 +230,12 @@ def delete_link(session: Session, model: type[Any], pk1: int | None = None, pk2:
         )
 
     if pk1 is not None and pk2 is not None:
-        row = get_link_or_404(session, model, pk1, pk2)
+        row = get_link_or_404(session = session, model = model, pk1 = pk1, pk2 = pk2)
         session.delete(row)
         session.commit()
         return row
 
-    pk_cols = _get_link_key_columns(model)
+    pk_cols = _get_link_key_columns(model = model)
     pkey = getattr(model, pk_cols[0])
     skey = getattr(model, pk_cols[1])
 
@@ -239,21 +246,14 @@ def delete_link(session: Session, model: type[Any], pk1: int | None = None, pk2:
         statement = statement.where(skey == pk2)
 
     rows = session.exec(statement).all()
-    if not rows:
-        raise HTTPException(
-            status_code=404,
-            detail=f"{model.__name__} link(s) not found",
-        )
-
-    for row in rows:
-        session.delete(row)
-
-    session.commit()
-
+    if rows and len(rows) > 0:
+        for row in rows:
+            session.delete(row)
+        session.commit()
     return rows
 
 def get_appSetting_or_404(session: Session, model: type[Any], settingKey: str | None = None, IsActive: bool | None = None) -> Any:
-    appSettings = _get_appSetting(session, model, settingKey, IsActive)
+    appSettings = _get_appSetting(session = session, model = model, settingKey = settingKey, IsActive = IsActive)
     if not appSettings:
         raise HTTPException(status_code=404, detail=f"{model.__name__} not found")
     return appSettings
@@ -285,7 +285,7 @@ def upsert_appSetting(session: Session, model: type[Any], payload: dict[str, Any
     return appSetting
 
 def soft_delete_appSetting(session: Session, model: type[Any], appSettingKey: str) -> Any:
-    appSetting = get_appSetting_or_404(session, model, appSettingKey)
+    appSetting = get_appSetting_or_404(session = session, model = model, appSettingKey = appSettingKey)
     appSetting.IsActive = False
     session.add(appSetting)
     session.commit()
@@ -324,7 +324,7 @@ def get_sources_by_parent(session: Session, parent_id: int, active_only: bool = 
 #####################
 #  JobSpec functions
 from app.schemas import ApplicationBase, InterviewBase, OfferBase
-from app.models import rolesJobSpec, rolesApplication, rolesInterview, rolesOffer
+from app.models import rolesJobSpec, rolesApplication, rolesInterview, rolesOffer, vwJobSpecBenefits, vwOfferBenefits, rolesLuBenefit
 
 def get_applications_by_job_spec(session: Session, job_spec_id: int) -> list[ApplicationBase]:
     statement = select(rolesApplication)
@@ -355,6 +355,26 @@ def get_offers_by_job_spec(session: Session, job_spec_id: int) -> list[OfferBase
     statement = statement.where(rolesOffer.IsActive == True)            # Only active Applications
     statement = statement.order_by(rolesApplication.Applied.desc())
     statement = statement.order_by(rolesOffer.Offered.desc())
+    return session.exec(statement).all()
+
+def get_tags_by_entity(session: Session, lnk_model: type[Any], model: type[Any], entity_id: int, active_only: bool = True) -> list[type[Any]]:
+    output: list[type[Any]] = []
+
+    for lnk in get_link_or_404(session = session, model = lnk_model, pk1 = entity_id):
+        tag = _get_entity(session = session, model = model, entity_id = lnk.TagId)
+        if (active_only and tag.IsActive) or (not active_only):
+            output.append(tag)
+    return output
+
+def get_benefits_by_entity(session: Session, model: type[Any], entity_id: int, active_only: bool = True) -> list[type[Any]]:
+    statement = select(model)
+    if (hasattr(model, 'JobSpecId')):
+        statement = statement.where(model.JobSpecId == entity_id)
+    elif (hasattr(model, 'OfferId')):
+        statement = statement.where(model.OfferId == entity_id)
+    if (active_only):
+        statement = statement.where(model.IsActive == 1)
+    statement = statement.order_by(model.Order)
     return session.exec(statement).all()
 
 #####################

@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react';
-import { FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
-import Modal from './Modal';
-import { getOffer, saveOffer } from '../api/offers';
-import { getApplication } from '../api/applications';
-import { getJobSpec } from '../api/jobSpecs';
-import { listBenefits } from '../api/lu_benefits'
+import { FaPlus, FaTimes, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
+
 import { newOfferItem, OfferItem, JobSpecItem, ApplicationItem, luBenefitItem } from '../defs/interfaces';
+import { luBenefit, lnkOfferBenefit, benefitWithNotes } from '../defs/types';
+
 import { formatFieldDate } from '../defs/tools'
 import { isDirty, setIsDirty } from '../App';
+
+import { listBenefits, getBenefit, getBenefitByName, saveBenefit } from '../api/lu_benefits';
+import { getOffer, saveOffer, getOfferBenefits, deleteOfferBenefits, saveOfferBenefit } from '../api/offers';
+import { getApplication } from '../api/applications';
+import { getJobSpec } from '../api/jobSpecs';
+
+import Modal from './Modal';
 
 type Props = {
   /** id of the offer to edit; null or undefined means create new */
@@ -20,7 +25,7 @@ type Props = {
 
 export default function OfferModal({ offerId, applicationId, title, onClose, onSuccess = () => {}, }: Props) {
   /* ---------- State --------------------------------------------------- */
-  const [isLoading, setIsLoading] = useState<boolean>(!!offerId);
+  const [loading, setLoading] = useState<boolean>(!!offerId);
   const [error, setError] = useState<string | null>(null);
 
   const [showDescription, setShowDescription] = useState(false);
@@ -34,20 +39,31 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
   const [salary, setSalary] = useState<string | ''>('');
   const [description, setDescription] = useState<string | ''>('');
   const [notes, setNotes] = useState<string | ''>('');
+  const [lAddBenefits, setLAddBenefits] = useState<benefitWithNotes[]>([]);
+  
   // Lookups
-  const [luBenefits, setLuBenefits] = useState<luBenefitItem[] | []>([]);
+  const [luBenefits, setLuBenefits] = useState<luBenefit[]>([]);
+
+  // Floating values
+  const [benefitInput, setBenefitInput] = useState<string>('');
+  const [benefitSuggestions, setBenefitSuggestions] = useState<any[]>([]);
+  const [benefitEditorOpen, setBenefitEditorOpen] = useState(false);
+  const [benefitError, setBenefitError] = useState<string | null>(null);
 
   /* ---------- Load data for editing ----------------------------------- */
   useEffect(() => {
     let mounted = true;
 
     async function load() {
-      setIsLoading(true);
+      setLoading(true);
       try {
-        fetchBenefits();
+        const lBenefits = await listBenefits();
+
+        const benefits = Array.isArray(lBenefits) ? lBenefits : (lBenefits?.data ?? []);
+        setLuBenefits(benefits);
 
         if (offerId) { 
-          // load the Offer to be editted
+          // load the offer to be editted
           const src: OfferItem | undefined = await getOffer(offerId);
           if (mounted && src) {
             applicationId = src.ApplicationId;
@@ -55,6 +71,8 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
             if (src.Salary) setSalary(src.Salary);
             if (src.Description) setDescription(src.Description);
             if (src.Notes) setNotes(src.Notes);
+            const ofrBenefits = await getOfferBenefits(offerId);
+            setLAddBenefits(ingestBenefits(ofrBenefits));
           }
         }
         if (mounted && applicationId) {
@@ -65,7 +83,7 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
         if (mounted)
           setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
-        if (mounted) setIsLoading(false);
+        if (mounted) setLoading(false);
       }
     }
 
@@ -75,19 +93,57 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
     };
   }, [offerId, applicationId]);
 
-  const fetchBenefits = async (mounted: boolean = true) => {
+  async function fetchBenefit (BenefitName: string) {
+    let benefitId: number;
+
     try {
-      const data = await listBenefits();
-      if (mounted && Array.isArray(data)) setLuBenefits(data);
-    } catch (err) {
-      if (mounted)
-        setError(
-          err instanceof Error ? err.message : 'Failed to load benefits',
-        );
-    } finally {
-      //if (mounted) setContactsLoading(false);
+      let addBenefit = await getBenefitByName(BenefitName);
+
+      if (!addBenefit) {
+        const payload: luBenefit = {
+          Name: BenefitName,
+          Order: lAddBenefits.length,
+          IsActive: true
+        }
+        addBenefit = await saveBenefit(payload);
+        benefitId = addBenefit.Id;
+      }
+      else {
+        benefitId = addBenefit[0].Id;
+      }
+      return benefitId;
+    }
+    catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Failed to get benefit',
+      );
     }
   };
+
+  function findBenefitId (benefit: string) {
+    luBenefits.forEach((item: luBenefit) => {
+      if (item.Name.toLowerCase() == benefit.toLowerCase()) {
+        return item.Id;
+      }
+    });
+    return null;
+  }
+
+  const ingestBenefits = (list_benefits: any[]) => {
+    let output: benefitWithNotes[] = [];
+
+    if (list_benefits.length > 0) {
+      for (const bnf of list_benefits) {
+        const outBnf: benefitWithNotes = {
+          BenefitId: bnf.Id,
+          Benefit: bnf.Name,
+          Notes: bnf.Notes
+        };
+        output.push(outBnf);
+      }
+    }
+    return output;
+  }
 
   const handleFieldEdit = (field: string, value: string) => {
     setIsDirty(true);
@@ -105,7 +161,74 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
     }
   }
 
+  function verifyBenefit (benefit: string) {
+    let isValid: boolean = false
+    luBenefits.forEach((item: luBenefit) => {
+      if (item.Name.toLowerCase() == benefit.toLowerCase()) {
+        isValid = true;
+      }
+    });
+    return isValid;
+  }
+
+  const handleAddBenefit = async () => {
+    if (benefitInput && verifyBenefit(benefitInput)) {
+      let newLBenefits = lAddBenefits;
+
+      if (lAddBenefits.length > 0) {
+        let found = false;
+
+        lAddBenefits.forEach((bn: benefitWithNotes) => {
+          if (bn.Benefit.toLowerCase() == benefitInput.toLowerCase()) {
+            found = true;
+          }
+        });
+        if (!found) {
+          const nBenefit: benefitWithNotes = {
+            Benefit: benefitInput,
+            Notes: ""
+          }
+          newLBenefits.push(nBenefit);
+          setLAddBenefits(newLBenefits);
+        }
+      }
+      else {
+        const nBenefit: benefitWithNotes = {
+          Benefit: benefitInput,
+          Notes: ""
+        }
+        newLBenefits.push(nBenefit);
+        setLAddBenefits(newLBenefits);
+      }
+    }
+    setBenefitInput('');
+    setBenefitEditorOpen(false);
+  };
+
+  const handleRemoveBenefit = (deletedBenefit: string) => {
+    if (lAddBenefits.length > 0) {
+      let newLBenefits: benefitWithNotes[] = [];
+
+      lAddBenefits.forEach((bn: benefitWithNotes) => {
+        if (bn.Benefit.toLowerCase() != deletedBenefit.toLowerCase()) {
+          newLBenefits.push(bn);
+        }
+      });
+      setLAddBenefits(newLBenefits);
+    }
+  };
+
+  const handleBenefitNoteChange = (index: number, newValue: string) => {
+    const updatedBenefits = [...lAddBenefits];
+    updatedBenefits[index] = {
+      ...updatedBenefits[index],
+      Notes: newValue
+    };
+    setLAddBenefits(updatedBenefits);
+  };
+
   const handleSubmit = async () => {
+    setLoading(true);
     setError(null);
     // Basic client‑side validation
     if (!applicationId || !offered) {
@@ -125,7 +248,27 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
     if (offerId) payload.Id = Number(offerId);
 
     try {
-      await saveOffer(payload);
+      const savedOffer = await saveOffer(payload);
+
+      if (savedOffer && savedOffer.Id) {
+        // clean offer benefits
+        await deleteOfferBenefits(savedOffer.Id);
+        if (lAddBenefits.length > 0) {
+          // Add new benefits
+          for (const bnf of lAddBenefits) {
+            bnf.BenefitId = await fetchBenefit(bnf.Benefit);
+            if (bnf.BenefitId != null) {
+              const payload: lnkOfferBenefit = {
+                OfferId: savedOffer.Id,
+                LuBenefitId: bnf.BenefitId,
+                Notes: bnf.Notes,
+                Order: lAddBenefits.findIndex((b: any) => bnf === b)
+              };
+              await saveOfferBenefit(payload);
+            }
+          }
+        }
+      }
       setIsDirty(false);
       onSuccess();
       onClose();
@@ -140,6 +283,7 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
     setDescription('');
     setNotes('');
     setApplication(null);
+    setLAddBenefits([]);
     setIsDirty(false);
     onClose();
   };
@@ -149,7 +293,7 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
     <Modal  title={title} onClose={onClose}>
       {error && <p className="error">{error}</p>}
 
-      {(isLoading || !offerId) && offerId
+      {(loading || !offerId) && offerId
         ? <p>Loading…</p>
         : (
         <div>
@@ -165,8 +309,57 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
           </div>
 
           <div className="modal-field">
-            <input id="salary" value={salary}  placeholder="Salary offered"  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+            <input id="salary" value={salary} placeholder="Salary offered" onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
           </div>
+
+          <div className="job-spec-benefits-area">
+            <div className="job-spec-benefits-header">Benefits</div>
+            {!benefitEditorOpen && (
+              <button type="button" 
+                      className="job-spec-benefits-list-button" 
+                      onClick={() => { 
+                        setBenefitEditorOpen(true); 
+                        setBenefitError(null); 
+                      }}>
+                <FaPlus />
+              </button>
+            )}
+            <div className="job-spec-benefits-list">
+              {lAddBenefits.length ? lAddBenefits.map((benefit: benefitWithNotes, index) => (
+                <span className="job-spec-benefits-list" key={`${benefit.Benefit}-${index}`}>
+                  <span>{benefit.Benefit}</span>
+                  <input id={`benefit-note-${index}`} 
+                        value={benefit.Notes} 
+                        placeholder={"Notes about " + benefit.Benefit} 
+                        onChange={(e) => handleBenefitNoteChange(index, e.target.value)} />
+                  <button type="button" 
+                          className="job-spec-benefit-button" 
+                          onClick={() => handleRemoveBenefit(benefit.Benefit)}>
+                    <FaTimes />
+                  </button>
+                </span>
+              )) : <></>}
+            </div>
+          </div>
+          {benefitEditorOpen && (
+            <div className="job-spec-benefit-editor">
+              <input
+                className="job-spec-benefit-editor"
+                value={benefitInput}
+                placeholder="Type benefit name"
+                onChange={(e) => setBenefitInput(e.target.value)}
+                type="text"
+                list="benefits-list"
+              />
+              <datalist id="benefits-list">
+                {luBenefits.filter((benefit: any, index) => (!lAddBenefits.includes(benefit.Name))).map((benefit: any, index) => (
+                  <option key={index} value={benefit.Name} />
+                ))}
+              </datalist>
+              <button type="button" className="job-spec-benefit-editor" onClick={handleAddBenefit}><FaPlus /></button>
+            </div>
+          )}
+          {benefitError && <p className="job-spec-benefitserror">{benefitError}</p>}
 
           <div className="modal-table">
             {showDescription ? (

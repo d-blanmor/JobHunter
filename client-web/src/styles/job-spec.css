@@ -7,6 +7,11 @@
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
+.job-spec-error{
+  color: var(--color-error-message);
+  font-size: large;
+}
+
 .job-spec-discarded {
   background: var(--view-labels-discarded);
   border-radius: 18px;
@@ -82,6 +87,12 @@
   margin-bottom: 0.3em;
 }
 
+.job-spec-section {
+  font-size: 1.1em;
+  color: var(--view-labels);
+  width: 15em;
+}
+
 .job-spec-section-clickable {
   cursor: pointer;
   transition: background 0.15s ease;
@@ -100,7 +111,7 @@
 
 .section-heading {
   font-size: 1.1em;
-  color: var(--view-labels);
+  color: var(--view-sections);
   width: 15em;
 }
 
@@ -233,4 +244,206 @@
 
 .job-spec-textarea-section {
   padding-top: 0;
+}
+
+.job-spec-tags-area {
+  display: block ruby;
+  margin-bottom: 12px;
+  margin-top: 10px;
+}
+
+.job-spec-tags-header {
+  font-size: 0.8rem;
+  color: var(--color-brand-primary);
+  margin-right: 8px;
+}
+
+.job-spec-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 200px;
+  max-width: 930px;
+}
+.job-spec-tags-list span {
+  display: inline-flex;
+  min-width: 5px;
+  align-items: center;
+  font-size: 0.8rem;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--color-background-button);
+  border: 1px solid var(--color-border-default);
+  border-radius: 12px;
+}
+.job-spec-tags-list-button {
+  /*display: inline-block;*/
+  /*width: 30px;*/
+  font-size: 0.6em;
+  /*text-decoration: none;*/
+  padding: 0.5em 0.5em;
+  margin: 0em 0.5em 0em 0.5em;
+  border-radius: 12px;
+  background: var(--color-background-button);
+  color: var(--color-text-muted);
+}
+.job-spec-tags-list-button:hover:not(.disabled) {
+  background: var(--stage-button-hover-background);
+  transform: translateY(-1px);
+  box-shadow: 0 1px 10px var(--color-brand-secondary);
+}
+
+.job-spec-tag {
+  border: none;
+}
+.job-spec-tag-button {
+  width: 20px;
+  padding: 0.2em 0.2em;
+  border: none;
+  background: var(--color-background-button);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.add {
+  margin-left: 8px;
+}
+.job-spec-tagserror {
+  margin-bottom: 12px;
+}
+
+.job-spec-tag-editor {
+  display: flex;
+  width: 250px;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+  align-items: center;
+  /*gap: '8px';*/
+  /*margin-bottom: 12px;*/
+  /*flex-wrap: wrap;*/
+}
+.job-spec-tag-editor input {
+  width: 228px;
+}
+.job-spec-tag-editor select {
+  width: 250px;
+}
+.job-spec-tag-editor button {
+  width: 30px;
+  border: none;
+  cursor: pointer;
+  margin: 0px 0px 0px 10px;
+}
+
+.job-spec-benefits-area {
+  display: block ruby;
+  margin-bottom: 12px;
+  margin-top: 10px;
+}
+
+.job-spec-benefits-header {
+  font-size: 1em;
+  color: var(--color-brand-primary);
+  margin-right: 8px;
+}
+
+.job-spec-benefits-list {
+  display: grid;
+  gap: 6px;
+  min-width: 200px;
+  max-width: 930px;
+}
+.job-spec-benefits-list span {
+  display: inline-flex;
+  min-width: 5px;
+  align-items: center;
+  font-size: 0.8rem;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--color-background-button);
+}
+.job-spec-benefits-list input {
+  width: 300px;
+  /*margin: 5px 0px 5px 0px;*/
+  padding: 2px 10px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+}
+.job-spec-benefits-list-button {
+  /*display: inline-block;*/
+  /*width: 30px;*/
+  font-size: 0.6em;
+  /*text-decoration: none;*/
+  padding: 0.5em 0.5em;
+  margin: 0em 0.5em 0em 0.5em;
+  border-radius: 12px;
+  background: var(--color-background-button);
+  color: var(--color-text-muted);
+}
+.job-spec-benefits-list-button:hover:not(.disabled) {
+  background: var(--stage-button-hover-background);
+  transform: translateY(-1px);
+  box-shadow: 0 1px 10px var(--color-brand-secondary);
+}
+
+.job-spec-benefit {
+  border: none;
+}
+.job-spec-benefit-button {
+  width: 20px;
+  padding: 3px 0px 0px 5px;
+  border: none;
+  background: var(--color-background-button);
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.add {
+  margin-left: 8px;
+}
+.job-spec-benefitserror {
+  margin-bottom: 12px;
+}
+
+.job-spec-benefit-editor {
+  display: flex;
+  width: 250px;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+  align-items: center;
+  /*gap: '8px';*/
+  /*margin-bottom: 12px;*/
+  /*flex-wrap: wrap;*/
+}
+.job-spec-benefit-editor input {
+  width: 228px;
+}
+.job-spec-benefit-editor select {
+  width: 250px;
+}
+.job-spec-benefit-editor button {
+  width: 30px;
+  border: none;
+  cursor: pointer;
+  margin: 0px 0px 0px 10px;
+}
+
+hr {
+  display: block;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  margin-left: auto;
+  margin-right: auto;
+  border-style: inset;
+  border-width: 1px;
 }

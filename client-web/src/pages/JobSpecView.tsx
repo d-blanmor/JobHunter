@@ -1,18 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaEdit, FaIdBadge, FaExternalLinkAlt, FaEnvelopeSquare, FaPhoneSquareAlt, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from 'react-icons/fa';
+import { FaEdit, FaIdBadge, FaExternalLinkAlt, FaEnvelopeSquare, FaPhoneSquareAlt, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown, FaTags } from 'react-icons/fa';
 import { BsInfoCircle } from "react-icons/bs";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm'; // Adds support for tables, strikethrough, etc.
 import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for security
-
 
 import JobSpecModal from '../components/JobSpecModal';
 import ApplicationModal from '../components/ApplicationModal';
 import InterviewModal from '../components/InterviewModal';
 import OfferModal from '../components/OfferModal';
 
-import { getJobSpec, getJobSpecBenefits, getJobSpecTags } from '../api/jobSpecs';
+import { getJobSpec, getJobSpecTags, getJobSpecBenefits } from '../api/jobSpecs';
 import { getApplicationsByJobSpec, getApplication } from '../api/applications';
 import { getInterviewByJobSpec } from '../api/interviews';
 import { getOfferByJobSpec, getOfferBenefits } from '../api/offers';
@@ -23,7 +22,6 @@ import { listBenefits } from '../api/lu_benefits';
 import { listLocations } from '../api/lu_locations';
 import { listSources } from '../api/sources';
 import { listContacts } from '../api/contacts';
-import { listTags } from '../api/tags';
 
 import { 
   formatDate, 
@@ -48,15 +46,15 @@ import {
   luWorkModelItem,
   luRoleTypeItem,
   ContactItem, 
-  TagItem,
-  luBenefitItem,
   } from '../defs/interfaces';
+import { Tag, luBenefit, lnkJobSpecBenefit, lnkOfferBenefit, benefitWithNotes } from '../defs/types';
 
 export default function JobSpecView() {
   const { id } = useParams();
 
   const navigate = useNavigate();
 
+  const tagContext: string = 'JobSpecs';
   const [modalEditJobSpec, setModalEditJobSpec] = useState(false);
   const [modalEditApplication, setModalEditApplication] = useState(false);
   const [modalEditInterview, setModalEditInterview] = useState(false);
@@ -82,22 +80,14 @@ export default function JobSpecView() {
 
   // Entities
   const [jobSpec, setJobSpec] = useState<JobSpecItem | null>(null);
-  const [jsBenefits, setJsBenefits] = useState<luBenefitItem[]>([]);
-  const [jsTags, setJSTags] = useState<TagItem[]>([]);
-  const [inContact, setInContact] = useState< any > (null);
   const [applicationId, setApplicationId] = useState<number | null>(null);
-  const [application, setApplication] = useState<ApplicationItem | null>(null);
   const [interviewId, setInterviewId] = useState<number | null>(null);
   const [offerId, setOfferId] = useState<number | null>(null);
   // Lookups
-  const [lPlacesOfWork, setPlacesOfWork] = useState<PlaceOfWorkItem[]>([]);
   const [lSources, setSources] = useState<SourceItem[]>([]);
-  const [lLocations, setLocations] = useState<luLocationItem[]>([]);
   const [lWorkModels, setWorkModels] = useState<luWorkModelItem[]>([]);
   const [lRoleTypes, setRoleTypes] = useState<luRoleTypeItem[]>([]);
   const [lContacts, setContacts] = useState<ContactItem[]>([]);
-  const [lBenefits, setBenefits] = useState<luBenefitItem[]>([]); 
-  const [lTags, setTags] = useState<TagItem[]>([]);
   const [placeOfWorkLabel, setPlaceOfWorkLabel] = useState<string | ''>('');
   // Behaviour
   const [loading, setLoading] = useState(true);
@@ -114,53 +104,38 @@ export default function JobSpecView() {
       try {
         const [
           jobSpec, 
-          jsBenefits,
-          jsTags,
           applications, 
           interviews, 
           offers,
-          placesOfWork,
           luSources, 
-          luLocations,
           luWorkModels, 
           luRoleTypes, 
           luContacts,
-          luBenefits,
-          luTags,
         ] = await Promise.all([
           getJobSpec(Number(id)),
-          getJobSpecBenefits(Number(id)).catch(() => []),
-          getJobSpecTags(Number(id)).catch(() => []),
           getApplicationsByJobSpec(Number(id)).catch(() => []),
           getInterviewByJobSpec(Number(id)).catch(() => []),
           getOfferByJobSpec(Number(id)).catch(() => []),
-          listPlacesOfWork().catch(() => []),
           listSources().catch(() => []),
-          listLocations().catch(() => []),
           listWorkModels().catch(() => []),
           listRoleTypes().catch(() => []),
           listContacts().catch(() => []),
-          listBenefits().catch(() => []),
-          listTags().catch(() => []),
         ]);
 
         if (!mounted) return;
-
-        setPlacesOfWork(Array.isArray(placesOfWork) ? placesOfWork : []);
         setSources(Array.isArray(luSources) ? luSources : []);
-        setLocations(Array.isArray(luLocations) ? luLocations : []);
         setWorkModels(Array.isArray(luWorkModels) ? luWorkModels : []);
         setRoleTypes(Array.isArray(luRoleTypes) ? luRoleTypes : []);
         setContacts(Array.isArray(luContacts) ? luContacts : []);
-        setBenefits(Array.isArray(luBenefits) ? luBenefits : []);
-        setTags(Array.isArray(luTags) ? luTags : []);
 
         setJobSpec(jobSpec);
-        setJsBenefits(jsBenefits || []);
         if (jobSpec.PlaceOfWorkId) setPlaceOfWorkLabel(await getPlaceOfWorkLabel(jobSpec.PlaceOfWorkId));
-        jobSpec.Benefits = jsBenefits;
-        setJSTags(jsTags || []);
-        jobSpec.Tags = jsTags;
+        jobSpec.Tags = [];
+        jobSpec.Benefits = [];
+        if (jobSpec && jobSpec.Id > 0) {
+          [jobSpec.Tags, jobSpec.Benefits] = await Promise.all ([getJobSpecTags(jobSpec.Id), getJobSpecBenefits(jobSpec.Id)]);
+        }
+
         jobSpec.Applications = [];
         if (applications && applications.length > 0) {
           jobSpec.Applications = applications;
@@ -180,7 +155,8 @@ export default function JobSpecView() {
             if (offers && offers.length > 0) {
               jobSpec.Applications[0].Offers = offers;
               for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
-                const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].id)).catch(() => []));
+                const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].Id)).catch(() => []));
+
                 jobSpec.Applications[0].Offers[i].Benefits = ofBenefits;
               }
             }
@@ -207,35 +183,32 @@ export default function JobSpecView() {
   const roleType = useMemo(() =>  (jobSpec ? getRoleTypeItem(jobSpec, lRoleTypes) : null), [jobSpec]);
   const workModel = useMemo(() => (jobSpec ? getWorkModelItem(jobSpec, lWorkModels) : null), [jobSpec,lWorkModels]);
   const contact = useMemo(() => (jobSpec ? getContactItem(jobSpec.ContactId, lContacts) : null), [jobSpec]);
-  // TODO: Get assigned benefits in jsBenefits to jobspec
-  // TODO: Get assigned tags in jsTags to jobspec
-
   const salary = jobSpec?.SalaryExpectation ||  '—';
-  const benefits = normalizeBenefits(jobSpec?.Benefits ?? jobSpec?.Benefits);
 
   const refreshJobSpec = async (mounted: boolean = true) => {
+    setLoading(true);
+    setError(null);
+
     try {
       const [
         jobSpec, 
-        jsBenefits,
-        jsTags,
         applications, 
         interviews, 
         offers
       ] = await Promise.all([
         getJobSpec(Number(id)),
-        getJobSpecBenefits(Number(id)).catch(() => []),
-        getJobSpecTags(Number(id)).catch(() => []),
         getApplicationsByJobSpec(Number(id)).catch(() => []),
         getInterviewByJobSpec(Number(id)).catch(() => []),
         getOfferByJobSpec(Number(id)).catch(() => [])
       ]);
       setJobSpec(jobSpec);
-      setJsBenefits(jsBenefits || []);
       jobSpec.PlacesOfWork = placeOfWorkLabel;
-      jobSpec.Benefits = jsBenefits;
-      setJSTags(jsTags || []);
-      jobSpec.Tags = jsTags;
+      jobSpec.Tags = [];
+      jobSpec.Benefits = [];
+      if (jobSpec && jobSpec.Id > 0) {
+        [jobSpec.Tags, jobSpec.Benefits] = await Promise.all ([getJobSpecTags(jobSpec.Id), getJobSpecBenefits(jobSpec.Id)]);
+      }
+
       jobSpec.Applications = applications;
       setInterviewId(null);
       if (jobSpec.Applications && jobSpec.Applications.length > 0) {
@@ -254,7 +227,8 @@ export default function JobSpecView() {
 
           if (Array.isArray(jobSpec.Applications[0].Offers) && jobSpec.Applications[0].Offers.length > 0) {
             for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
-              const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].id)).catch(() => []));
+              const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].Id)).catch(() => []));
+
               jobSpec.Applications[0].Offers[i].Benefits = ofBenefits;
             }
           }
@@ -267,7 +241,10 @@ export default function JobSpecView() {
           err instanceof Error ? err.message : 'Failed to load contacts',
         );
     } 
-    finally {}
+    finally {
+      if (!mounted) return;
+      setLoading(false);
+    }
   };
 
   const getModalTitle = (modal: string) => {
@@ -333,6 +310,7 @@ export default function JobSpecView() {
             </span>
             <button className="action-button" onClick={() => navigate(-1)}>Back</button>
           </div>
+
           <div className="page-header-row">
             <div>
               <span className="job-spec-title">
@@ -352,6 +330,19 @@ export default function JobSpecView() {
               )}
             </div>
           </div>
+
+          {jobSpec.Tags && jobSpec.Tags.length > 0 ? (
+            <div className="job-spec-tags-area">
+              <div className="job-spec-tags-header"><FaTags /></div>
+              <div className="job-spec-tags-list">
+                {jobSpec.Tags.length ? jobSpec.Tags.map((tag: Tag) => (
+                  <span className="job-spec-tags-list" key={tag.Id}>
+                    <span style={{'border': 'none'}}>{tag.Name}</span>
+                  </span>
+                )) : <></>}
+              </div>
+            </div>
+          ) : ( '' )}
 
           <div className="job-spec">
             {jobSpec.SourceId ? (
@@ -454,7 +445,7 @@ export default function JobSpecView() {
               </div>
             ) : null}
 
-            {jobSpec.RoleTypeId || jobSpec.WorkModelId || jobSpec.SalaryExpectation || (jobSpec.Benefits && jobSpec.Benefits.length > 0) ? (
+            {jobSpec.RoleTypeId || jobSpec.WorkModelId || jobSpec.SalaryExpectation ? (
               <div className="job-spec-row">
                 {jobSpec.RoleTypeId && roleType ? (
                   <div className="job-spec-field-row">
@@ -470,7 +461,7 @@ export default function JobSpecView() {
                 ) : null}
               </div>
             ) : null}
-            {jobSpec.RoleTypeId || jobSpec.WorkModelId || jobSpec.SalaryExpectation || (jobSpec.Benefits && jobSpec.Benefits.length > 0) ? (
+            {jobSpec.RoleTypeId || jobSpec.WorkModelId || jobSpec.SalaryExpectation ? (
               <div className="job-spec-row">
                 {jobSpec.SalaryExpectation ? (
                   <div className="job-spec-field-row">
@@ -478,14 +469,34 @@ export default function JobSpecView() {
                     <span className="job-spec-value">{safeValue(salary)}</span>
                   </div>
                 ) : null}
-                {jobSpec.Benefits && jobSpec.Benefits.length > 0 ? (
-                  <div className="job-spec-field-row">
-                    <span className="job-spec-label">Benefits</span>
-                    <span className="job-spec-value">{normalizeBenefits(jobSpec.Benefits)}</span>
-                  </div>
-                ) : null}
               </div>
             ) : null}
+            {jobSpec.Benefits && jobSpec.Benefits.length > 0 ? (
+              <div className="job-spec-benefits-area">
+                <span className="job-spec-label">Benefits</span>
+                <div className="job-spec-benefits-list">
+                  {jobSpec.Benefits.map((benefit: any, index) => (
+                    <>
+                      {benefit.Notes != '' ? (
+                        <span className="job-spec-benefits-list">
+                          <span className="job-spec-value">{benefit.Name}: </span>
+                          <span className="job-spec-value">{benefit.Notes} </span>
+                        </span>
+                      ) :
+                      (
+                        <span className="job-spec-benefits-list">
+                          <span className="job-spec-value">{benefit.Name}</span>
+                        </span>
+                      )}
+                    </>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="job-spec-benefits-area">
+                <span className="job-spec-label">Benefits</span>
+              </div>
+            )}
           </div>
 
           {jobSpec.Description || jobSpec.Analysis || jobSpec.Profile || jobSpec.Notes ? (
@@ -496,7 +507,7 @@ export default function JobSpecView() {
                       role="button"
                       tabIndex={0}
                       onClick={() => setShowJsDescription(false)}>
-                    <h4 className="section-heading"><FaRegArrowAltCircleDown /> Description</h4>
+                    <h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Description</h4>
                   </div>
                   <div className="job-spec-text">
                     <ReactMarkdown
@@ -511,7 +522,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsDescription(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Description</h4></div>
+                      onClick={() => setShowJsDescription(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Description</h4></div>
                 </div>
               ) : null )}
 
@@ -520,7 +531,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsAnalysis(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Analysis and recomendations</h4></div>
+                      onClick={() => setShowJsAnalysis(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Analysis and recomendations</h4></div>
                   <div className="job-spec-text">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
@@ -534,7 +545,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsAnalysis(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Analysis and recomendations</h4></div>
+                      onClick={() => setShowJsAnalysis(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Analysis and recomendations</h4></div>
                 </div>
               ) : null )}
 
@@ -543,7 +554,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsProfile(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Profile match to Job Spec</h4></div>
+                      onClick={() => setShowJsProfile(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Profile match to Job Spec</h4></div>
                   <div className="job-spec-text">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
@@ -557,7 +568,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsProfile(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Profile match to Job Spec</h4></div>
+                      onClick={() => setShowJsProfile(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Profile match to Job Spec</h4></div>
                 </div>
               ) : null )}
 
@@ -566,7 +577,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
+                      onClick={() => setShowJsNotes(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Notes</h4></div>
                   <div className="job-spec-text">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
@@ -580,7 +591,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsNotes(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Notes</h4></div>
+                      onClick={() => setShowJsNotes(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Notes</h4></div>
                 </div>
               ) : null )}
             </div>
@@ -589,7 +600,7 @@ export default function JobSpecView() {
           {jobSpec.Applications && jobSpec.Applications.length > 0 ? (
             showApplications ? (
               <div className={`${jobSpec.Applications[0].Discarded ? 'job-spec-discarded' : 'job-spec'}`}>
-                <div className="application-row">
+                <div>
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
@@ -635,7 +646,7 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApLetter(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Cover Letter</h4></div>
+                                onClick={() => setShowApLetter(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Cover Letter</h4></div>
                             <div className="job-spec-text">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
@@ -649,7 +660,7 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApLetter(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Cover Letter</h4></div>
+                                onClick={() => setShowApLetter(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Cover Letter</h4></div>
                           </div>
                         ) : null )}
 
@@ -658,7 +669,7 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApCV(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Resume sent</h4></div>
+                                onClick={() => setShowApCV(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Resume sent</h4></div>
                             <div className="job-spec-text">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
@@ -672,7 +683,7 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApCV(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Resume sent</h4></div>
+                                onClick={() => setShowApCV(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Resume sent</h4></div>
                           </div>
                         ) : null )}
 
@@ -681,7 +692,7 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
+                                onClick={() => setShowApNotes(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Notes</h4></div>
                             <div className="job-spec-text">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
@@ -695,11 +706,12 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApNotes(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Notes</h4></div>
+                                onClick={() => setShowApNotes(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Notes</h4></div>
                           </div>
                         ) : null )}
                       </div>
                     ) : ( null )}
+                    <hr/>
                   </div>
                 ))}
               </div>
@@ -722,7 +734,7 @@ export default function JobSpecView() {
           {jobSpec.Applications && jobSpec.Applications[0] && jobSpec.Applications[0].Interviews && jobSpec.Applications[0].Interviews.length > 0 ? (
             showInterviews ? (
               <div className="job-spec">
-                <div className="interview-row">
+                <div>
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
@@ -796,7 +808,6 @@ export default function JobSpecView() {
                           </div>
                         </div>
                       ) : (null)}
-
                       {interview.Description || interview.Analysis || interview.Notes || interview.Outcome || interview.Feedback ? (
                         <div className="job-spec-decorated">
 
@@ -805,7 +816,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInDescription(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Description</h4></div>
+                                  onClick={() => setShowInDescription(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Description</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -819,7 +830,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInDescription(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Description</h4></div>
+                                  onClick={() => setShowInDescription(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Description</h4></div>
                             </div>
                           ) : null )}
 
@@ -828,7 +839,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInAnalysis(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Recomendations</h4></div>
+                                  onClick={() => setShowInAnalysis(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Recomendations</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -842,7 +853,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInAnalysis(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Recomendations</h4></div>
+                                  onClick={() => setShowInAnalysis(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Recomendations</h4></div>
                             </div>
                           ) : null )}
 
@@ -851,7 +862,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
+                                  onClick={() => setShowInNotes(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Notes</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -865,7 +876,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInNotes(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Notes</h4></div>
+                                  onClick={() => setShowInNotes(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Notes</h4></div>
                             </div>
                           ) : null )}
 
@@ -874,7 +885,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInOutcome(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Outcome</h4></div>
+                                  onClick={() => setShowInOutcome(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Outcome</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -888,7 +899,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInOutcome(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Outcome</h4></div>
+                                  onClick={() => setShowInOutcome(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Outcome</h4></div>
                             </div>
                           ) : null )}
 
@@ -897,7 +908,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInFeedback(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Feedback</h4></div>
+                                  onClick={() => setShowInFeedback(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Feedback</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -911,13 +922,13 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInFeedback(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Feedback</h4></div>
+                                  onClick={() => setShowInFeedback(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Feedback</h4></div>
                             </div>
                           ) : null )}
                         
                         </div>
                       ) : (null)}
-
+                      <hr/>
                     </div>
                   </div>
                 ))}
@@ -939,7 +950,7 @@ export default function JobSpecView() {
           {jobSpec.Applications && jobSpec.Applications[0] && jobSpec.Applications[0].Offers && jobSpec.Applications[0].Offers.length > 0 ? (
             showOffers ? (
               <div className="job-spec">
-                <div className="offer-row">
+                <div>
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
@@ -979,12 +990,32 @@ export default function JobSpecView() {
                         </div>
                       ) : (null)}
 
-                      {offer.Benefits ? (
-                        <div className="job-spec-field-row">
+                      {offer.Benefits && offer.Benefits.length > 0 ? (
+                        <div className="job-spec-benefits-area">
                           <span className="job-spec-label">Benefits</span>
-                          <span className="job-spec-value">{normalizeBenefits(offer.Benefits)}</span>
+                          <div className="job-spec-benefits-list">
+                            {offer.Benefits.map((benefit: any, index) => (
+                              <>
+                                {benefit.Notes != '' ? (
+                                  <span className="job-spec-benefits-list">
+                                    <span className="job-spec-value">{benefit.Name}: </span>
+                                    <span className="job-spec-value">{benefit.Notes} </span>
+                                  </span>
+                                ) :
+                                (
+                                  <span className="job-spec-benefits-list">
+                                    <span className="job-spec-value">{benefit.Name}</span>
+                                  </span>
+                                )}
+                              </>
+                            ))}
+                          </div>
                         </div>
-                      ) : (null)}
+                      ) : (
+                        <div className="job-spec-benefits-area">
+                          <span className="job-spec-label">Benefits</span>
+                        </div>
+                      )}
 
                       {offer.Notes  ? (
                         <div className="job-spec-decorated">
@@ -993,7 +1024,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowOfNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
+                                  onClick={() => setShowOfNotes(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Notes</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -1008,13 +1039,14 @@ export default function JobSpecView() {
                                   role="button"
                                   tabIndex={0}
                                   onClick={() => setShowOfNotes(true)}>
-                                <h4 className="section-heading"><FaRegArrowAltCircleRight /> Notes</h4>
+                                <h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Notes</h4>
                               </div>
                             </div>
                           )}
                         </div>
                       ) : (null)}
                     </div>
+                    <hr/>
                   </div>
                 ))}
               </div>

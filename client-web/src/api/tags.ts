@@ -17,13 +17,28 @@ export async function getTag(id: number) {
 
 export async function getTagByName(tagName: string) {
   const res = await fetch(`${API_BASE}/tags/by-name/${tagName}`);
-  if (!res.ok) throw new Error(`Failed to load tag: ${res.status}`);
+  if (!res.ok) {
+    if (res.status != 404) throw new Error(`Failed to load tag: ${res.status}`);
+    return "()";
+  }
   return res.json();
 }
 
 export async function getTagByContext(tagContext: string) {
   const res = await fetch(`${API_BASE}/tags/by-context/${tagContext}`);
-  if (!res.ok) throw new Error(`Failed to load tag: ${res.status}`);
+  if (!res.ok) {
+    if (res.status != 404) throw new Error(`Failed to load tag: ${res.status}`);
+    return "()";
+  }
+  return res.json();
+}
+
+export async function getTagByNameContext(tagName: string, tagContext: string) {
+  const res = await fetch(`${API_BASE}/tags/by-name-context/${tagName}/${tagContext}`);
+  if (!res.ok) {
+    if (res.status != 404) throw new Error(`Failed to load tag: ${res.status}`);
+    return "()";
+  }
   return res.json();
 }
 

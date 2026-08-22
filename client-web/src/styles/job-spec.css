@@ -87,6 +87,12 @@
   margin-bottom: 0.3em;
 }
 
+.job-spec-section {
+  font-size: 1.1em;
+  color: var(--view-labels);
+  width: 15em;
+}
+
 .job-spec-section-clickable {
   cursor: pointer;
   transition: background 0.15s ease;
@@ -105,7 +111,7 @@
 
 .section-heading {
   font-size: 1.1em;
-  color: var(--view-labels);
+  color: var(--view-sections);
   width: 15em;
 }
 
@@ -430,4 +436,14 @@
   border: none;
   cursor: pointer;
   margin: 0px 0px 0px 10px;
+}
+
+hr {
+  display: block;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  margin-left: auto;
+  margin-right: auto;
+  border-style: inset;
+  border-width: 1px;
 }

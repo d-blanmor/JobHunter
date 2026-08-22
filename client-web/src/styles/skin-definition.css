@@ -54,6 +54,7 @@
   --stage-button-delete: #7c0f0f;
   --stage-button-delete-border: #fecaca;
   /* --- Entity View --- */
+  --view-sections: #444343;
   --view-labels: #757a81;
   --view-labels-discarded: #f0bbbbd2;
   --view-values: #384768;
@@ -117,6 +118,7 @@
   --stage-button-delete: #c06666;
   --stage-button-delete-border: #fecaca;
   /* --- Entity View --- */
+  --view-sections: #5b7191;
   --view-labels: #475569;
   --view-labels-discarded: #581414d2;
   --view-values: #9cb5d1;

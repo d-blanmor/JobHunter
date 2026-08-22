@@ -507,7 +507,7 @@ export default function JobSpecView() {
                       role="button"
                       tabIndex={0}
                       onClick={() => setShowJsDescription(false)}>
-                    <h4 className="section-heading"><FaRegArrowAltCircleDown /> Description</h4>
+                    <h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Description</h4>
                   </div>
                   <div className="job-spec-text">
                     <ReactMarkdown
@@ -522,7 +522,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsDescription(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Description</h4></div>
+                      onClick={() => setShowJsDescription(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Description</h4></div>
                 </div>
               ) : null )}
 
@@ -531,7 +531,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsAnalysis(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Analysis and recomendations</h4></div>
+                      onClick={() => setShowJsAnalysis(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Analysis and recomendations</h4></div>
                   <div className="job-spec-text">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
@@ -545,7 +545,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsAnalysis(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Analysis and recomendations</h4></div>
+                      onClick={() => setShowJsAnalysis(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Analysis and recomendations</h4></div>
                 </div>
               ) : null )}
 
@@ -554,7 +554,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsProfile(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Profile match to Job Spec</h4></div>
+                      onClick={() => setShowJsProfile(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Profile match to Job Spec</h4></div>
                   <div className="job-spec-text">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
@@ -568,7 +568,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsProfile(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Profile match to Job Spec</h4></div>
+                      onClick={() => setShowJsProfile(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Profile match to Job Spec</h4></div>
                 </div>
               ) : null )}
 
@@ -577,7 +577,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
+                      onClick={() => setShowJsNotes(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Notes</h4></div>
                   <div className="job-spec-text">
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
@@ -591,7 +591,7 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowJsNotes(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Notes</h4></div>
+                      onClick={() => setShowJsNotes(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Notes</h4></div>
                 </div>
               ) : null )}
             </div>
@@ -600,7 +600,7 @@ export default function JobSpecView() {
           {jobSpec.Applications && jobSpec.Applications.length > 0 ? (
             showApplications ? (
               <div className={`${jobSpec.Applications[0].Discarded ? 'job-spec-discarded' : 'job-spec'}`}>
-                <div className="application-row">
+                <div>
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
@@ -646,7 +646,7 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApLetter(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Cover Letter</h4></div>
+                                onClick={() => setShowApLetter(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Cover Letter</h4></div>
                             <div className="job-spec-text">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
@@ -660,7 +660,7 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApLetter(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Cover Letter</h4></div>
+                                onClick={() => setShowApLetter(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Cover Letter</h4></div>
                           </div>
                         ) : null )}
 
@@ -669,7 +669,7 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApCV(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Resume sent</h4></div>
+                                onClick={() => setShowApCV(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Resume sent</h4></div>
                             <div className="job-spec-text">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
@@ -683,7 +683,7 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApCV(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Resume sent</h4></div>
+                                onClick={() => setShowApCV(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Resume sent</h4></div>
                           </div>
                         ) : null )}
 
@@ -692,7 +692,7 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
+                                onClick={() => setShowApNotes(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Notes</h4></div>
                             <div className="job-spec-text">
                               <ReactMarkdown
                                 remarkPlugins={[remarkGfm]}
@@ -706,11 +706,12 @@ export default function JobSpecView() {
                             <div className="job-spec-section-clickable"
                                 role="button"
                                 tabIndex={0}
-                                onClick={() => setShowApNotes(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Notes</h4></div>
+                                onClick={() => setShowApNotes(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Notes</h4></div>
                           </div>
                         ) : null )}
                       </div>
                     ) : ( null )}
+                    <hr/>
                   </div>
                 ))}
               </div>
@@ -733,7 +734,7 @@ export default function JobSpecView() {
           {jobSpec.Applications && jobSpec.Applications[0] && jobSpec.Applications[0].Interviews && jobSpec.Applications[0].Interviews.length > 0 ? (
             showInterviews ? (
               <div className="job-spec">
-                <div className="interview-row">
+                <div>
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
@@ -807,7 +808,6 @@ export default function JobSpecView() {
                           </div>
                         </div>
                       ) : (null)}
-
                       {interview.Description || interview.Analysis || interview.Notes || interview.Outcome || interview.Feedback ? (
                         <div className="job-spec-decorated">
 
@@ -816,7 +816,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInDescription(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Description</h4></div>
+                                  onClick={() => setShowInDescription(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Description</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -830,7 +830,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInDescription(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Description</h4></div>
+                                  onClick={() => setShowInDescription(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Description</h4></div>
                             </div>
                           ) : null )}
 
@@ -839,7 +839,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInAnalysis(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Recomendations</h4></div>
+                                  onClick={() => setShowInAnalysis(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Recomendations</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -853,7 +853,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInAnalysis(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Recomendations</h4></div>
+                                  onClick={() => setShowInAnalysis(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Recomendations</h4></div>
                             </div>
                           ) : null )}
 
@@ -862,7 +862,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
+                                  onClick={() => setShowInNotes(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Notes</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -876,7 +876,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInNotes(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Notes</h4></div>
+                                  onClick={() => setShowInNotes(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Notes</h4></div>
                             </div>
                           ) : null )}
 
@@ -885,7 +885,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInOutcome(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Outcome</h4></div>
+                                  onClick={() => setShowInOutcome(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Outcome</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -899,7 +899,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInOutcome(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Outcome</h4></div>
+                                  onClick={() => setShowInOutcome(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Outcome</h4></div>
                             </div>
                           ) : null )}
 
@@ -908,7 +908,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInFeedback(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Feedback</h4></div>
+                                  onClick={() => setShowInFeedback(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Feedback</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -922,13 +922,13 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowInFeedback(true)}><h4 className="section-heading"><FaRegArrowAltCircleRight /> Feedback</h4></div>
+                                  onClick={() => setShowInFeedback(true)}><h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Feedback</h4></div>
                             </div>
                           ) : null )}
                         
                         </div>
                       ) : (null)}
-
+                      <hr/>
                     </div>
                   </div>
                 ))}
@@ -950,7 +950,7 @@ export default function JobSpecView() {
           {jobSpec.Applications && jobSpec.Applications[0] && jobSpec.Applications[0].Offers && jobSpec.Applications[0].Offers.length > 0 ? (
             showOffers ? (
               <div className="job-spec">
-                <div className="offer-row">
+                <div>
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
@@ -1024,7 +1024,7 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowOfNotes(false)}><h4 className="section-heading"><FaRegArrowAltCircleDown /> Notes</h4></div>
+                                  onClick={() => setShowOfNotes(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Notes</h4></div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -1039,13 +1039,14 @@ export default function JobSpecView() {
                                   role="button"
                                   tabIndex={0}
                                   onClick={() => setShowOfNotes(true)}>
-                                <h4 className="section-heading"><FaRegArrowAltCircleRight /> Notes</h4>
+                                <h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Notes</h4>
                               </div>
                             </div>
                           )}
                         </div>
                       ) : (null)}
                     </div>
+                    <hr/>
                   </div>
                 ))}
               </div>

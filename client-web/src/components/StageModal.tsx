@@ -362,9 +362,6 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
       if (selectedWorkModelIds.length > 0 && (!item.WorkModelId || !selectedWorkModelIds.includes(item.WorkModelId))) {
         return false;
       }
-      //if (selectedTagIds.length > 0 && !selectedTagIds.some((tagId) => item.tagIds.includes(tagId))) {
-      //  return false;
-      //}
       return true;
     });
   }, [items, dateFrom, searchPosition, searchCompany, selectedRoleTypeIds, selectedWorkModelIds, selectedTagIds, stage]);

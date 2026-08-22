@@ -47,7 +47,7 @@ import {
   luRoleTypeItem,
   ContactItem, 
   } from '../defs/interfaces';
-import { Tag, luBenefit, lnkJobSpecBenefit, benefitWithNotes } from '../defs/types';
+import { Tag, luBenefit, lnkJobSpecBenefit, lnkOfferBenefit, benefitWithNotes } from '../defs/types';
 
 export default function JobSpecView() {
   const { id } = useParams();
@@ -155,7 +155,8 @@ export default function JobSpecView() {
             if (offers && offers.length > 0) {
               jobSpec.Applications[0].Offers = offers;
               for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
-                const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].id)).catch(() => []));
+                const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].Id)).catch(() => []));
+
                 jobSpec.Applications[0].Offers[i].Benefits = ofBenefits;
               }
             }
@@ -226,7 +227,8 @@ export default function JobSpecView() {
 
           if (Array.isArray(jobSpec.Applications[0].Offers) && jobSpec.Applications[0].Offers.length > 0) {
             for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
-              const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].id)).catch(() => []));
+              const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].Id)).catch(() => []));
+
               jobSpec.Applications[0].Offers[i].Benefits = ofBenefits;
             }
           }

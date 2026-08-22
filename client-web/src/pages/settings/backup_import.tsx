@@ -212,7 +212,6 @@ export default function BackupImportPage() {
           <div>
             <h2 className="settings-title"><p>Loading page...</p></h2>
           </div>
-          <button className="action-button" onClick={() => navigate(-1)}>Back</button>
         </div>
       )}
       {error && (

@@ -404,7 +404,7 @@ def import_roles_backup_payload(session: Session, payload: dict[str, Any]) -> di
                             if offer.get('Benefits') and len(offer['Benefits']) > 0:
                                 for benefit in offer['Benefits']:
                                     nLink = rolesLnkOfferBenefit()
-                                    nLink.JobSpecId = nOffer.Id
+                                    nLink.OfferId = nOffer.Id
                                     nLink.Notes = benefit["Notes"]
                                     nLink.Order = benefit["Order"]
                                     foundItem = next((item for item in lBenefits 

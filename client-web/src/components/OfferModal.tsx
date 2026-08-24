@@ -296,7 +296,7 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
       {(loading || !offerId) && offerId
         ? <p>Loading…</p>
         : (
-        <div>
+        <div className="modal-envelope">
           <div className="modal-field-date">
             <label>* Offered on</label>
             <input id="offered"

@@ -101,7 +101,7 @@ export default function SourceModal({ placeOfWorkId, title, onClose, onSuccess =
       {(isLoading || !placeOfWorkId) && placeOfWorkId
         ? <p>Loading…</p>
         : (
-        <div>
+        <div className="modal-envelope">
           <div className="modal-field">
             <select style={{ flex: 1 }} 
               required

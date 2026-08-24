@@ -179,7 +179,7 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
       {(isLoading || !interviewId) && interviewId
         ? <p>Loading…</p>
         : (
-        <div>
+        <div className="modal-envelope">
           <div className="modal-field-date">
             <label>* Scheduled for</label>
             <input id="scheduled"

@@ -254,12 +254,12 @@
   grid-template-rows: repeat(5, 1fr);
   grid-gap: 10px;
 }
+.lookup-row-tree {
+  display: list-item;
+  padding: 8px 0;
+  border-top: 1px solid var(--stage-border-bottom);
+}
 .lookup-row {
-/*
-  grid-template-columns: minmax(0, 16px) minmax(0, 900px) minmax(0, 80px);
-  align-items: start;
-  margin: 0.2em 0em 0em 0em;
-*/
   display: grid;
   grid-template-columns: 15px minmax(100px, 1fr) minmax(200px, 1fr) 150px;
   gap: 10px;

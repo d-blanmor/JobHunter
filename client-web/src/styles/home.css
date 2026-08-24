@@ -290,13 +290,13 @@
 
 .source-sublist {
   list-style: none;
-  display: inline;
+  display: list-item;
+  padding-bottom: 10px;
 }
 
 .source-subitem {
   color: var(--color-brand-primary);
-  margin-bottom: 0.5em;
-  margin-left: 1em;
+  margin: 10px 20px 10px 20px;
   font-size: 1em;
 }
 .source-subitem a {

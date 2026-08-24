@@ -114,7 +114,7 @@ export default function SourceModal({ contactId, title, onClose, onSuccess = () 
       {(isLoading || !contactId) && contactId
         ? <p>Loading…</p>
         : (
-        <div>
+        <div className="modal-envelope">
           <div className="modal-field">
             <input 
               required

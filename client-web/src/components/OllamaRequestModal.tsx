@@ -121,7 +121,7 @@ export default function SourceModal({ response, request, payload, title, onClose
       {(isLoading)
         ? <p>Loading…</p>
         : (
-        <div>
+        <div className="modal-envelope">
           <div className="modal-field">
             <ReactMarkdown>{safeValue(prompt)}</ReactMarkdown>
           </div>

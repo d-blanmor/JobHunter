@@ -305,6 +305,11 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
       IsActive: isActive,
     };
     if (jobSpecId) payload.Id = jobSpecId;
+    payload.SourceId = null;
+    payload.WorkModelId = null;
+    payload.RoleTypeId = null;
+    payload.PlaceOfWorkId = null;
+    payload.Published = null;
     if (sourceId != '') payload.SourceId = sourceId;
     if (workModelId != '') payload.WorkModelId = workModelId;
     if (roleTypeId != '') payload.RoleTypeId = roleTypeId;
@@ -496,25 +501,25 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
     else if (field.toLowerCase() == 'company') {
       setCompany(value);
     }
-    else if (field.toLowerCase() == 'sourceid') {
+    else if (field.toLowerCase() == 'source') {
       setSourceId(value ? Number(value) : '');
     }
     else if (field.toLowerCase() == 'link') {
       setLink(value);
     }
-    else if (field.toLowerCase() == 'placeofworkid') {
+    else if (field.toLowerCase() == 'placeofwork') {
       setPlaceOfWorkId(value ? Number(value) : '');
     }
-    else if (field.toLowerCase() == 'workmodelid') {
+    else if (field.toLowerCase() == 'workmodel') {
       setWorkModelId(value ? Number(value) : '');
     }
-    else if (field.toLowerCase() == 'roletypeid') {
+    else if (field.toLowerCase() == 'roletype') {
       setRoleTypeId(value ? Number(value) : '');
     }
     else if (field.toLowerCase() == 'salaryexpectation') {
       setSalaryExpectation(value);
     }
-    else if (field.toLowerCase() == 'contactid') {
+    else if (field.toLowerCase() == 'contact') {
       setContactId(value ? Number(value) : null);
     }
     else if (field.toLowerCase() == 'description') {

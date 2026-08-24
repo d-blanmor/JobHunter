@@ -119,7 +119,7 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
       {(isLoading || !sourceId) && sourceId
         ? <p>Loading…</p>
         : (
-        <div>
+        <div className="modal-envelope">
           <div className="modal-field mandatory-field">
             <input 
               value={name}

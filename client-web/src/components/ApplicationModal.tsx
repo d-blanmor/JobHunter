@@ -153,7 +153,7 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
       {(isLoading || !applicationId) && applicationId
         ? <p>Loading…</p>
         : (
-        <div>
+        <div className="modal-envelope">
 
           <div className="modal-field-date">
             <label>* Applied on</label>

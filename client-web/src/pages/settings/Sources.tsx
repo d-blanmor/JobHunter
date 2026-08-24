@@ -209,8 +209,8 @@ export default function SourcesPage() {
               {sources.length != 0 ? (
                 <>
                   {parents.map((parent, index) => (
-                    <div key={parent.Id} className="lookup-row">
-                      <div className="lookup-icon-cell">
+                    <div key={parent.Id} className="lookup-row-tree">
+                      <div className="lookup-cell">
                         {children[parent.Id] && children[parent.Id].length > 0 ? (
                           <span className="lookup-expand-span"
                             onClick={() => setExpanded((prev)=>{
@@ -223,8 +223,6 @@ export default function SourcesPage() {
                         ) : (
                           <span className="lookup-icon-cell"></span>
                         )}
-                      </div>
-                      <div className="lookup-cell">
                         <span className="settings-value">{parent.Name}</span>
                         {parent.PortalURL ? (
                           <span className="settings-text-link">
@@ -287,7 +285,7 @@ export default function SourcesPage() {
                       {expanded.has(parent.Id) && (
                       <>
                         {expanded.has(parent.Id) && (children[parent.Id]||[]).map((child, index) => (
-                          <div key={child.Id} className="lookup-row">
+                          <div key={child.Id} className="lookup-row-tree">
                             <div className="lookup-cell">
                               <span className="source-item">{child.Name}</span>
                               {child.PortalURL ? (
@@ -363,6 +361,7 @@ export default function SourcesPage() {
 
           {isModalOpen && (
             <SourceModal
+              sourceId={currentSource ? (currentSource.Id) : (null)}
               title='New Source Portal'
               onClose={() => setIsModalOpen(false)}
               onSuccess={async () => {

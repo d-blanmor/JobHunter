@@ -363,6 +363,7 @@ export default function SourcesPage() {
 
           {isModalOpen && (
             <SourceModal
+              sourceId={currentSource ? (currentSource.Id) : (null)}
               title='New Source Portal'
               onClose={() => setIsModalOpen(false)}
               onSuccess={async () => {

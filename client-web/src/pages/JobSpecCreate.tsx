@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { FaPlus, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown, FaTags, FaTimes } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm'; // Adds support for tables, strikethrough, etc.
+import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for security
 
 import { setting_keys } from '../config';
 import { isDirty, setIsDirty } from '../App';
-import { fetchAllBenefits } from '../defs/tools';
+import { fetchAllBenefits, safeValue } from '../defs/tools';
 import { newJobSpecItem, PlaceOfWorkItem } from '../defs/interfaces';
 import { Source, luWorkModel, luRoleType, PlaceOfWork, luLocation, luBenefit, Tag, lnkJobSpecTag, lnkJobSpecBenefit, benefitWithNotes } from '../defs/types';
 
@@ -36,9 +39,13 @@ export default function JobSpecCreate() {
   const [modalOpenOllamaAnalysis, setModalOpenOllamaAnalysis] = useState(false);
   const [modalOpenOllamaProfile, setModalOpenOllamaProfile] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
+  const [editableDescription, setEditableDescription] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [editableAnalysis, setEditableAnalysis] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [editableProfile, setEditableProfile] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [editableNotes, setEditableNotes] = useState(false);
   const [showCallAI, setShowCallAI] = useState(false);
     
   // Entities
@@ -778,10 +785,22 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                   <FaRegArrowAltCircleDown />
                 </span>
                 <span className='modal-field-expanded'>
-                  <textarea id="Description"
-                            value={description} 
-                            placeholder="Description of the role" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  {editableDescription ? (
+                    <textarea id="Description"
+                              value={description} 
+                              placeholder="Description of the role" 
+                              autoFocus
+                              onBlur={(e) => setEditableDescription(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  ) : (
+                    <div className='modal-field-expanded-view' onClick={() => setEditableDescription(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={description && description !== '' ? safeValue(description) : "```Description of the role```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -793,14 +812,25 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                         setShowAnalysis(false);
                         setShowProfile(false);
                         setShowNotes(false)}}>
-
                   <FaRegArrowAltCircleRight />
                 </span>
                 <span className='modal-field'>
-                  <textarea id="Description"
-                            value={description} 
-                            placeholder="Description of the role" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  {editableDescription ? (
+                    <textarea id="Description"
+                              value={description} 
+                              placeholder="Description of the role" 
+                              autoFocus
+                              onBlur={(e) => setEditableDescription(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  ) : (
+                    <div className='modal-field-view' onClick={() => setEditableDescription(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={description && description !== '' ? safeValue(description) : "```Description of the role```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -818,10 +848,22 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                   <FaRegArrowAltCircleDown />
                 </span>
                 <span className='modal-field-expanded'>
-                  <textarea id="Analysis"
-                            value={analysis} 
-                            placeholder="Analysis of the role spec" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  {editableAnalysis ? (
+                    <textarea id="Analysis"
+                              value={analysis} 
+                              placeholder="Analysis of the role spec" 
+                              autoFocus
+                              onBlur={(e) => setEditableAnalysis(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  ) : (
+                    <div className='modal-field-expanded-view' onClick={() => setEditableAnalysis(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={analysis && analysis !== '' ? safeValue(analysis) : "```Analysis of the role spec```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 {showCallAI ? (
                   <span className="modal-field">
@@ -845,10 +887,22 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                   <FaRegArrowAltCircleRight />
                 </span>
                 <span className='modal-field'>
-                  <textarea id="Analysis"
-                            value={analysis} 
-                            placeholder="Analysis of the role spec" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  {editableAnalysis ? (
+                    <textarea id="Analysis"
+                              value={analysis} 
+                              placeholder="Analysis of the role spec" 
+                              autoFocus
+                              onBlur={(e) => setEditableAnalysis(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  ) : (
+                    <div className='modal-field-view' onClick={() => setEditableAnalysis(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={analysis && analysis !== '' ? safeValue(analysis) : "```Analysis of the role spec```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 {showCallAI ? (
                   <span className="modal-field">
@@ -874,10 +928,22 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                   <FaRegArrowAltCircleDown />
                 </span>
                 <span className='modal-field-expanded'>
-                  <textarea id="Profile"
-                            value={profile} 
-                            placeholder="Profile match to the role specification" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  {editableProfile ? (
+                    <textarea id="Profile"
+                              value={profile} 
+                              placeholder="Profile match to the role specification" 
+                              autoFocus
+                              onBlur={(e) => setEditableProfile(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  ) : (
+                    <div className='modal-field-expanded-view' onClick={() => setEditableProfile(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={profile && profile !== '' ? safeValue(profile) : "```Profile match to the role specification```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 {showCallAI ? (
                   <span className="modal-field">
@@ -901,10 +967,22 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                   <FaRegArrowAltCircleRight />
                 </span>
                 <span className='modal-field'>
-                  <textarea id="Profile"
-                            value={profile} 
-                            placeholder="Profile match to the role specification" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  {editableProfile ? (
+                    <textarea id="Profile"
+                              value={profile} 
+                              placeholder="Profile match to the role specification" 
+                              autoFocus
+                              onBlur={(e) => setEditableProfile(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  ) : (
+                    <div className='modal-field-view' onClick={() => setEditableProfile(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={profile && profile !== '' ? safeValue(profile) : "```Profile match to the role specification```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 {showCallAI ? (
                   <span className="modal-field">
@@ -930,10 +1008,22 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                   <FaRegArrowAltCircleDown />
                 </span>
                 <span className='modal-field-expanded'>
-                  <textarea id="notes"
-                            value={notes} 
-                            placeholder="Notes about the role" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  {editableNotes ? (
+                    <textarea id="notes"
+                              value={notes} 
+                              placeholder="Notes about the role" 
+                              autoFocus
+                              onBlur={(e) => setEditableNotes(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  ) : (
+                    <div className='modal-field-expanded-view' onClick={() => setEditableNotes(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={notes && notes !== '' ? safeValue(notes) : "```Notes about the role```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className='modal-field'></span>
               </span>
@@ -949,10 +1039,22 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                   <FaRegArrowAltCircleRight />
                 </span>
                 <span className='modal-field'>
-                  <textarea id="notes"
-                            value={notes} 
-                            placeholder="Notes about the role" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  {editableNotes ? (
+                    <textarea id="notes"
+                              value={notes} 
+                              placeholder="Notes about the role" 
+                              autoFocus
+                              onBlur={(e) => setEditableNotes(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)} />
+                  ) : (
+                    <div className='modal-field-view' onClick={() => setEditableNotes(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={notes && notes !== '' ? safeValue(notes) : "```Notes about the role```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className='modal-field'></span>
               </span>

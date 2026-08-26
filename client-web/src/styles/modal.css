@@ -119,6 +119,7 @@
 .modal-field button {
   margin: 0px 0px 0px 10px;
 }
+.modal-field-view,
 .modal-field textarea {
   width: 893px;
   min-height: 50px;
@@ -134,6 +135,7 @@
   border-width: 3px;
   font-weight: bold;
 }
+.modal-field-expanded-view,
 .modal-field-expanded textarea {
   width: 893px;
   min-height: 500px;

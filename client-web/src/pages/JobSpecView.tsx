@@ -76,6 +76,7 @@ export default function JobSpecView() {
   const [showInOutcome, setShowInOutcome] = useState(false);
   const [showInFeedback, setShowInFeedback] = useState(false);
   const [showOffers, setShowOffers] = useState(false);
+  const [showOfDescription, setShowOfDescription] = useState(false);
   const [showOfNotes, setShowOfNotes] = useState(false);
 
   // Entities
@@ -1016,6 +1017,35 @@ export default function JobSpecView() {
                           <span className="job-spec-label">Benefits</span>
                         </div>
                       )}
+
+                      {offer.Description  ? (
+                        <div className="job-spec-decorated">
+                          {showOfDescription ? (
+                            <div className="job-spec job-spec-textarea-section">
+                              <div className="job-spec-section-clickable"
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() => setShowOfDescription(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Description</h4></div>
+                              <div className="job-spec-text">
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkGfm]}
+                                  rehypePlugins={[rehypeSanitize]}
+                                  children={safeValue(offer.Description)}
+                                />
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="job-spec job-spec-textarea-section">
+                              <div className="job-spec-section-clickable"
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={() => setShowOfDescription(true)}>
+                                <h4 className="job-spec-section"><FaRegArrowAltCircleRight /> Description</h4>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (null)}
 
                       {offer.Notes  ? (
                         <div className="job-spec-decorated">

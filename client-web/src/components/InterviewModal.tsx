@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react';
 import { FaPlus, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
-import Modal from './Modal'; // your existing modal component
-import ContactModal from '../components/ContactModal';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm'; // Adds support for tables, strikethrough, etc.
+import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for security
+
+import { newInterviewItem, InterviewItem, ApplicationItem, JobSpecItem, ContactItem } from '../defs/interfaces';
+import { formatFieldDateTime, safeValue } from '../defs/tools'
+import { isDirty, setIsDirty } from '../App';
+
 import { getJobSpec } from '../api/jobSpecs';
 import { getApplication } from '../api/applications';
 import { getInterview, saveInterview} from '../api/interviews';
 import { listContacts } from '../api/contacts';
-import { newInterviewItem, InterviewItem, ApplicationItem, JobSpecItem, ContactItem } from '../defs/interfaces';
-import { formatFieldDateTime } from '../defs/tools'
-import { isDirty, setIsDirty } from '../App';
+
+import Modal from './Modal'; // your existing modal component
+import ContactModal from '../components/ContactModal';
 
 type Props = {
   /** id of the interview to edit; null or undefined means create new */
@@ -25,10 +31,15 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
   const [error, setError] = useState<string | null>(null);
 
   const [modalOpenContact, setModalOpenContact] = useState(false);
+  const [editableDescription, setEditableDescription] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
+  const [editableNotes, setEditableNotes] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [editableAnalysis, setEditableAnalysis] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(false);
+  const [editableOutcome, setEditableOutcome] = useState(false);
   const [showOutcome, setShowOutcome] = useState(false);
+  const [editableFeedback, setEditableFeedback] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   // form fields – initialise to empty values
   // Entities
@@ -222,10 +233,22 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
                   <FaRegArrowAltCircleDown />
                 </span>
                 <span className='modal-field-expanded'>
-                  <textarea id="Description"
-                            value={description} 
-                            placeholder="Description of the interview" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableDescription ? (
+                    <textarea id="Description"
+                              value={description} 
+                              placeholder="Description of the interview" 
+                              autoFocus
+                              onBlur={(e) => setEditableDescription(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-expanded-view' onClick={() => setEditableDescription(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={description && description !== '' ? safeValue(description) : "```Description of the interview```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -242,10 +265,22 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
                   <FaRegArrowAltCircleRight />
                 </span>
                 <span className='modal-field'>
-                  <textarea id="Description"
-                            value={description} 
-                            placeholder="Description of the interview" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableDescription ? (
+                    <textarea id="Description"
+                              value={description} 
+                              placeholder="Description of the interview" 
+                              autoFocus
+                              onBlur={(e) => setEditableDescription(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-view' onClick={() => setEditableDescription(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={description && description !== '' ? safeValue(description) : "```Description of the interview```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -263,10 +298,22 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
                   <FaRegArrowAltCircleDown />
                 </span>
                 <span className='modal-field-expanded'>
-                  <textarea id="notes"
-                            value={notes} 
-                            placeholder="Notes about the interview" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableNotes ? (
+                    <textarea id="notes"
+                              value={notes} 
+                              placeholder="Notes about the interview" 
+                              autoFocus
+                              onBlur={(e) => setEditableNotes(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-expanded-view' onClick={() => setEditableNotes(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={notes && notes !== '' ? safeValue(notes) : "```Notes about the interview```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -283,10 +330,22 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
                   <FaRegArrowAltCircleRight />
                 </span>
                 <span className='modal-field'>
-                  <textarea id="notes"
-                            value={notes} 
-                            placeholder="Notes about the interview" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableNotes ? (
+                    <textarea id="notes"
+                              value={notes} 
+                              placeholder="Notes about the interview" 
+                              autoFocus
+                              onBlur={(e) => setEditableNotes(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-view' onClick={() => setEditableNotes(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={notes && notes !== '' ? safeValue(notes) : "```Notes about the interview```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -306,10 +365,22 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
                       <FaRegArrowAltCircleDown />
                     </span>
                     <span className='modal-field-expanded'>
-                      <textarea id="analysis"
-                                value={analysis} 
-                                placeholder="Analysis and tips for the interview" 
-                                onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      {editableAnalysis ? (
+                        <textarea id="analysis"
+                                  value={analysis} 
+                                  placeholder="Analysis and tips for the interview" 
+                                  autoFocus
+                                  onBlur={(e) => setEditableAnalysis(false)}
+                                  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      ) : (
+                        <div className='modal-field-expanded-view' onClick={() => setEditableAnalysis(true)}>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeSanitize]}
+                            children={analysis && analysis !== '' ? safeValue(analysis) : "```Analysis and tips for the interview```"}
+                          />
+                        </div>
+                      )}
                     </span>
                     <span className="modal-field"></span>
                   </span>
@@ -325,10 +396,22 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
                       <FaRegArrowAltCircleRight />
                     </span>
                     <span className='modal-field'>
-                      <textarea id="analysis"
-                                value={analysis} 
-                                placeholder="Analysis and tips for the interview" 
-                                onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      {editableAnalysis ? (
+                        <textarea id="analysis"
+                                  value={analysis} 
+                                  placeholder="Analysis and tips for the interview" 
+                                  autoFocus
+                                  onBlur={(e) => setEditableAnalysis(false)}
+                                  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      ) : (
+                        <div className='modal-field-view' onClick={() => setEditableAnalysis(true)}>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeSanitize]}
+                            children={analysis && analysis !== '' ? safeValue(analysis) : "```Analysis and tips for the interview```"}
+                          />
+                        </div>
+                      )}
                     </span>
                     <span className="modal-field"></span>
                   </span>
@@ -346,10 +429,22 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
                       <FaRegArrowAltCircleDown />
                     </span>
                     <span className='modal-field-expanded'>
-                      <textarea id="outcome"
-                                value={outcome} 
-                                placeholder="Outcome of the interview" 
-                                onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      {editableOutcome ? (
+                        <textarea id="outcome"
+                                  value={outcome} 
+                                  placeholder="Outcome of the interview" 
+                                  autoFocus
+                                  onBlur={(e) => setEditableOutcome(false)}
+                                  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      ) : (
+                        <div className='modal-field-expanded-view' onClick={() => setEditableOutcome(true)}>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeSanitize]}
+                            children={outcome && outcome !== '' ? safeValue(outcome) : "```Outcome of the interview```"}
+                          />
+                        </div>
+                      )}
                     </span>
                     <span className="modal-field"></span>
                   </span>
@@ -365,10 +460,22 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
                       <FaRegArrowAltCircleRight />
                     </span>
                     <span className='modal-field'>
-                      <textarea id="outcome"
-                                value={outcome} 
-                                placeholder="Outcome of the interview" 
-                                onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      {editableOutcome ? (
+                        <textarea id="outcome"
+                                  value={outcome} 
+                                  placeholder="Outcome of the interview" 
+                                  autoFocus
+                                  onBlur={(e) => setEditableOutcome(false)}
+                                  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      ) : (
+                        <div className='modal-field-view' onClick={() => setEditableOutcome(true)}>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeSanitize]}
+                            children={outcome && outcome !== '' ? safeValue(outcome) : "```Outcome of the interview```"}
+                          />
+                        </div>
+                      )}
                     </span>
                     <span className="modal-field"></span>
                   </span>
@@ -386,10 +493,22 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
                       <FaRegArrowAltCircleDown />
                     </span>
                     <span className='modal-field-expanded'>
-                      <textarea id="feedback"
-                                value={feedback} 
-                                placeholder="Feedback from interviewer" 
-                                onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      {editableFeedback ? (
+                        <textarea id="feedback"
+                                  value={feedback} 
+                                  placeholder="Feedback from interviewer" 
+                                  autoFocus
+                                  onBlur={(e) => setEditableFeedback(false)}
+                                  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      ) : (
+                        <div className='modal-field-expanded-view' onClick={() => setEditableFeedback(true)}>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeSanitize]}
+                            children={feedback && feedback !== '' ? safeValue(feedback) : "```Feedback from interviewer```"}
+                          />
+                        </div>
+                      )}
                     </span>
                     <span className="modal-field"></span>
                   </span>
@@ -405,10 +524,22 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
                       <FaRegArrowAltCircleRight />
                     </span>
                     <span className='modal-field'>
-                      <textarea id="feedback"
-                                value={feedback} 
-                                placeholder="Feedback from interviewer" 
-                                onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      {editableFeedback ? (
+                        <textarea id="feedback"
+                                  value={feedback} 
+                                  placeholder="Feedback from interviewer" 
+                                  autoFocus
+                                  onBlur={(e) => setEditableFeedback(false)}
+                                  onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                      ) : (
+                        <div className='modal-field-view' onClick={() => setEditableFeedback(true)}>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeSanitize]}
+                            children={feedback && feedback !== '' ? safeValue(feedback) : "```Feedback from interviewer```"}
+                          />
+                        </div>
+                      )}
                     </span>
                     <span className="modal-field"></span>
                   </span>

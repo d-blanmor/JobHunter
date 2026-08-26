@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { FaPlus, FaTimes, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm'; // Adds support for tables, strikethrough, etc.
+import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for security
 
 import { newOfferItem, OfferItem, JobSpecItem, ApplicationItem, luBenefitItem } from '../defs/interfaces';
 import { luBenefit, lnkOfferBenefit, benefitWithNotes } from '../defs/types';
-
-import { formatFieldDate } from '../defs/tools'
+import { formatFieldDate, safeValue } from '../defs/tools'
 import { isDirty, setIsDirty } from '../App';
 
 import { listBenefits, getBenefit, getBenefitByName, saveBenefit } from '../api/lu_benefits';
@@ -28,7 +30,9 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
   const [loading, setLoading] = useState<boolean>(!!offerId);
   const [error, setError] = useState<string | null>(null);
 
+  const [editableDescription, setEditableDescription] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
+  const [editableNotes, setEditableNotes] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
 
   // form fields – initialise to empty values
@@ -371,10 +375,22 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
                   <FaRegArrowAltCircleDown />
                 </span>
                 <span className='modal-field-expanded'>
-                  <textarea id="Description"
-                          value={description} 
-                          placeholder="Description of the offer" 
-                          onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableDescription ? (
+                    <textarea id="Description"
+                            value={description} 
+                            placeholder="Description of the offer" 
+                            autoFocus
+                            onBlur={(e) => setEditableDescription(false)}
+                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-expanded-view' onClick={() => setEditableDescription(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={description && description !== '' ? safeValue(description) : "```Description of the offer```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -387,10 +403,22 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
                   <FaRegArrowAltCircleRight />
                 </span>
                 <span className='modal-field'>
-                  <textarea id="Description"
-                          value={description} 
-                          placeholder="Description of the offer" 
-                          onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableDescription ? (
+                    <textarea id="Description"
+                              value={description} 
+                              placeholder="Description of the offer" 
+                              autoFocus
+                              onBlur={(e) => setEditableDescription(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-view' onClick={() => setEditableDescription(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={description && description !== '' ? safeValue(description) : "```Description of the offer```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -405,10 +433,22 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
                   <FaRegArrowAltCircleDown />
                 </span>
                 <span className='modal-field-expanded'>
-                  <textarea id="notes"
-                            value={notes} 
-                            placeholder="Notes about the offer" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableNotes ? (
+                    <textarea id="notes"
+                              value={notes} 
+                              placeholder="Notes about the offer" 
+                              autoFocus
+                              onBlur={(e) => setEditableNotes(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-expanded-view' onClick={() => setEditableNotes(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={notes && notes !== '' ? safeValue(notes) : "```Notes about the offer```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -421,10 +461,22 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
                   <FaRegArrowAltCircleRight />
                 </span>
                 <span className='modal-field'>
-                  <textarea id="notes"
-                            value={notes} 
-                            placeholder="Notes about the offer" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableNotes ? (
+                    <textarea id="notes"
+                              value={notes} 
+                              placeholder="Notes about the offer" 
+                              autoFocus
+                              onBlur={(e) => setEditableNotes(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-view' onClick={() => setEditableNotes(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={notes && notes !== '' ? safeValue(notes) : "```Notes about the offer```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>

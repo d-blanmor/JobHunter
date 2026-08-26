@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm'; // Adds support for tables, strikethrough, etc.
+import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for security
 
 import { setting_keys } from '../config';
+import { isDirty, setIsDirty } from '../App';
+import { formatFieldDate, safeValue } from '../defs/tools'
+import { newApplicationItem, ApplicationItem, JobSpecItem } from '../defs/interfaces';
+
 import { getJobSpec } from '../api/jobSpecs';
 import { getApplication, saveApplication} from '../api/applications';
-import { newApplicationItem, ApplicationItem, JobSpecItem } from '../defs/interfaces';
-import { formatFieldDate } from '../defs/tools'
-import { isDirty, setIsDirty } from '../App';
 
 import Modal from './Modal';
 import OllamaRequestModal from '../components/OllamaRequestModal'
@@ -27,8 +31,11 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
 
   const [modalOpenOllamaLetter, setModalOpenOllamaLetter] = useState(false);
   const [showLetter, setShowLetter] = useState(false);
+  const [editableLetter, setEditableLetter] = useState(false);
   const [showCV, setShowCV] = useState(false);
+  const [editableCV, setEditableCV] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [editableNotes, setEditableNotes] = useState(false);
   const [showCallAI, setShowCallAI] = useState(false);
 
   // form fields – initialise to empty values
@@ -177,10 +184,22 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
                   <FaRegArrowAltCircleDown />
                 </span>
                 <span className='modal-field-expanded'>
-                  <textarea id="letter"
-                            value={letter} 
-                            placeholder="Application letter used" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableLetter ? (
+                    <textarea id="letter"
+                              value={letter} 
+                              placeholder="Application letter used" 
+                              autoFocus
+                              onBlur={(e) => setEditableLetter(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-expanded-view' onClick={() => setEditableLetter(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={letter && letter !== '' ? safeValue(letter) : "```Application letter used```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field">
                   <button className="button" 
@@ -201,10 +220,22 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
                   <FaRegArrowAltCircleRight />
                 </span>
                 <span className='modal-field'>
-                  <textarea id="letter"
-                            value={letter} 
-                            placeholder="Application letter used" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableLetter ? (
+                    <textarea id="letter"
+                              value={letter} 
+                              autoFocus
+                              onBlur={(e) => setEditableLetter(false)}
+                              placeholder="Application letter used" 
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-view' onClick={() => setEditableLetter(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={letter && letter !== '' ? safeValue(letter) : "```Application letter used```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field">
                   <button className="button" 
@@ -227,10 +258,22 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
                   <FaRegArrowAltCircleDown />
                 </span>
                 <span className='modal-field-expanded'>
-                  <textarea id="cv"
-                            value={cV} 
-                            placeholder="Resume sent" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableCV ? (
+                    <textarea id="cv"
+                              value={cV} 
+                              autoFocus
+                              onBlur={(e) => setEditableCV(false)}
+                              placeholder="Resume sent" 
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-expanded-view' onClick={() => setEditableCV(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={cV && cV !== '' ? safeValue(cV) : "```Resume sent```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -244,10 +287,22 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
                   <FaRegArrowAltCircleRight />
                 </span>
                 <span className='modal-field'>
-                  <textarea id="cv"
-                            value={cV} 
-                            placeholder="Resume sent" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableCV ? (
+                    <textarea id="cv"
+                              value={cV} 
+                              placeholder="Resume sent" 
+                              autoFocus
+                              onBlur={(e) => setEditableCV(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-view' onClick={() => setEditableCV(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={cV && cV !== '' ? safeValue(cV) : "```Resume sent```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -263,10 +318,22 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
                   <FaRegArrowAltCircleDown />
                 </span>
                 <span className='modal-field-expanded'>
-                  <textarea id="notes"
-                            value={notes} 
-                            placeholder="Notes about the application" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableNotes ? (
+                    <textarea id="notes"
+                              value={notes} 
+                              placeholder="Notes about the application" 
+                              autoFocus
+                              onBlur={(e) => setEditableNotes(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-expanded-view' onClick={() => setEditableNotes(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={notes && notes !== '' ? safeValue(notes) : "```Notes about the application```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -280,10 +347,22 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
                   <FaRegArrowAltCircleRight />
                 </span>
                 <span className='modal-field'>
-                  <textarea id="notes"
-                            value={notes} 
-                            placeholder="Notes about the application" 
-                            onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  {editableNotes ? (
+                    <textarea id="notes"
+                              value={notes} 
+                              placeholder="Notes about the application" 
+                              autoFocus
+                              onBlur={(e) => setEditableNotes(false)}
+                              onChange={(e) => handleFieldEdit(e.target.id, e.target.value)}/>
+                  ) : (
+                    <div className='modal-field-view' onClick={() => setEditableNotes(true)}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeSanitize]}
+                        children={notes && notes !== '' ? safeValue(notes) : "```Notes about the application```"}
+                      />
+                    </div>
+                  )}
                 </span>
                 <span className="modal-field"></span>
               </span>

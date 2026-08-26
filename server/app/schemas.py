@@ -137,6 +137,13 @@ class genericResponse(BaseModel):
     state: int
     message: Optional[str] = None
 
+class ollamaResponseBase(genericResponse):
+    completed: Optional[bool] = None
+    done: Optional[bool] = None
+    done_reason: Optional[str] = None
+    context: Optional[str] = None
+    thinking: Optional[str] = None
+
 class ollamaModelBase(BaseModel):
     Key: str = None
     Name: str = None

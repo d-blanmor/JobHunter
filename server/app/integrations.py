@@ -7,7 +7,7 @@ from ollama import Client, Message
 
 from app.config import ollama_url_tag, ollama_api_key_tag, ollama_model_tag, ollama_sys_prompt_tag, ollama_knowledge_source_tag
 from app.models import appSetting
-from app.schemas import ollamaModelBase, OllamaModelsResponse, genericResponse
+from app.schemas import ollamaModelBase, OllamaModelsResponse, ollamaResponseBase
 from app.dependencies import get_appSetting_or_404
 
 def __ollama_helper (ollamaHost: str, ollamaApiKey: str | None) -> Client:
@@ -59,7 +59,7 @@ def _get_ollama_models_or_404(session: Session) -> OllamaModelsResponse:
             message=str(e)
         )
 
-def _get_ollama_generate_or_404(session: Session, request: str, payload: str, addKnowledge: bool | None = None) -> genericResponse:
+def _get_ollama_generate_or_404(session: Session, request: str, payload: str, addKnowledge: bool | None = None) -> ollamaResponseBase:
     try:
         ollamaHost = get_appSetting_or_404(session, appSetting, ollama_url_tag(), True).Value
         ollamaModel = get_appSetting_or_404(session, appSetting, ollama_model_tag(), True).Value
@@ -76,15 +76,28 @@ def _get_ollama_generate_or_404(session: Session, request: str, payload: str, ad
         userPrompt = userPrompt + '\n\n' + request + '\n\n' + payload
 
         outcome = client.generate(model=ollamaModel, system=systemPrompt, prompt=userPrompt)
-        return genericResponse(
-            outcome=outcome.response if outcome else "",
-            state=200,
-            message=None
-        )
+        if outcome:
+            return ollamaResponseBase(
+                completed   = outcome.completed,
+                done        = outcome.done,
+                done_reason = outcome.done_reason,
+                context     = ",".join(map(str, outcome.context)),
+                thinking    = outcome.thinking,
+                outcome     = outcome.response, 
+                state       = 200,
+                message     = None
+            )
+        else:
+            return ollamaResponseBase(
+                outcome="",
+                state=200,
+                message=None
+            )
+
     except HTTPException as e:
         raise e
     except Exception as e:
-        return genericResponse(
+        return ollamaResponseBase(
             outcome="",
             state=500,
             message=str(e)

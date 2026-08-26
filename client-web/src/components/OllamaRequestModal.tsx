@@ -2,6 +2,8 @@ import { setting_keys } from '../config';
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm'; // Adds support for tables, strikethrough, etc.
+import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for security
 
 import { ollamaCheckJobSpec, ollamaCheckJobSpecProfile, ollamaCoverLetter } from '../api/integrations/ollama';
 import { getSetting } from '../api/app_settings';
@@ -24,6 +26,7 @@ export default function SourceModal({ response, request, payload, title, onClose
   const [prompt, setPrompt] = useState <string | null>(null);
 
   // form fields – initialise to empty values
+  const [editableResponse, setEditableResponse] = useState(false);
   const [ollamaResponse, setOllamaResponse] = useState<string>('');
   
   /* ---------- Load data for editing ----------------------------------- */
@@ -153,13 +156,25 @@ export default function SourceModal({ response, request, payload, title, onClose
 
           {!processing && ollamaResponse && ollamaResponse != '' ? (
             <div className="modal-field">
-              <span className='modal-field-expanded'>
-                <textarea
-                  placeholder="Response from AI"
-                  value={ollamaResponse}
-                  onChange={(e) => setOllamaResponse(e.target.value)}
-                />
-              </span>
+              {editableResponse ? (
+                <span className='modal-field-expanded'>
+                  <textarea
+                    placeholder="Response from AI"
+                    value={ollamaResponse}
+                    autoFocus
+                    onBlur={(e) => setEditableResponse(false)}
+                    onChange={(e) => setOllamaResponse(e.target.value)}
+                  />
+                </span>
+              ) : (
+                <div className='modal-field-expanded-view' onClick={() => setEditableResponse(true)}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeSanitize]}
+                    children={response && response !== '' ? safeValue(response) : "```Response from AI```"}
+                  />
+                </div>
+              )}
             </div>
           ) : (<></>)}
 

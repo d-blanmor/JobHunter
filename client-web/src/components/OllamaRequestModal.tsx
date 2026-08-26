@@ -171,7 +171,7 @@ export default function SourceModal({ response, request, payload, title, onClose
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeSanitize]}
-                    children={response && response !== '' ? safeValue(response) : "```Response from AI```"}
+                    children={ollamaResponse && ollamaResponse !== '' ? safeValue(ollamaResponse) : "```Response from AI```"}
                   />
                 </div>
               )}

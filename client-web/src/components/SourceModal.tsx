@@ -42,6 +42,7 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
         if (!mounted) return;
         const mainSources = Array.isArray(lMainSources) ? lMainSources : (lMainSources?.data ?? [])
         setMainSources(mainSources);
+        setOrder(lMainSources.length);
 
         if (sourceId) { 
           // load the Source to be editted
@@ -85,7 +86,7 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
       Icon: null,
       Details: details.trim() || undefined,
       IsActive: true,
-      Order: 0,
+      Order: order,
     };
     if (sourceId) payload.Id = Number(sourceId);
 
@@ -182,6 +183,14 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
                 <span className="modal-field"></span>
               </span>
             )}
+          </div>
+
+          <div className="modal-field-numeric">
+            <input 
+              value={order}
+              type="number"
+              placeholder="Order"
+              onChange={(e) => setOrder(parseInt(e.target.value))} />
           </div>
 
           <div className="modal-actions">

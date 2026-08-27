@@ -90,6 +90,15 @@
   color: var(--color-brand-primary);
   margin: 0px 10px 0px 0px;
 }
+.modal-field-numeric input {
+  width: 100px;
+  margin: 5px 0px 5px 0px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-border-default);
+  border-radius: 10px;
+  background: var(--color-background-page);
+  color: var(--color-brand-primary);
+}
 .modal-field select {
   width: 940px;
   margin: 5px 0px 5px 0px;

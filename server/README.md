@@ -519,6 +519,19 @@ Here is a list of the current APIs deffinitions:
   | List Job Specs Offer      | `/v1/workflow/stages/offer`     | GET     |
   | List Job Specs Discarded  | `/v1/workflow/stages/discarded` | GET     |
 
+- `app\routers\integrations\ollama.py`:
+
+  | Name                      | Command                                           | Method  |
+  |---------------------------|---------------------------------------------------|---------|
+  
+  | List available models     | `/v1/external/ollama/get-models`                  | GET     |
+  | Analyse Jobspec           | `/v1/external/ollama/check-jobspec`               | POST    |
+  | Match Jobspec and profile | `/v1/external/ollama/check-jobspec-profile`       | POST    |
+  | Create cover letter       | `/v1/external/ollama/get-coverletter`             | POST    |
+  | Index context             | `/v1/external/ollama/index-context`               | POST    |
+  | Index profile             | `/v1/external/ollama/index-profile`               | POST    |
+  | Index jobspec             | `/v1/external/ollama/index-jobspec/{job_spec_id}` | POST    |
+
 ---
 
 ## Testing

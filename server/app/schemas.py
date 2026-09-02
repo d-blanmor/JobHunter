@@ -155,3 +155,9 @@ class OllamaModelsResponse(BaseModel):
 
 class OllamaJobspecRequest(BaseModel):
     jobspec: str
+
+class VectorIndexRequest(BaseModel):
+    text: str
+    entity_type: str = "job_spec"
+    entity_id: Optional[str] = None
+    label: Optional[str] = None

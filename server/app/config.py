@@ -12,6 +12,12 @@ def conf_dbtype() -> str:
 def conf_db() -> str:
     return config.get('data', 'db');
 
+def ollama_vector_store() -> str:
+    return config.get('ollama', 'vectorstore');
+
+def ollama_embedding_model() -> str:
+    return config.get('ollama', 'embeddingmodel');
+
 def ollama_url_tag() -> str:
     return 'OLLAMA_URL';
 

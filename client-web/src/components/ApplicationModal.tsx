@@ -72,6 +72,7 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
         }
         if (mounted && jobSpecId) {
           setJobSpec(await getJobSpec(jobSpecId));
+          setShowCallAI(true);
         }
     } catch (err) {
         if (mounted)
@@ -174,6 +175,16 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
           </div>
 
           <div className="modal-table">
+            {showCallAI ? (
+              <span className="modal-ollama-field">
+                <button className="button" 
+                        onClick={() => {
+                                  setModalOpenOllamaLetter(true);
+                                }}
+                >Analyse with AI</button>
+              </span>
+            ) : ('')}
+
             {showLetter ? (
               <span className="modal-row">
                 <span className='modal-field' style={{ 'marginTop': '10px' }} 
@@ -200,13 +211,6 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
                       />
                     </div>
                   )}
-                </span>
-                <span className="modal-field">
-                  <button className="button" 
-                          onClick={() => {
-                                    setModalOpenOllamaLetter(true);
-                                  }}
-                  >Ask AI</button>
                 </span>
                 <span className="modal-field"></span>
               </span>
@@ -236,13 +240,6 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
                       />
                     </div>
                   )}
-                </span>
-                <span className="modal-field">
-                  <button className="button" 
-                          onClick={() => {
-                                    setModalOpenOllamaLetter(true);
-                                  }}
-                  >Ask AI</button>
                 </span>
                 <span className="modal-field"></span>
               </span>

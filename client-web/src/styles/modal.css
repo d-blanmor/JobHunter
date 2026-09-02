@@ -118,6 +118,7 @@
 }
 .modal-field button {
   margin: 0px 0px 0px 10px;
+  cursor: pointer;
 }
 .modal-field-view {
   width: 893px;
@@ -193,6 +194,18 @@
   box-shadow: 0 2px 2px var(--color-brand-secondary);
 }
 
+.modal-ollama-field button {
+  width: 940px;
+  margin: 10px 0px 10px 10px;
+  background: var(--color-background-button);
+  color: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+  cursor: pointer;
+  border-style:inset;
+}
+.modal-ollama-field button:hover {
+  box-shadow: 0 1px 10px var(--color-brand-secondary);
+}
 .modal-actions {
   display: flex;
   justify-content: flex-end;

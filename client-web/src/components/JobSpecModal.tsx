@@ -200,6 +200,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
               setTags(nTags);
             }
             setLAddBenefits(ingestBenefits(jsBenefits));
+            setShowCallAI(description != "");
           }
         } catch (err) {
           if (mounted)
@@ -531,6 +532,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
     }
     else if (field.toLowerCase() == 'description') {
       setDescription(value);
+      setShowCallAI(description != "");
     }
     else if (field.toLowerCase() == 'analysis') {
       setAnalysis(value);
@@ -891,6 +893,16 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
               </span>
             )}
 
+            {showCallAI ? (
+              <span className="modal-ollama-field">
+                <button className="button" 
+                        onClick={() => {
+                                  setModalOpenOllamaAnalysis(true);
+                                }}
+                >Analyse with AI</button>
+              </span>
+            ) : ('')}
+
             {showAnalysis ? (
               <span className="modal-row">
                 <span className='modal-field' 
@@ -919,13 +931,6 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
                       />
                     </div>
                   )}
-                </span>
-                <span className="modal-field">
-                  <button className="button" 
-                          onClick={() => {
-                                    setModalOpenOllamaAnalysis(true);
-                                  }}
-                  >Ask AI</button>
                 </span>
               </span>
             ) : (
@@ -956,13 +961,6 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
                       />
                     </div>
                   )}
-                </span>
-                <span className="modal-field">
-                  <button className="button" 
-                          onClick={() => {
-                                    setModalOpenOllamaAnalysis(true);
-                                  }}
-                  >Ask AI</button>
                 </span>
               </span>
             )}
@@ -996,13 +994,6 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
                     </div>
                   )}
                 </span>
-                <span className="modal-field">
-                  <button className="button" 
-                          onClick={() => {
-                                    setModalOpenOllamaProfile(true);
-                                  }}
-                  >Ask AI</button>
-                </span>
               </span>
             ) : (
               <span className="modal-row">
@@ -1032,13 +1023,6 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
                       />
                     </div>
                   )}
-                </span>
-                <span className="modal-field">
-                  <button className="button" 
-                          onClick={() => {
-                                    setModalOpenOllamaProfile(true);
-                                  }}
-                  >Ask AI</button>
                 </span>
               </span>
             )}

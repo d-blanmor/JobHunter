@@ -8,7 +8,7 @@ import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for se
 import { setting_keys } from '../config';
 import { isDirty, setIsDirty } from '../App';
 import { fetchAllBenefits, safeValue } from '../defs/tools';
-import { newJobSpecItem, PlaceOfWorkItem } from '../defs/interfaces';
+import { newJobSpecItem, PlaceOfWorkItem, SourceItem } from '../defs/interfaces';
 import { Source, luWorkModel, luRoleType, PlaceOfWork, luLocation, luBenefit, Tag, lnkJobSpecTag, lnkJobSpecBenefit, benefitWithNotes } from '../defs/types';
 
 import { listLocations } from '../api/lu_locations';
@@ -20,7 +20,6 @@ import { listSources } from '../api/sources';
 import { listContacts } from '../api/contacts';
 import { saveJobSpec, saveJobSpecTag, saveJobSpecBenefit } from '../api/jobSpecs';
 import { getTagByContext, getTagByNameContext, saveTag } from '../api/tags';
-import { SourceItem } from '../defs/interfaces';
 import { ollamaCheckJobSpec } from '../api/integrations/ollama';
 
 import SourceModal from '../components/SourceModal';
@@ -836,6 +835,16 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
               </span>
             )}
 
+            {showCallAI ? (
+              <span className="modal-ollama-field">
+                <button className="button" 
+                        onClick={() => {
+                                  setModalOpenOllamaAnalysis(true);
+                                }}
+                >Analyse with AI</button>
+              </span>
+            ) : ('')}
+
             {showAnalysis ? (
               <span className="modal-row">
                 <span className='modal-field' 
@@ -865,15 +874,6 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                     </div>
                   )}
                 </span>
-                {showCallAI ? (
-                  <span className="modal-field">
-                    <button className="button" 
-                            onClick={() => {
-                                      setModalOpenOllamaAnalysis(true);
-                                    }}
-                    >Ask AI</button>
-                  </span>
-                ) : ('')}
               </span>
             ) : (
               <span className="modal-row">
@@ -904,15 +904,6 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                     </div>
                   )}
                 </span>
-                {showCallAI ? (
-                  <span className="modal-field">
-                    <button className="button" 
-                            onClick={() => {
-                                      setModalOpenOllamaAnalysis(true);
-                                    }}
-                    >Ask AI</button>
-                  </span>
-                ) : ('')}
               </span>
             )}
 
@@ -945,15 +936,6 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                     </div>
                   )}
                 </span>
-                {showCallAI ? (
-                  <span className="modal-field">
-                    <button className="button" 
-                            onClick={() => {
-                                      setModalOpenOllamaProfile(true);
-                                    }}
-                    >Ask AI</button>
-                  </span>
-                ) : ('')}
               </span>
             ) : (
               <span className="modal-row">
@@ -984,15 +966,6 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
                     </div>
                   )}
                 </span>
-                {showCallAI ? (
-                  <span className="modal-field">
-                    <button className="button" 
-                            onClick={() => {
-                                      setModalOpenOllamaProfile(true);
-                                    }}
-                    >Ask AI</button>
-                  </span>
-                ) : ('')}
               </span>
             )}
 

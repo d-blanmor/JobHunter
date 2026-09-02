@@ -56,6 +56,8 @@
 }
 
 .action-button {
+  width: 150px;
+  min-width: 1em;
   background: var(--color-background-button);
   color: var(--color-brand-primary);
   box-shadow: 0 1px 1px var(--color-brand-secondary);
@@ -64,7 +66,6 @@
   text-decoration: none;
   padding: 0.5em 1em;
   border-radius: 10px;
-  min-width: 1em;
 }
 .action-button:hover:not(.disabled) {
   background: var(--color-border-default);

@@ -277,15 +277,13 @@
   border-radius: 12px;
 }
 .job-spec-tags-list-button {
-  /*display: inline-block;*/
-  /*width: 30px;*/
   font-size: 0.6em;
-  /*text-decoration: none;*/
   padding: 0.5em 0.5em;
   margin: 0em 0.5em 0em 0.5em;
   border-radius: 12px;
   background: var(--color-background-button);
   color: var(--color-text-muted);
+  cursor: pointer;
 }
 .job-spec-tags-list-button:hover:not(.disabled) {
   background: var(--stage-button-hover-background);
@@ -376,15 +374,13 @@
   color: var(--color-brand-primary);
 }
 .job-spec-benefits-list-button {
-  /*display: inline-block;*/
-  /*width: 30px;*/
   font-size: 0.6em;
-  /*text-decoration: none;*/
   padding: 0.5em 0.5em;
   margin: 0em 0.5em 0em 0.5em;
   border-radius: 12px;
   background: var(--color-background-button);
   color: var(--color-text-muted);
+  cursor: pointer;
 }
 .job-spec-benefits-list-button:hover:not(.disabled) {
   background: var(--stage-button-hover-background);

@@ -127,6 +127,7 @@
 }
 .modal-field button {
   margin: 0px 0px 0px 10px;
+  cursor: pointer;
 }
 .modal-field-view {
   width: 893px;

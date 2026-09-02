@@ -1167,7 +1167,14 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
           request={setting_keys.OLLAMA.PromptAnalyseJobspec}
           payload={description.trim()}
           title = "Analyse Job Specification"
-          onClose={() => setModalOpenOllamaAnalysis(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalOpenOllamaAnalysis(false);
+          }}
           onSuccess={async (response?: string) => {
             if (response) setAnalysis(response);
             setModalOpenOllamaAnalysis(false);
@@ -1181,7 +1188,14 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
           request={setting_keys.OLLAMA.PromptMatchProfile}
           payload={description.trim()}
           title = "Profile match to the job spec"
-          onClose={() => setModalOpenOllamaProfile(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalOpenOllamaProfile(false);
+          }}
           onSuccess={async (response?: string) => {
             if (response) setProfile(response);
             setModalOpenOllamaProfile(false);

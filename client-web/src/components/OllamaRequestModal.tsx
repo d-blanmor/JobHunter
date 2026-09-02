@@ -58,6 +58,7 @@ export default function SourceModal({ response, request, payload, title, onClose
 
   const promptOllama = async () => {
     setProcessing(true);
+    setIsDirty(true);
     try {
       if (request == setting_keys.OLLAMA.PromptAnalyseJobspec) {
         const resp = await ollamaCheckJobSpec(payload);
@@ -100,7 +101,6 @@ export default function SourceModal({ response, request, payload, title, onClose
       setError(err instanceof Error ? err.message : 'Unknown error');
     } 
     finally {
-      setIsDirty(true);
       setProcessing(false);
     }
   }
@@ -109,7 +109,7 @@ export default function SourceModal({ response, request, payload, title, onClose
     setError(null);
     try {
       onSuccess(ollamaResponse);
-      onClose();
+      //onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save analysis');
     }

@@ -413,7 +413,14 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
           request={setting_keys.OLLAMA.PromptGenerateCoverLetter}
           payload={letter.trim()}
           title = "Create cover letter to apply"
-          onClose={() => setModalOpenOllamaLetter(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalOpenOllamaLetter(false);
+          }}
           onSuccess={async (response?: string) => {
             if (response) setLetter(response);
             setModalOpenOllamaLetter(false);

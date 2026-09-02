@@ -56,10 +56,12 @@ body {
 
 .menu-button-plain button {
   border: none;
+  cursor: pointer;
 }
 
 .menu-button a {
   box-shadow: 0 1px 10px var(--color-brand-secondary);
+  cursor: pointer;
 }
 .menu-button:hover:not(.disabled) {
   color: var(--color-brand-primary);
@@ -80,6 +82,7 @@ body {
   border-radius: 10px;
   background: var(--color-background-button);
   color: var(--color-text-muted);
+  cursor: pointer;
 }
 
 .app-shell {

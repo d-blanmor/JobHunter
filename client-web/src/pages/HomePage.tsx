@@ -66,9 +66,11 @@ export default function HomePage() {
   const [children, setChildren] = useState<Record<number, SourceItem[]>>({});
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
 
-  const [filter, setFilter] = useState('');
-  const filteredSources = sources.filter((s)=> s.Name.toLowerCase().includes(filter.toLowerCase()));
-  const filteredParents = parents.filter((s)=> s.Name.toLowerCase().includes(filter.toLowerCase()));
+  const [filterJobspecs, setFilterJobspecs] = useState('');
+
+  const [filterSources, setFilterSources] = useState('');
+  const filteredSources = sources.filter((s)=> s.Name.toLowerCase().includes(filterSources.toLowerCase()));
+  const filteredParents = parents.filter((s)=> s.Name.toLowerCase().includes(filterSources.toLowerCase()));
   const [sourcesLoading, setSourcesLoading] = useState(true);
   const [sourcesError, setSourcesError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -165,16 +167,6 @@ export default function HomePage() {
 
   return (
     <section className="page">
-      <div className="page-header-row">
-        <h2>Job specs</h2>
-        <button 
-          type="button"
-          className="action-button"
-          onClick={navigateToNewJobSpec}>
-          Add new Job Spec
-        </button>
-      </div>
-
       {loading && <p>Loading summary...</p>}
       {error && <p className="error">{error}</p>}
 
@@ -283,8 +275,36 @@ export default function HomePage() {
           )}
         </div>
       )}
+
       <hr className="rounded"></hr>
-      <div className="source-header">
+      <div className="page-header-row">
+        <span className="source-header-title">
+          <h2>Job specs</h2>
+        </span>
+        <span className="source-header">
+          <FaSearch aria-hidden="true" />
+        </span>
+        <span className="source-header-search">
+          <input
+            type="text"
+            className="source-header"
+            placeholder="Filter job specs..."
+            value={filterJobspecs}
+            onChange={(e)=>setFilterJobspecs(e.currentTarget.value)}
+          />
+        </span>
+        <span className="source-header-action">
+          <button 
+            type="button"
+            className="action-button"
+            onClick={navigateToNewJobSpec}>
+            Add new Job Spec
+          </button>
+        </span>
+      </div>
+
+      <hr className="rounded"></hr>
+      <div className="page-header-row">
         <span className="source-header-title">
           <h2>Job Seeking Portals</h2>
         </span>
@@ -296,8 +316,8 @@ export default function HomePage() {
             type="text"
             className="source-header"
             placeholder="Filter portals..."
-            value={filter}
-            onChange={(e)=>setFilter(e.currentTarget.value)}
+            value={filterSources}
+            onChange={(e)=>setFilterSources(e.currentTarget.value)}
           />
         </span>
         <span className="source-header-action">

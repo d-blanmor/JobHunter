@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
-import Modal from './Modal';
+
+import { isDirty, setIsDirty } from '../App';
+import { newContactItem, ContactItem } from '../defs/interfaces';
+
 import { getContact, saveContact } from '../api/contacts';
 import { listSources } from '../api/sources';
-import { newContactItem, ContactItem } from '../defs/interfaces';
+
+import Modal from './Modal';
 
 type Props = {
   /** id of the source to edit; null or undefined means create new */
@@ -57,6 +61,7 @@ export default function SourceModal({ contactId, title, onClose, onSuccess = () 
         if (mounted)
           setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
+        setIsDirty(false);
         if (mounted) setIsLoading(false);
       }
     }
@@ -96,12 +101,16 @@ export default function SourceModal({ contactId, title, onClose, onSuccess = () 
   };
 
   const handleCancel = () => {
+    if (isDirty()) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        return;
+    }
     setName('');
     setEmail('');
     setPhone('');
     setDetails('');
     setSourceId(null);
-
+    setIsDirty(false);
     onClose();
   };
 

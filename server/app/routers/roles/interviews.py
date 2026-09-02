@@ -17,7 +17,7 @@ def list_interviews(*, session: Session = Depends(get_session), active_only: boo
 
 @router.get(conf_pathname()+"/v1/roles/interviews/{interview_id}", response_model=InterviewBase)
 def get_interview(interview_id: int, session: Session = Depends(get_session)) -> InterviewBase:
-    return get_entity_or_404(session = session, model = rolesInterview, IsActive = interview_id)
+    return get_entity_or_404(session = session, model = rolesInterview, entity_id = interview_id, IsActive = interview_id)
 
 @router.get(conf_pathname()+"/v1/roles/interviews-by-jobspec/{jobspec_id}", response_model=list[InterviewBase])
 def get_jobspec_benefit(jobspec_id: int, session: Session = Depends(get_session)) -> list[InterviewBase]:

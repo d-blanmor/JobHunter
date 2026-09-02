@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { FaRegArrowAltCircleRight, FaRegArrowAltCircleDown } from "react-icons/fa";
 import Modal from './Modal'; // your existing modal component
+
+import { isDirty, setIsDirty } from '../App';
+
 import { getSource, listMainSources, saveSource } from '../api/sources';
 import { newSourceItem, SourceItem } from '../defs/interfaces';
 
@@ -60,6 +63,7 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
         if (mounted)
           setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
+        setIsDirty(false);
         if (mounted) setIsLoading(false);
       }
     }
@@ -92,6 +96,7 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
 
     try {
       await saveSource(payload);
+      setIsDirty(false);
       onSuccess();
       onClose();
     } catch (err) {
@@ -100,7 +105,10 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
   };
 
   const handleCancel = () => {
-    //setSourceFormOpen(false);
+    if (isDirty()) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        return;
+    }
     setMainSources([]);
     setName('');
     setParentId(null);
@@ -108,6 +116,7 @@ export default function SourceModal({ sourceId, title, onClose, onSuccess = () =
     setIcon(null);
     setDetails('');
     setOrder(0);
+    setIsDirty(false);
     onClose();
   };
 

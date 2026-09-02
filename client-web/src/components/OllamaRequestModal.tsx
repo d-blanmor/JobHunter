@@ -5,9 +5,11 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm'; // Adds support for tables, strikethrough, etc.
 import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for security
 
+import { isDirty, setIsDirty } from '../App';
+import { safeValue } from '../defs/tools'
+
 import { ollamaCheckJobSpec, ollamaCheckJobSpecProfile, ollamaCoverLetter } from '../api/integrations/ollama';
 import { getSetting } from '../api/app_settings';
-import { safeValue } from '../defs/tools'
 
 type Props = {
   response?: string | null;
@@ -43,6 +45,7 @@ export default function SourceModal({ response, request, payload, title, onClose
         if (mounted)
           setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
+        setIsDirty(false);
         if (mounted) setIsLoading(false);
       }
     }
@@ -97,6 +100,7 @@ export default function SourceModal({ response, request, payload, title, onClose
       setError(err instanceof Error ? err.message : 'Unknown error');
     } 
     finally {
+      setIsDirty(true);
       setProcessing(false);
     }
   }
@@ -112,7 +116,12 @@ export default function SourceModal({ response, request, payload, title, onClose
   };
 
   const handleCancel = () => {
+    if (isDirty()) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        return;
+    }
     setOllamaResponse('');
+    setIsDirty(false);
     onClose();
   };
 

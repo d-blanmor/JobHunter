@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
+
+import { isDirty, setIsDirty } from '../App';
+import { newPlaceOfWorkItem, PlaceOfWorkItem } from '../defs/interfaces';
+
 import { getPlaceOfWork, savePlaceOfWork } from '../api/place_of_work';
 import { listLocations } from '../api/lu_locations';
-import { newPlaceOfWorkItem, PlaceOfWorkItem } from '../defs/interfaces';
 
 type Props = {
   /** id of the source to edit; null or undefined means create new */
@@ -50,6 +53,7 @@ export default function SourceModal({ placeOfWorkId, title, onClose, onSuccess =
         if (mounted)
           setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
+        setIsDirty(false);
         if (mounted) setIsLoading(false);
       }
     }
@@ -78,6 +82,7 @@ export default function SourceModal({ placeOfWorkId, title, onClose, onSuccess =
 
     try {
       await savePlaceOfWork(payload);
+      setIsDirty(false);
       onSuccess();
       onClose();
     } catch (err) {
@@ -86,9 +91,13 @@ export default function SourceModal({ placeOfWorkId, title, onClose, onSuccess =
   };
 
   const handleCancel = () => {
+    if (isDirty()) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        return;
+    }
     setLocationId(null);
     setAddress('');
-
+    setIsDirty(false);
     onClose();
   };
 

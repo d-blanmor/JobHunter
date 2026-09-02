@@ -2,16 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaTags, FaArrowCircleRight, FaTrashAlt, FaUndo, FaRegCalendarPlus } from 'react-icons/fa';
 import { GiCardDiscard } from "react-icons/gi";
-import { Stage,  } from '../defs/types';
-import { wfStageItem } from '../defs/types';
-import { 
-  titleMap,
-  stageDateLabels,
-} from '../defs/maps';
-import Modal from './Modal';
-import ApplicationModal from '../components/ApplicationModal';
-import InterviewModal from '../components/InterviewModal';
-import OfferModal from '../components/OfferModal';
+
+import { DEFAULT_PAGE_SIZE } from '../config';
+import { isDirty, setIsDirty } from '../App';
+import { Stage, wfStageItem } from '../defs/types';
+import { titleMap, stageDateLabels } from '../defs/maps';
+
 import { inStageReceived, inStageApplied, inStageInterview, inStageOffer, inStageDiscarded } from '../api/workflow';
 import { listWorkModels } from '../api/lu_workmodels';
 import { listTags } from '../api/tags';
@@ -21,7 +17,11 @@ import { deleteJobSpec } from '../api/jobSpecs';
 import { getApplication, saveApplication } from '../api/applications';
 import { getInterview, saveInterview } from '../api/interviews';
 import { getOffer, saveOffer } from '../api/offers';
-import { DEFAULT_PAGE_SIZE } from '../config';
+
+import Modal from './Modal';
+import ApplicationModal from '../components/ApplicationModal';
+import InterviewModal from '../components/InterviewModal';
+import OfferModal from '../components/OfferModal';
 
 type Props = {
   stage: Stage;
@@ -82,6 +82,7 @@ function loadStageSpecs(stage: Stage) {
     case 'discarded':
       return inStageDiscarded();
   }
+  setIsDirty(false);
 }
 
 export default function StageModal({ stage, title, open, onClose }: Props) {
@@ -727,7 +728,14 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
           applicationId={null}
           jobSpecId={selectedJobSpecId}
           title = "Create new Application"
-          onClose={() => closeModalForm()}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            closeModalForm();
+          }}
           onSuccess={async () => {
             closeModalForm('applied');
           }}
@@ -739,7 +747,14 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
           interviewId={null}
           applicationId={selectedApplicationId}
           title = "Create new Interview"
-          onClose={() => closeModalForm()}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            closeModalForm();
+          }}
           onSuccess={async () => {
             closeModalForm('interview');
           }}
@@ -751,7 +766,14 @@ export default function StageModal({ stage, title, open, onClose }: Props) {
           offerId={null}
           applicationId={selectedApplicationId}
           title = "Create new Offer"
-          onClose={() => closeModalForm()}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            closeModalForm();
+          }}
           onSuccess={async () => {
             closeModalForm('offers');
           }}

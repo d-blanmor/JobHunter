@@ -205,6 +205,7 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
           if (mounted)
             setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
+          setIsDirty(false);
           if (mounted) setLoading(false);
         }
       }
@@ -373,6 +374,10 @@ export default function JobSpecModal({ jobSpecId, title, onClose, onSuccess = ()
   };
 
   const handleCancel = () => {
+    if (isDirty()) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        return;
+    }
     setPosition('');
     setCompany('');
     setSourceId('');

@@ -87,6 +87,7 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
         if (mounted)
           setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
+        setIsDirty(false);
         if (mounted) setLoading(false);
       }
     }
@@ -282,6 +283,10 @@ export default function OfferModal({ offerId, applicationId, title, onClose, onS
   };
 
   const handleCancel = () => {
+    if (isDirty()) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        return;
+    }
     setOffered('');
     setSalary('');
     setDescription('');

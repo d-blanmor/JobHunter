@@ -8,7 +8,7 @@ import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for se
 import { setting_keys } from '../config';
 import { isDirty, setIsDirty } from '../App';
 import { fetchAllBenefits, safeValue } from '../defs/tools';
-import { newJobSpecItem, PlaceOfWorkItem } from '../defs/interfaces';
+import { newJobSpecItem, PlaceOfWorkItem, SourceItem } from '../defs/interfaces';
 import { Source, luWorkModel, luRoleType, PlaceOfWork, luLocation, luBenefit, Tag, lnkJobSpecTag, lnkJobSpecBenefit, benefitWithNotes } from '../defs/types';
 
 import { listLocations } from '../api/lu_locations';
@@ -20,7 +20,6 @@ import { listSources } from '../api/sources';
 import { listContacts } from '../api/contacts';
 import { saveJobSpec, saveJobSpecTag, saveJobSpecBenefit } from '../api/jobSpecs';
 import { getTagByContext, getTagByNameContext, saveTag } from '../api/tags';
-import { SourceItem } from '../defs/interfaces';
 import { ollamaCheckJobSpec } from '../api/integrations/ollama';
 
 import SourceModal from '../components/SourceModal';
@@ -126,7 +125,6 @@ export default function JobSpecCreate() {
   useEffect(() => {
     function handelOnBeforeUnload(event: BeforeUnloadEvent) {
       event.preventDefault();
-      //return (event.returnValue = '');
       return (event.preventDefault());
     }
     window.addEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
@@ -185,6 +183,7 @@ export default function JobSpecCreate() {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } 
       finally {
+        setIsDirty(false);
         if (mounted) setLoading(false);
       }
     }
@@ -435,14 +434,14 @@ export default function JobSpecCreate() {
     }
   };
 
-const handleBenefitNoteChange = (index: number, newValue: string) => {
-  const updatedBenefits = [...lAddBenefits];
-  updatedBenefits[index] = {
-    ...updatedBenefits[index],
-    Notes: newValue
+  const handleBenefitNoteChange = (index: number, newValue: string) => {
+    const updatedBenefits = [...lAddBenefits];
+    updatedBenefits[index] = {
+      ...updatedBenefits[index],
+      Notes: newValue
+    };
+    setLAddBenefits(updatedBenefits);
   };
-  setLAddBenefits(updatedBenefits);
-};
 
   const checkJobSpecOllama = async () => {
     setLoading(true);
@@ -1072,7 +1071,14 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
         <SourceModal
           sourceId={null}
           title = "Create new Source"
-          onClose={() => setModalOpenSource(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalOpenSource(false);
+          }}
           onSuccess={async () => {
             await fetchSources(true); // refresh portal list after modal close
             setModalOpenSource(false);
@@ -1085,7 +1091,14 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
         <PlaceOfWorkModal
           placeOfWorkId={null}
           title = "Create new Place of Work"
-          onClose={() => setModalOpenPlaceOfWork(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalOpenPlaceOfWork(false);
+          }}
           onSuccess={async () => {
             await fetchPlacesOfWork(true); // refresh portal list after modal close
             setModalOpenPlaceOfWork(false);
@@ -1099,7 +1112,14 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
           contactId={null}
           iniSourceId={sourceId || null}
           title = "Create new Contact"
-          onClose={() => setModalOpenContact(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalOpenContact(false);
+          }}
           onSuccess={async () => {
             await fetchContacts(true); // refresh portal list after modal close
             setModalOpenContact(false);
@@ -1114,7 +1134,14 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
           request={setting_keys.OLLAMA.PromptAnalyseJobspec}
           payload={description.trim()}
           title = "Analyse Job Specification"
-          onClose={() => setModalOpenOllamaAnalysis(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalOpenOllamaAnalysis(false);
+          }}
           onSuccess={async (response?: string) => {
             if (response) setAnalysis(response);
             setModalOpenOllamaAnalysis(false);
@@ -1128,7 +1155,14 @@ const handleBenefitNoteChange = (index: number, newValue: string) => {
           request={setting_keys.OLLAMA.PromptMatchProfile}
           payload={description.trim()}
           title = "Profile match to the job spec"
-          onClose={() => setModalOpenOllamaProfile(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalOpenOllamaProfile(false);
+          }}
           onSuccess={async (response?: string) => {
             if (response) setProfile(response);
             setModalOpenOllamaProfile(false);

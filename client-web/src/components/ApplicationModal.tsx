@@ -73,10 +73,11 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
         if (mounted && jobSpecId) {
           setJobSpec(await getJobSpec(jobSpecId));
         }
-    } catch (err) {
+      } catch (err) {
         if (mounted)
           setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
+        setIsDirty(false);
         if (mounted) setIsLoading(false);
       }
     }
@@ -141,6 +142,10 @@ export default function ApplicationModal({ applicationId, jobSpecId, title, onCl
   };
 
   const handleCancel = () => {
+    if (isDirty()) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        return;
+    }
     setApplied('');
     setConfirmed('');
     setDiscarded('');

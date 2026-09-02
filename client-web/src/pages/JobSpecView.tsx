@@ -6,23 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm'; // Adds support for tables, strikethrough, etc.
 import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for security
 
-import JobSpecModal from '../components/JobSpecModal';
-import ApplicationModal from '../components/ApplicationModal';
-import InterviewModal from '../components/InterviewModal';
-import OfferModal from '../components/OfferModal';
-
-import { getJobSpec, getJobSpecTags, getJobSpecBenefits } from '../api/jobSpecs';
-import { getApplicationsByJobSpec, getApplication } from '../api/applications';
-import { getInterviewByJobSpec } from '../api/interviews';
-import { getOfferByJobSpec, getOfferBenefits } from '../api/offers';
-import { listPlacesOfWork } from '../api/place_of_work';
-import { listWorkModels } from '../api/lu_workmodels';
-import { listRoleTypes } from '../api/lu_roletypes';
-import { listBenefits } from '../api/lu_benefits';
-import { listLocations } from '../api/lu_locations';
-import { listSources } from '../api/sources';
-import { listContacts } from '../api/contacts';
-
+import { isDirty, setIsDirty } from '../App';
 import { 
   formatDate, 
   formatDateOnly, 
@@ -48,6 +32,23 @@ import {
   ContactItem, 
   } from '../defs/interfaces';
 import { Tag, luBenefit, lnkJobSpecBenefit, lnkOfferBenefit, benefitWithNotes } from '../defs/types';
+
+import JobSpecModal from '../components/JobSpecModal';
+import ApplicationModal from '../components/ApplicationModal';
+import InterviewModal from '../components/InterviewModal';
+import OfferModal from '../components/OfferModal';
+
+import { getJobSpec, getJobSpecTags, getJobSpecBenefits } from '../api/jobSpecs';
+import { getApplicationsByJobSpec, getApplication } from '../api/applications';
+import { getInterviewByJobSpec } from '../api/interviews';
+import { getOfferByJobSpec, getOfferBenefits } from '../api/offers';
+import { listPlacesOfWork } from '../api/place_of_work';
+import { listWorkModels } from '../api/lu_workmodels';
+import { listRoleTypes } from '../api/lu_roletypes';
+import { listBenefits } from '../api/lu_benefits';
+import { listLocations } from '../api/lu_locations';
+import { listSources } from '../api/sources';
+import { listContacts } from '../api/contacts';
 
 export default function JobSpecView() {
   const { id } = useParams();
@@ -169,6 +170,7 @@ export default function JobSpecView() {
         setError(err instanceof Error ? err.message : 'Failed to load job spec');
       } 
       finally {
+        setIsDirty(false);
         if (!mounted) return;
         setLoading(false);
       }
@@ -179,6 +181,18 @@ export default function JobSpecView() {
       mounted = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    function handelOnBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault();
+      alert("Oppsie1");
+      return (event.preventDefault());
+    }
+    window.addEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
+    return () => {
+      if (isDirty()) window.removeEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
+    }
+  }, []);
 
   const source = useMemo(() => (jobSpec ? getSourceItem(jobSpec, lSources) : null), [jobSpec, lSources]);
   const roleType = useMemo(() =>  (jobSpec ? getRoleTypeItem(jobSpec, lRoleTypes) : null), [jobSpec]);
@@ -1100,7 +1114,14 @@ export default function JobSpecView() {
         <JobSpecModal
           jobSpecId={jobSpec?.Id || null}
           title = {getModalTitle('jobspec')}
-          onClose={() => setModalEditJobSpec(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalEditJobSpec(false);
+          }}
           onSuccess={async () => {
             await refreshJobSpec(true); // refresh portal list after modal close
             setModalEditJobSpec(false);
@@ -1113,7 +1134,14 @@ export default function JobSpecView() {
           applicationId={applicationId}
           jobSpecId={jobSpec?.Id || null}
           title = {getModalTitle('application')}
-          onClose={() => setModalEditApplication(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalEditApplication(false);
+          }} 
           onSuccess={async () => {
             await refreshJobSpec(true); // refresh portal list after modal close
             setModalEditApplication(false);
@@ -1126,7 +1154,14 @@ export default function JobSpecView() {
           interviewId={interviewId}
           applicationId={applicationId}
           title = {getModalTitle('interview')}
-          onClose={() => setModalEditInterview(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalEditInterview(false);
+          }}
           onSuccess={async () => {
             await refreshJobSpec(true); // refresh portal list after modal close
             setModalEditInterview(false);
@@ -1139,7 +1174,14 @@ export default function JobSpecView() {
           offerId={offerId}
           applicationId={applicationId}
           title = {getModalTitle('offer')}
-          onClose={() => setModalEditOffer(false)}
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalEditOffer(false);
+          }}
           onSuccess={async () => {
             await refreshJobSpec(true); // refresh portal list after modal close
             setModalEditOffer(false);

@@ -87,6 +87,7 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
         if (mounted)
           setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
+        setIsDirty(false);
         if (mounted) setIsLoading(false);
       }
     }
@@ -169,6 +170,10 @@ export default function InterviewModal({ interviewId, applicationId, title, onCl
   };
 
   const handleCancel = () => {
+    if (isDirty()) {
+      if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+        return;
+    }
     setScheduled('');
     setContactId('');
     setDescription('');

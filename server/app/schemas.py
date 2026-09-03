@@ -131,6 +131,8 @@ class vwWorkflowBase(BaseModel):
     Discarded: Optional[datetime] = None
     Scheduled: Optional[datetime] = None
     Offered: Optional[datetime] = None
+    Stage: Optional[str] = None
+    IsActive: bool = True
 
 class genericResponse(BaseModel):
     outcome: Any

@@ -382,41 +382,11 @@ def get_benefits_by_entity(session: Session, model: type[Any], entity_id: int, a
 from app.schemas import vwWorkflowBase
 from app.models import vwWorkflow
 
-def workflow_get_received(session: Session) -> list[vwWorkflowBase]:
+def workflow_get_jobspecs(session: Session, Stage: str | None = None, IsActive: bool = True) -> list[vwWorkflowBase]:
     statement = select(vwWorkflow)
-    statement = statement.where(vwWorkflow.ApplicationId == None)   # JobSpec has not been applied
-    statement = statement.order_by(vwWorkflow.Created.desc())
-    return session.exec(statement).all()
-
-def workflow_get_applied(session: Session) -> list[vwWorkflowBase]:
-    statement = select(vwWorkflow)
-    statement = statement.where(vwWorkflow.ApplicationId != None)   # JobSpec has been applied
-    statement = statement.where(vwWorkflow.InterviewId == None)     # Application has no interviews
-    statement = statement.where(vwWorkflow.OfferId == None)         # Application has no offers
-    statement = statement.where(vwWorkflow.Discarded == None)       # Application has not been discarded
-    statement = statement.order_by(vwWorkflow.Created.desc())
-    return session.exec(statement).all()
-
-def workflow_get_interview(session: Session) -> list[vwWorkflowBase]:
-    statement = select(vwWorkflow)
-    statement = statement.where(vwWorkflow.ApplicationId != None)   # JobSpec has been applied
-    statement = statement.where(vwWorkflow.InterviewId != None)     # Application has at least one interviews
-    statement = statement.where(vwWorkflow.OfferId == None)         # Application has no offers
-    statement = statement.where(vwWorkflow.Discarded == None)       # Application has not been discarded
-    statement = statement.order_by(vwWorkflow.Created.desc())
-    return session.exec(statement).all()
-
-def workflow_get_offer(session: Session) -> list[vwWorkflowBase]:
-    statement = select(vwWorkflow)
-    statement = statement.where(vwWorkflow.ApplicationId != None)   # JobSpec has been applied
-    statement = statement.where(vwWorkflow.OfferId != None)         # Application has at least one offer
-    statement = statement.where(vwWorkflow.Discarded == None)       # Application has not been discarded
-    statement = statement.order_by(vwWorkflow.Created.desc())
-    return session.exec(statement).all()
-
-def workflow_get_discarded(session: Session) -> list[vwWorkflowBase]:
-    statement = select(vwWorkflow)
-    statement = statement.where(vwWorkflow.ApplicationId != None)   # JobSpec has been applied
-    statement = statement.where(vwWorkflow.Discarded != None)       # Application is discarded
+    if Stage is not None:
+        statement = statement.where(vwWorkflow.Stage == Stage)
+    if IsActive:
+        statement = statement.where(vwWorkflow.IsActive == True)
     statement = statement.order_by(vwWorkflow.Created.desc())
     return session.exec(statement).all()

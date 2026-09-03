@@ -147,6 +147,8 @@ export interface wfStageItem {
   Discarded?: string | null;
   Scheduled?: string | null;
   Offered?: string | null;
+  Stage?: string | null;
+  IsActive: boolean | true;
 }
 
 // Deffinition for new entities

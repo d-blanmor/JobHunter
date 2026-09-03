@@ -1,7 +1,7 @@
 import { API_BASE } from '../config';
 
-export async function inStageReceived() {
-  const res = await fetch(`${API_BASE}/workflow/stages/received`);
+export async function listJobSpecs(IsActve: boolean = true) {
+  const res = await fetch(`${API_BASE}/workflow/jobspecs?active_only=${IsActve}`);
   if (!res.ok) {
     if (res.status != 404) throw new Error(`Failed to load sources: ${res.status}`);
     return "()";
@@ -9,8 +9,8 @@ export async function inStageReceived() {
   return res.json();
 }
 
-export async function inStageApplied() {
-  const res = await fetch(`${API_BASE}/workflow/stages/applied`);
+export async function inStageReceived(IsActve: boolean = true) {
+  const res = await fetch(`${API_BASE}/workflow/stages/received?active_only=${IsActve}`);
   if (!res.ok) {
     if (res.status != 404) throw new Error(`Failed to load sources: ${res.status}`);
     return "()";
@@ -18,8 +18,8 @@ export async function inStageApplied() {
   return res.json();
 }
 
-export async function inStageInterview() {
-  const res = await fetch(`${API_BASE}/workflow/stages/interview`);
+export async function inStageApplied(IsActve: boolean = true) {
+  const res = await fetch(`${API_BASE}/workflow/stages/applied?active_only=${IsActve}`);
   if (!res.ok) {
     if (res.status != 404) throw new Error(`Failed to load sources: ${res.status}`);
     return "()";
@@ -27,8 +27,8 @@ export async function inStageInterview() {
   return res.json();
 }
 
-export async function inStageOffer() {
-  const res = await fetch(`${API_BASE}/workflow/stages/offer`);
+export async function inStageInterview(IsActve: boolean = true) {
+  const res = await fetch(`${API_BASE}/workflow/stages/interview?active_only=${IsActve}`);
   if (!res.ok) {
     if (res.status != 404) throw new Error(`Failed to load sources: ${res.status}`);
     return "()";
@@ -36,8 +36,17 @@ export async function inStageOffer() {
   return res.json();
 }
 
-export async function inStageDiscarded() {
-  const res = await fetch(`${API_BASE}/workflow/stages/discarded`);
+export async function inStageOffer(IsActve: boolean = true) {
+  const res = await fetch(`${API_BASE}/workflow/stages/offer?active_only=${IsActve}`);
+  if (!res.ok) {
+    if (res.status != 404) throw new Error(`Failed to load sources: ${res.status}`);
+    return "()";
+  }
+  return res.json();
+}
+
+export async function inStageDiscarded(IsActve: boolean = true) {
+  const res = await fetch(`${API_BASE}/workflow/stages/discarded?active_only=${IsActve}`);
   if (!res.ok) {
     if (res.status != 404) throw new Error(`Failed to load sources: ${res.status}`);
     return "()";

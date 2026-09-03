@@ -316,7 +316,9 @@ class vwWorkflow(SQLModel, table=True):
     Discarded: Optional[datetime] = None
     Scheduled: Optional[datetime] = None
     Offered: Optional[datetime] = None
-    
+    Stage: Optional[str] = None
+    IsActive: bool = True
+
 # View definitions
 # --------------------------------------------------------------------------- #
 # Simple placeholder model (no table)
@@ -405,6 +407,23 @@ def _create_vwWorkflow_view(engine: Engine) -> None:
             , "Applications"."Discarded"      AS "Discarded"
             , "Interviews"."Scheduled"        AS "Scheduled"
             , "Offers"."Offered"              AS "Offered"
+            , CASE
+                WHEN "Applications"."ApplicationId" IS NULL THEN 'received'
+                WHEN "Applications"."ApplicationId" IS NOT NULL 
+                 AND "Interviews"."InterviewId" IS NULL
+                 AND "Offers"."OfferId" IS NULL
+                 AND "Applications"."Discarded" IS NULL THEN 'applied'
+                WHEN "Applications"."ApplicationId" IS NOT NULL 
+                 AND "Interviews"."InterviewId" IS NOT NULL
+                 AND "Offers"."OfferId" IS NULL
+                 AND "Applications"."Discarded" IS NULL THEN 'interview'
+                WHEN "Applications"."ApplicationId" IS NOT NULL 
+                 AND "Offers"."OfferId" IS NOT NULL
+                 AND "Applications"."Discarded" IS NULL THEN 'offer'
+                WHEN "Applications"."ApplicationId" IS NOT NULL 
+                 AND "Applications"."Discarded" IS NOT NULL THEN 'discarded'
+            END                               AS 'Stage'
+            , "JobSpecs"."IsActive"           AS "IsActive"
         FROM   roles_job_specs AS JobSpecs
         LEFT JOIN (SELECT MAX("roles_applications"."JobSpecId") AS "JobSpecId"
                         , "roles_applications"."Id"             AS "ApplicationId"

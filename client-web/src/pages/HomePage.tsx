@@ -1,13 +1,22 @@
 import { useNavigate } from 'react-router-dom';
-import { FaSearch } from 'react-icons/fa';
-import { useEffect, useState } from 'react';
+import { FaSearch, FaTags } from 'react-icons/fa';
+import { useEffect, useState, useMemo } from 'react';
+
+import { DEFAULT_PAGE_SIZE } from '../config';
 import { 
   Stage,
   Counts,
 } from '../defs/types';
 import { titleMap } from '../defs/maps';
+import { formatShortDate, parseDate } from '../defs/tools';
+
 import StageModal from '../components/StageModal';
+
+import { listWorkModels } from '../api/lu_workmodels';
+import { listTags } from '../api/tags';
+import { listRoleTypes } from '../api/lu_roletypes';
 import {
+  listJobSpecs,
   inStageReceived,
   inStageApplied,
   inStageInterview,
@@ -17,7 +26,7 @@ import {
 
 import SourceModal from '../components/SourceModal';
 import { listSources } from '../api/sources';
-import { SourceItem } from '../defs/interfaces';
+import { wfStageItem, SourceItem } from '../defs/interfaces';
 
 export async function getJobSpecCounts(): Promise<Counts> {
   try {
@@ -61,12 +70,27 @@ export default function HomePage() {
   const [modalStage, setModalStage] = useState<Stage | null>(null);
 
   /* ---- Portal (source) state -------------------------------------------- */
+  const [jobSpecs, setJobSpecs] = useState<wfStageItem[]>([]);
   const [sources, setSources] = useState<SourceItem[]>([]);
   const [parents, setParents] = useState<SourceItem[]>([]);
   const [children, setChildren] = useState<Record<number, SourceItem[]>>({});
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
+  const [roleTypes, setRoleTypes] = useState<any[]>([]);
+  const [workModels, setWorkModels] = useState<any[]>([]);
+  const [tags, setTags] = useState<any[]>([]);
 
+  const PAGE_SIZE = DEFAULT_PAGE_SIZE;
   const [filterJobspecs, setFilterJobspecs] = useState('');
+  const filteredJobspecs = jobSpecs.filter(
+    (s) =>
+      (s.Position ?? "").toLowerCase().includes(filterJobspecs.toLowerCase()) ||
+      (s.Company ?? "").toLowerCase().includes(filterJobspecs.toLowerCase()),
+  );
+  const [jobSpecsLoading, setJobSpecsLoading] = useState(true);
+  const [jobSpecsError, setJobSpecsError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const totalJobSpecsPages = Math.max(1, Math.ceil(filteredJobspecs.length / PAGE_SIZE));
+  const pagedJobSpecs = filteredJobspecs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const [filterSources, setFilterSources] = useState('');
   const filteredSources = sources.filter((s)=> s.Name.toLowerCase().includes(filterSources.toLowerCase()));
@@ -115,6 +139,62 @@ export default function HomePage() {
     }
   };
 
+  const roleTypeById = useMemo(() => new Map(roleTypes.map((role) => [role.Id, role.Name])), [roleTypes]);
+  const workModelById = useMemo(() => new Map(workModels.map((model) => [model.Id, model.Name])), [workModels]);
+
+  const getRoleTypeLabel = (id: number | null) => {
+    if (id === null || id === undefined) return '—';
+    return roleTypeById.get(id) ?? 'Unknown';
+  };
+
+  const getWorkModelLabel = (id: number | null) => {
+    if (id === null || id === undefined) return '—';
+    return workModelById.get(id) ?? 'Unknown';
+  };
+
+  const handlePageChange = (target: number) => {
+    setPage(Math.max(1, Math.min(target, totalJobSpecsPages)));
+  };
+
+
+  const handleRowClick = (id: number) => {
+    navigate(`/job-specs/view/${id}`);
+  };
+
+
+  /* ---- Portal list fetch utility ---------------------------------------- */
+  const fetchJobspecs = async (mounted: boolean = true) => {
+    setJobSpecsLoading(true);
+    try {
+      const [
+              lJobspecs,
+              roleTypeData, 
+              workModelData, 
+              tagData
+            ] = await Promise.all([
+              listJobSpecs(),
+              listRoleTypes(),
+              listWorkModels(),
+              listTags(),
+            ]);
+
+      if (lJobspecs != "()") {
+        setJobSpecs(lJobspecs);
+      }
+      setRoleTypes(roleTypeData);
+      setWorkModels(workModelData);
+      setTags(tagData);
+      if (mounted && Array.isArray(lJobspecs)) setJobSpecs(lJobspecs);
+    } catch (err) {
+      if (mounted)
+        setJobSpecsError(
+          err instanceof Error ? err.message : 'Failed to load job specs'
+        );
+    } finally {
+      if (mounted) setJobSpecsLoading(false);
+    }
+  };
+
   /* ---- Portal list fetch utility ---------------------------------------- */
   const fetchSources = async (mounted: boolean = true) => {
     setSourcesLoading(true);
@@ -151,6 +231,7 @@ export default function HomePage() {
   /* ---- Fetch portal list on mount -------------------------------------- */
   useEffect(() => {
     let mounted = true;
+    fetchJobspecs(mounted);
     fetchSources(mounted);
     return () => {
       mounted = false;
@@ -301,6 +382,90 @@ export default function HomePage() {
             Add new Job Spec
           </button>
         </span>
+
+        {!jobSpecsLoading && filterJobspecs != '' && (
+          <>
+            <div className="jsGrid-row jsGrid-row-header">
+              <div className="jsGrid-cell jsGrid-cell-date">Added on</div>
+              <div className="jsGrid-cell jsGrid-cell-job-position">Job Position</div>
+              <div className="jsGrid-cell">Role Type</div>
+              <div className="jsGrid-cell">Work Model</div>
+              <div className="jsGrid-cell jsGrid-cell-status">Status</div>
+            </div>
+            <div className="jsGrid-table">
+              {pagedJobSpecs.length === 0 && (
+                <div className="jsGrid-row jsGrid-empty-row">
+                  <div className="jsGrid-cell jsGrid-paged-cell">
+                    No job specs found.
+                  </div>
+                </div>
+              )}
+              {pagedJobSpecs.map((item) => (
+                <div key={item.JobSpecId} className="jsGrid-row jsGrid-row-clickable" onClick={() => handleRowClick(item.JobSpecId)}>
+                  <div className="jsGrid-cell jsGrid-cell-date">
+                    {formatShortDate(item.Created)}
+                  </div>
+                  <div className="jsGrid-cell jsGrid-cell-job-position">
+                    {item.Position || item.Company ? (
+                      <>
+                        {item.Position ? (
+                          <span className="job-position-name">{item.Position}</span>
+                        ) : (
+                          <span className="job-position-empty">—</span>
+                        )}
+                        {item.Position && item.Company && (
+                          <span className="job-position-separator"> at </span>
+                        )}
+                        {item.Company ? (
+                          <span className="job-company-name">{item.Company}</span>
+                        ) : null}
+                      </>
+                    ) : (
+                      <span className="job-position-empty">—</span>
+                    )}
+                  </div>
+                  <div className="jsGrid-cell">
+                    {item.RoleTypeId ? (
+                      getRoleTypeLabel(item.RoleTypeId)
+                    ) : (
+                      '—'
+                    )}
+                  </div>
+                  <div className="jsGrid-cell">
+                    {item.WorkModelId ? (
+                      getWorkModelLabel(item.WorkModelId)
+                    ) : (
+                      '—'
+                    )}
+                  </div>
+                  <div className="jsGrid-cell">
+                    {item.Stage}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {totalJobSpecsPages && totalJobSpecsPages > 1 ? (
+              <div className="jsGrid-pagination">
+                <button className="jsGrid-button jsGrid-secondary-button" onClick={() => handlePageChange(1)} disabled={page === 1}>
+                  First
+                </button>
+                <button className="jsGrid-button jsGrid-secondary-button" onClick={() => handlePageChange(page - 1)} disabled={page === 1}>
+                  Previous
+                </button>
+                <span>
+                  Page {page} / {totalJobSpecsPages}
+                </span>
+                <button className="jsGrid-button jsGrid-secondary-button" onClick={() => handlePageChange(page + 1)} disabled={page === totalJobSpecsPages}>
+                  Next
+                </button>
+                <button className="jsGrid-button stage-secondary-button" onClick={() => handlePageChange(totalJobSpecsPages)} disabled={page === totalJobSpecsPages}>
+                  Last
+                </button>
+              </div>
+            ) : ( <div className="jsGrid-pagination"/> )}
+          </>
+        )}
+
       </div>
 
       <hr className="rounded"></hr>

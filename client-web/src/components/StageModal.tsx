@@ -7,6 +7,7 @@ import { DEFAULT_PAGE_SIZE } from '../config';
 import { isDirty, setIsDirty } from '../App';
 import { Stage, wfStageItem } from '../defs/types';
 import { titleMap, stageDateLabels } from '../defs/maps';
+import { formatShortDate, parseDate } from '../defs/tools';
 
 import { inStageReceived, inStageApplied, inStageInterview, inStageOffer, inStageDiscarded } from '../api/workflow';
 import { listWorkModels } from '../api/lu_workmodels';
@@ -31,23 +32,6 @@ type Props = {
 };
 
 const PAGE_SIZE = DEFAULT_PAGE_SIZE;
-
-function pad(value: number) {
-  return value.toString().padStart(2, '0');
-}
-
-function formatShortDate(value?: string | null) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '—';
-  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${String(date.getFullYear()).slice(-2)}`;
-}
-
-function parseDate(value?: string | null) {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
 
 function buildJobSpecItem( spec: wfStageItem ) {
   return {

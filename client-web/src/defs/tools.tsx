@@ -125,3 +125,17 @@ export const fetchAllBenefits = async () => {
     return (err instanceof Error ? err.message : 'Failed to load benefits');
   }
 };
+
+export function formatShortDate(value?: string | null) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '—';
+  return `${_pad(date.getDate())}/${_pad(date.getMonth() + 1)}/${String(date.getFullYear()).slice(-2)}`;
+}
+
+export function parseDate(value?: string | null) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+

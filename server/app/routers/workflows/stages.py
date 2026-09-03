@@ -6,26 +6,30 @@ from sqlmodel import Session, select
 
 from app.database import get_session
 from app.schemas import vwWorkflowBase
-from app.dependencies import workflow_get_received, workflow_get_applied, workflow_get_interview, workflow_get_offer, workflow_get_discarded
+from app.dependencies import workflow_get_jobspecs
 
 router = APIRouter()
 
+@router.get(conf_pathname()+"/v1/workflow/jobspecs", response_model=list[vwWorkflowBase])
+def list_jobspecs_received(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[vwWorkflowBase]:
+    return workflow_get_jobspecs(session = session, IsActive = active_only)
+
 @router.get(conf_pathname()+"/v1/workflow/stages/received", response_model=list[vwWorkflowBase])
-def list_jobspecs_received(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return workflow_get_received(session = session)
+def list_jobspecs_received(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[vwWorkflowBase]:
+    return workflow_get_jobspecs(session = session, Stage = 'received', IsActive = active_only)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/applied", response_model=list[vwWorkflowBase])
-def list_jobspecs_applied(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return workflow_get_applied(session = session)
+def list_jobspecs_applied(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[vwWorkflowBase]:
+    return workflow_get_jobspecs(session = session, Stage = 'applied', IsActive = active_only)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/interview", response_model=list[vwWorkflowBase])
-def list_jobspecs_interview(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return workflow_get_interview(session = session)
+def list_jobspecs_interview(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[vwWorkflowBase]:
+    return workflow_get_jobspecs(session = session, Stage = 'interview', IsActive = active_only)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/offer", response_model=list[vwWorkflowBase])
-def list_jobspecs_offer(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return workflow_get_offer(session = session)
+def list_jobspecs_offer(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[vwWorkflowBase]:
+    return workflow_get_jobspecs(session = session, Stage = 'offer', IsActive = active_only)
 
 @router.get(conf_pathname()+"/v1/workflow/stages/discarded", response_model=list[vwWorkflowBase])
-def list_jobspecs_discarded(*, session: Session = Depends(get_session)) -> list[vwWorkflowBase]:
-    return workflow_get_discarded(session = session)
+def list_jobspecs_discarded(*, session: Session = Depends(get_session), active_only: bool = Query(True)) -> list[vwWorkflowBase]:
+    return workflow_get_jobspecs(session = session, Stage = 'discarded', IsActive = active_only)

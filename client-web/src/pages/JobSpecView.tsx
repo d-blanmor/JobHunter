@@ -14,11 +14,12 @@ import {
   formatFieldDate, 
   safeValue,
   getSourceItem,
+  getPlaceOfWorkLabel,
+  getContactDetails,
   getWorkModelItem,
   getRoleTypeItem,
   getContactItem,
   normalizeBenefits,
-  getPlaceOfWorkLabel
   } from '../defs/tools'
 import { 
   JobSpecItem, 
@@ -87,13 +88,74 @@ export default function JobSpecView() {
   const [offerId, setOfferId] = useState<number | null>(null);
   // Lookups
   const [lSources, setSources] = useState<SourceItem[]>([]);
+  const [lLocations, setLLocations] = useState<luLocationItem[]>([]);
+  const [lPlacesOfWork, setLPlacesOfWork] = useState<PlaceOfWorkItem[]>([]);
   const [lWorkModels, setWorkModels] = useState<luWorkModelItem[]>([]);
   const [lRoleTypes, setRoleTypes] = useState<luRoleTypeItem[]>([]);
-  const [lContacts, setContacts] = useState<ContactItem[]>([]);
-  const [placeOfWorkLabel, setPlaceOfWorkLabel] = useState<string | ''>('');
+  const [lContacts, setLContacts] = useState<ContactItem[]>([]);
   // Behaviour
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const refreshJobSpec = async (mounted: boolean = true) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const [
+        js, 
+        applications, 
+        interviews, 
+        offers
+      ] = await Promise.all([
+        getJobSpec(Number(id)),
+        getApplicationsByJobSpec(Number(id)).catch(() => []),
+        getInterviewByJobSpec(Number(id)).catch(() => []),
+        getOfferByJobSpec(Number(id)).catch(() => [])
+      ]);
+      js.Tags = [];
+      js.Benefits = [];
+      if (js && js.Id > 0) {
+        [js.Tags, js.Benefits] = await Promise.all ([getJobSpecTags(js.Id), getJobSpecBenefits(js.Id)]);
+      }
+
+      js.Applications = applications;
+      setInterviewId(null);
+      if (js.Applications && js.Applications.length > 0) {
+        setApplicationId(js.Applications[0].Id);
+        js.Applications[0].Interviews = interviews;
+        js.Applications[0].Offers = offers;
+        if (Array.isArray(js.Applications) && js.Applications.length > 0) {
+          if (Array.isArray(js.Applications[0].Interviews) && js.Applications[0].Interviews.length > 0) {
+            for (let i = 0; i < js.Applications[0].Interviews.length; i++) {
+              if (js.Applications[0].Interviews[i].ContactId) {
+                js.Applications[0].Interviews[i].Contact = getContactDetails(js.Applications[0].Interviews[i].ContactId, lContacts);
+              }
+            }
+          }
+
+          if (Array.isArray(js.Applications[0].Offers) && js.Applications[0].Offers.length > 0) {
+            for (let i = 0; i < js.Applications[0].Offers.length; i++) {
+              const ofBenefits = await (getOfferBenefits(Number(js.Applications[0].Offers[i].Id)).catch(() => []));
+
+              js.Applications[0].Offers[i].Benefits = ofBenefits;
+            }
+          }
+        }
+      }
+      setJobSpec(js);
+    }
+    catch (err) {
+      if (mounted)
+        setError(
+          err instanceof Error ? err.message : 'Failed to load contacts',
+        );
+    } 
+    finally {
+      if (!mounted) return;
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -104,66 +166,32 @@ export default function JobSpecView() {
       setError(null);
 
       try {
+        if (!mounted) return;
         const [
-          jobSpec, 
-          applications, 
-          interviews, 
-          offers,
+          js, 
           luSources, 
+          luLocations,
+          luPlacesOfWork,
           luWorkModels, 
           luRoleTypes, 
           luContacts,
         ] = await Promise.all([
           getJobSpec(Number(id)),
-          getApplicationsByJobSpec(Number(id)).catch(() => []),
-          getInterviewByJobSpec(Number(id)).catch(() => []),
-          getOfferByJobSpec(Number(id)).catch(() => []),
           listSources().catch(() => []),
+          listLocations().catch(() => []),
+          listPlacesOfWork().catch(() => []),
           listWorkModels().catch(() => []),
           listRoleTypes().catch(() => []),
           listContacts().catch(() => []),
         ]);
-
-        if (!mounted) return;
         setSources(Array.isArray(luSources) ? luSources : []);
+        setLLocations(Array.isArray(luLocations) ? luLocations : []);
+        setLPlacesOfWork(Array.isArray(luPlacesOfWork) ? luPlacesOfWork : []);
         setWorkModels(Array.isArray(luWorkModels) ? luWorkModels : []);
         setRoleTypes(Array.isArray(luRoleTypes) ? luRoleTypes : []);
-        setContacts(Array.isArray(luContacts) ? luContacts : []);
-
-        setJobSpec(jobSpec);
-        if (jobSpec.PlaceOfWorkId) setPlaceOfWorkLabel(await getPlaceOfWorkLabel(jobSpec.PlaceOfWorkId));
-        jobSpec.Tags = [];
-        jobSpec.Benefits = [];
-        if (jobSpec && jobSpec.Id > 0) {
-          [jobSpec.Tags, jobSpec.Benefits] = await Promise.all ([getJobSpecTags(jobSpec.Id), getJobSpecBenefits(jobSpec.Id)]);
-        }
-
-        jobSpec.Applications = [];
-        if (applications && applications.length > 0) {
-          jobSpec.Applications = applications;
-          if (jobSpec.Applications && jobSpec.Applications.length > 0) {
-            setApplicationId(jobSpec.Applications[0].Id);
-            jobSpec.Applications[0].Interviews = [];
-            if (interviews && interviews.length > 0) {
-              jobSpec.Applications[0].Interviews = interviews;
-              for (let i = 0; i<jobSpec.Applications[0].Interviews.length; i++) {
-                if (jobSpec.Applications[0].Interviews[i].ContactId) {
-                  lContacts.find((contact: ContactItem) => contact.Id === jobSpec.Applications[0].Interviews[i].ContactId);
-                  jobSpec.Applications[0].Interviews[i].Contact = contact;
-                }
-              }
-            }
-            jobSpec.Applications[0].Offers = [];
-            if (offers && offers.length > 0) {
-              jobSpec.Applications[0].Offers = offers;
-              for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
-                const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].Id)).catch(() => []));
-
-                jobSpec.Applications[0].Offers[i].Benefits = ofBenefits;
-              }
-            }
-          }
-        }
+        setLContacts(Array.isArray(luContacts) ? luContacts : []);
+        setJobSpec(js);
+        await refreshJobSpec(mounted);
       } 
       catch (err) {
         if (!mounted) return;
@@ -185,7 +213,6 @@ export default function JobSpecView() {
   useEffect(() => {
     function handelOnBeforeUnload(event: BeforeUnloadEvent) {
       event.preventDefault();
-      alert("Oppsie1");
       return (event.preventDefault());
     }
     window.addEventListener('beforeunload', handelOnBeforeUnload, {capture: true});
@@ -197,70 +224,9 @@ export default function JobSpecView() {
   const source = useMemo(() => (jobSpec ? getSourceItem(jobSpec, lSources) : null), [jobSpec, lSources]);
   const roleType = useMemo(() =>  (jobSpec ? getRoleTypeItem(jobSpec, lRoleTypes) : null), [jobSpec]);
   const workModel = useMemo(() => (jobSpec ? getWorkModelItem(jobSpec, lWorkModels) : null), [jobSpec,lWorkModels]);
+  const placeOfWorkLabel = useMemo(() => (jobSpec?.PlaceOfWorkId ? getPlaceOfWorkLabel(jobSpec.PlaceOfWorkId, lPlacesOfWork, lLocations) : '—'), [jobSpec?.PlaceOfWorkId, lPlacesOfWork, lLocations]);
   const contact = useMemo(() => (jobSpec ? getContactItem(jobSpec.ContactId, lContacts) : null), [jobSpec]);
   const salary = jobSpec?.SalaryExpectation ||  '—';
-
-  const refreshJobSpec = async (mounted: boolean = true) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const [
-        jobSpec, 
-        applications, 
-        interviews, 
-        offers
-      ] = await Promise.all([
-        getJobSpec(Number(id)),
-        getApplicationsByJobSpec(Number(id)).catch(() => []),
-        getInterviewByJobSpec(Number(id)).catch(() => []),
-        getOfferByJobSpec(Number(id)).catch(() => [])
-      ]);
-      setJobSpec(jobSpec);
-      jobSpec.PlacesOfWork = placeOfWorkLabel;
-      jobSpec.Tags = [];
-      jobSpec.Benefits = [];
-      if (jobSpec && jobSpec.Id > 0) {
-        [jobSpec.Tags, jobSpec.Benefits] = await Promise.all ([getJobSpecTags(jobSpec.Id), getJobSpecBenefits(jobSpec.Id)]);
-      }
-
-      jobSpec.Applications = applications;
-      setInterviewId(null);
-      if (jobSpec.Applications && jobSpec.Applications.length > 0) {
-        setApplicationId(jobSpec.Applications[0].Id);
-        jobSpec.Applications[0].Interviews = interviews;
-        jobSpec.Applications[0].Offers = offers;
-        if (Array.isArray(jobSpec.Applications) && jobSpec.Applications.length > 0) {
-          if (Array.isArray(jobSpec.Applications[0].Interviews) && jobSpec.Applications[0].Interviews.length > 0) {
-            for (let i = 0; i<jobSpec.Applications[0].Interviews.length; i++) {
-              if (jobSpec.Applications[0].Interviews[i].ContactId) {
-                lContacts.find((contact: ContactItem) => contact.Id === jobSpec.Applications[0].Interviews[i].ContactId);
-                jobSpec.Applications[0].Interviews[i].Contact = contact;
-              }
-            }
-          }
-
-          if (Array.isArray(jobSpec.Applications[0].Offers) && jobSpec.Applications[0].Offers.length > 0) {
-            for (let i = 0; i<jobSpec.Applications[0].Offers.length; i++) {
-              const ofBenefits = await (getOfferBenefits(Number(jobSpec.Applications[0].Offers[i].Id)).catch(() => []));
-
-              jobSpec.Applications[0].Offers[i].Benefits = ofBenefits;
-            }
-          }
-        }
-      }
-    }
-    catch (err) {
-      if (mounted)
-        setError(
-          err instanceof Error ? err.message : 'Failed to load contacts',
-        );
-    } 
-    finally {
-      if (!mounted) return;
-      setLoading(false);
-    }
-  };
 
   const getModalTitle = (modal: string) => {
     var title: string = '';
@@ -954,7 +920,10 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowInterviews(true)}>
+                      onClick={() => {
+                        refreshJobSpec(true);
+                        setShowInterviews(true);
+                      }}>
                     <h4 className="section-heading"><FaRegArrowAltCircleRight /> Interviews</h4>
                   </div>
                 </div>

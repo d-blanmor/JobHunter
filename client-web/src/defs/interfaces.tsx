@@ -81,6 +81,7 @@ export interface JobSpecItem {
   Notes?: string | null;
   Published?: string | null;
   Created: string | null;
+  Contact?: ContactItem;
   Applications?: ApplicationItem[] | [];
   Benefits?: luBenefitItem[] | [];
   Tags?: TagItem[] | [];

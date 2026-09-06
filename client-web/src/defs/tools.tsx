@@ -1,5 +1,3 @@
-import { listLocations } from '../api/lu_locations';
-import { getPlaceOfWork } from '../api/place_of_work';
 import { listBenefits } from '../api/lu_benefits';
 
 import { 
@@ -56,6 +54,40 @@ export function safeValue(value: any) {
   return value === null || value === undefined || value === '' ? '—' : value;
 }
 
+export function getLocation(locationId:number, lLocations: luLocationItem[]) {
+    return lLocations.find(loc => loc.Id === locationId);
+  }
+
+export function getPlaceOfWork(powId: number, lPlacesOfWork: PlaceOfWorkItem[]) {
+    return lPlacesOfWork.find(pow => pow.Id === powId);
+  };
+
+export function getPlaceOfWorkLabel(placeOfWorkId: number, lPlacesOfWork: PlaceOfWorkItem[], lLocations: luLocationItem[]) {
+  try {
+    const placeOfWork = getPlaceOfWork(placeOfWorkId, lPlacesOfWork);
+    const location = placeOfWork ? getLocation(placeOfWork.LocationId, lLocations) : null;
+    var locationLabel = '';
+
+    if (location) {
+      locationLabel = location.Country;
+      if (location.City && location.City != '') {
+        locationLabel = locationLabel + ` - ${location.City?.trim()}`;
+      }
+    }
+    if (placeOfWork?.Address && placeOfWork.Address.trim() != ''){
+      locationLabel = locationLabel + ` (${placeOfWork.Address?.trim()})`;
+    }
+    return locationLabel;
+  }
+  catch (err) {
+    return (err instanceof Error ? err.message : 'Failed formating place of work');
+  } 
+}
+
+export function getContactDetails(contactId: number, lContacts: ContactItem[]) {
+    return lContacts.find(c => c.Id === contactId);
+  };
+
 export function getSourceItem(spec: any, sources: SourceItem[]) {
   return sources.find((item) => item.Id === spec.SourceId) || null;
 }
@@ -79,34 +111,6 @@ export function normalizeBenefits(value: any) {
   if (Array.isArray(value)) return value.filter(Boolean).join(', ') || '—';
   if (typeof value === 'string') return value.trim() || '—';
   return String(value);
-}
-
-export async function getPlaceOfWorkLabel(placeOfWorkId: number) {
-  try {
-    const [
-      placeOfWork, 
-      luLocations
-    ] = await Promise.all([
-      getPlaceOfWork(placeOfWorkId),
-      listLocations()
-    ]);
-    const location = placeOfWork ? luLocations.find((item: luLocationItem) => item.Id === placeOfWork.LocationId) : null;
-    var locationLabel = '';
-
-    if (location) {
-      locationLabel = location.Country;
-      if (location.City && location.City != '') {
-        locationLabel = locationLabel + ` - ${location.City?.trim()}`;
-      }
-    }
-    if (placeOfWork?.Address && placeOfWork.Address.trim() != ''){
-      locationLabel = locationLabel + ` (${placeOfWork.Address?.trim()})`;
-    }
-    return locationLabel;
-  }
-  catch (err) {
-    return (err instanceof Error ? err.message : 'Failed formating place of work');
-  } 
 }
 
 export function encodeURI(str: string): string {

@@ -14,8 +14,6 @@ import {
   formatFieldDate, 
   safeValue,
   getSourceItem,
-  getLocation,
-  getPlaceOfWork,
   getPlaceOfWorkLabel,
   getContactDetails,
   getWorkModelItem,
@@ -95,7 +93,6 @@ export default function JobSpecView() {
   const [lWorkModels, setWorkModels] = useState<luWorkModelItem[]>([]);
   const [lRoleTypes, setRoleTypes] = useState<luRoleTypeItem[]>([]);
   const [lContacts, setLContacts] = useState<ContactItem[]>([]);
-  const [placeOfWorkLabel, setPlaceOfWorkLabel] = useState<string | ''>('');
   // Behaviour
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -146,7 +143,6 @@ export default function JobSpecView() {
           }
         }
       }
-      if (js.PlaceOfWorkId) setPlaceOfWorkLabel(getPlaceOfWorkLabel(js.PlaceOfWorkId, lPlacesOfWork, lLocations));
       setJobSpec(js);
     }
     catch (err) {
@@ -228,6 +224,7 @@ export default function JobSpecView() {
   const source = useMemo(() => (jobSpec ? getSourceItem(jobSpec, lSources) : null), [jobSpec, lSources]);
   const roleType = useMemo(() =>  (jobSpec ? getRoleTypeItem(jobSpec, lRoleTypes) : null), [jobSpec]);
   const workModel = useMemo(() => (jobSpec ? getWorkModelItem(jobSpec, lWorkModels) : null), [jobSpec,lWorkModels]);
+  const placeOfWorkLabel = useMemo(() => (jobSpec?.PlaceOfWorkId ? getPlaceOfWorkLabel(jobSpec.PlaceOfWorkId, lPlacesOfWork, lLocations) : '—'), [jobSpec?.PlaceOfWorkId, lPlacesOfWork, lLocations]);
   const contact = useMemo(() => (jobSpec ? getContactItem(jobSpec.ContactId, lContacts) : null), [jobSpec]);
   const salary = jobSpec?.SalaryExpectation ||  '—';
 
@@ -923,7 +920,10 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => setShowInterviews(true)}>
+                      onClick={() => {
+                        refreshJobSpec(true);
+                        setShowInterviews(true);
+                      }}>
                     <h4 className="section-heading"><FaRegArrowAltCircleRight /> Interviews</h4>
                   </div>
                 </div>

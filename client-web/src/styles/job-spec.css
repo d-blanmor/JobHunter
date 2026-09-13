@@ -108,6 +108,39 @@
 .job-spec-field-row > span:last-child {
   /*color: var(--color-brand-primary);*/
 }
+.job-spec-actions {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+.job-spec-button {
+  appearance: none;
+  border: 1px solid var(--color-border-default);
+  color: var(--stage-row-action);
+  border-radius: 10px;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background-box);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.12s ease;
+  margin-right: 10px;
+}
+.job-spec-button:hover:not(.disabled) {
+  background: var(--stage-button-hover-background);
+  transform: translateY(-1px);
+  box-shadow: 0 1px 10px var(--color-brand-secondary);
+}
+.job-spec-button-delete {
+  border-color: var(--stage-button-delete-fron);
+  color: var(--stage-button-delete);
+}
+.job-spec-button.disabled {
+  opacity: 0.5;
+  cursor: default;
+}
 
 .section-heading {
   font-size: 1.1em;
@@ -139,7 +172,8 @@
 
 .application-row {
   display: grid;
-  grid-template-columns: minmax(1em, 0.8em) minmax(1em, 6em) minmax(1em, 8em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em);
+  /*grid-template-columns: minmax(1em, 0.8em) minmax(1em, 6em) minmax(1em, 8em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em);*/
+  grid-template-columns: minmax(1em, 100px) minmax(1em, 750px);
   align-items: center;
   gap: 10px;
   margin: 0em 0em 0.5em 0.4em;
@@ -147,18 +181,27 @@
 
 .interview-row {
   display: grid;
-  grid-template-columns: minmax(1em, 0.8em) minmax(1em, 6em) minmax(1em, 9em) minmax(1em, 6em) minmax(1em, 6em);
+  /*grid-template-columns: minmax(1em, 0.8em) minmax(1em, 6em) minmax(1em, 9em) minmax(1em, 6em) minmax(1em, 6em);*/
+  grid-template-columns: minmax(1em, 100px) minmax(1em, 750px);
   align-items: center;
   gap: 10px;
-  margin: 0em 0em 0em 0.4em;
+  margin: 0em 0em 0.5em 0.4em;
 }
 
 .offer-row {
   display: grid;
-  grid-template-columns: minmax(1em, 0.8em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em);
+  /*grid-template-columns: minmax(1em, 0.8em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em) minmax(1em, 6em);*/
+  grid-template-columns: minmax(1em, 100px) minmax(1em, 750px);
   align-items: center;
   gap: 10px;
-  margin: 0em 0em 0em 0.4em;
+  margin: 0em 0em 0.5em 0.4em;
+}
+
+.offer-label {
+  color: var(--view-labels);
+  font-weight: 700;
+  font-size: 0.9em;
+  margin: 0px 0.5em 0em 0em;
 }
 
 .job-spec-text {
@@ -335,6 +378,13 @@
   border: none;
   cursor: pointer;
   margin: 0px 0px 0px 10px;
+}
+
+.offer-benefits-area {
+  display: block ruby;
+  margin-bottom: 12px;
+  margin-top: 10px;
+  margin-left: 7px;
 }
 
 .job-spec-benefits-area {

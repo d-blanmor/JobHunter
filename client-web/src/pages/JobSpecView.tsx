@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaEdit, FaIdBadge, FaExternalLinkAlt, FaEnvelopeSquare, FaPhoneSquareAlt, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown, FaTags } from 'react-icons/fa';
+import { FaEdit, FaIdBadge, FaExternalLinkAlt, FaEnvelopeSquare, FaPhoneSquareAlt, FaRegArrowAltCircleRight, FaRegArrowAltCircleDown, FaTags, FaArrowCircleRight, FaTrashAlt, FaUndo, FaRegCalendarPlus } from 'react-icons/fa';
 import { BsInfoCircle } from "react-icons/bs";
+import { GiCardDiscard } from "react-icons/gi";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm'; // Adds support for tables, strikethrough, etc.
 import rehypeSanitize from 'rehype-sanitize'; // Optional but recommended for security
@@ -39,10 +40,10 @@ import ApplicationModal from '../components/ApplicationModal';
 import InterviewModal from '../components/InterviewModal';
 import OfferModal from '../components/OfferModal';
 
-import { getJobSpec, getJobSpecTags, getJobSpecBenefits } from '../api/jobSpecs';
-import { getApplicationsByJobSpec, getApplication } from '../api/applications';
-import { getInterviewByJobSpec } from '../api/interviews';
-import { getOfferByJobSpec, getOfferBenefits } from '../api/offers';
+import { getJobSpec, getJobSpecTags, getJobSpecBenefits, deleteJobSpec } from '../api/jobSpecs';
+import { getApplicationsByJobSpec, getApplication, saveApplication } from '../api/applications';
+import { getInterviewByJobSpec, getInterview, saveInterview } from '../api/interviews';
+import { getOfferByJobSpec, getOfferBenefits, getOffer, saveOffer } from '../api/offers';
 import { listPlacesOfWork } from '../api/place_of_work';
 import { listWorkModels } from '../api/lu_workmodels';
 import { listRoleTypes } from '../api/lu_roletypes';
@@ -57,6 +58,9 @@ export default function JobSpecView() {
   const navigate = useNavigate();
 
   const tagContext: string = 'JobSpecs';
+  const [modalOpenApplication, setModalOpenApplication] = useState(false);
+  const [modalOpenInterview, setModalOpenInterview] = useState(false);
+  const [modalOpenOffer, setModalOpenOffer] = useState(false);
   const [modalEditJobSpec, setModalEditJobSpec] = useState(false);
   const [modalEditApplication, setModalEditApplication] = useState(false);
   const [modalEditInterview, setModalEditInterview] = useState(false);
@@ -228,6 +232,118 @@ export default function JobSpecView() {
   const contact = useMemo(() => (jobSpec ? getContactItem(jobSpec.ContactId, lContacts) : null), [jobSpec]);
   const salary = jobSpec?.SalaryExpectation ||  '—';
 
+  const handleSoftDeleteJobSpec = async (jsId: number) => {
+    if (!window.confirm('Are you sure you want to soft delete this Job Spec?')) return;
+    setError(null);
+    
+    try {
+      await deleteJobSpec(jsId);
+      navigate('/');
+    } catch(err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete job spec');
+    } finally {
+
+    }
+  };
+
+  const handleSoftDeleteApplication = async (appId: number) => {
+    if (!window.confirm('Are you sure you want to soft delete this application?')) return;
+    setError(null);
+    //setActionLoadingId(appId);
+    try {
+      const application = await getApplication(appId);
+      // Build a minimal payload for updating the application to avoid modifying related JobSpec or nested objects.
+      const minimalPayload: any = {};
+      for (const [key, value] of Object.entries(application || {})) {
+        // keep primitives and nulls only; skip nested objects/arrays which may represent linked entities
+        if (value === null) {
+          minimalPayload[key] = null;
+        } else if (typeof value !== 'object') {
+          minimalPayload[key] = value;
+        }
+      }
+      minimalPayload.Id = appId;
+      minimalPayload.IsActive = false;
+      await saveApplication(minimalPayload);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete application');
+    } finally {
+      await refreshJobSpec();
+    }
+  };
+
+  const handleSoftDeleteInterview = async (intvwId: number) => {
+    if (!window.confirm('Are you sure you want to soft delete this interview?')) return;
+    setError(null);
+    try {
+      const interview = await getInterview(intvwId);
+      const minimalPayload: any = {};
+      for (const [key, value] of Object.entries(interview || {})) {
+        if (value === null) {
+          minimalPayload[key] = null;
+        } else if (typeof value !== 'object') {
+          minimalPayload[key] = value;
+        }
+      }
+      minimalPayload.Id = intvwId;
+      minimalPayload.IsActive = false;
+      await saveInterview(minimalPayload);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete interview');
+    } finally {
+      await refreshJobSpec();
+    }
+  };
+
+  const handleSoftDeleteOffer = async (offId: number) => {
+    if (!window.confirm('Are you sure you want to soft delete this offer?')) return;
+    setError(null);
+    try {
+      const offer = await getOffer(offId);
+      const minimalPayload: any = {};
+      for (const [key, value] of Object.entries(offer || {})) {
+        if (value === null) {
+          minimalPayload[key] = null;
+        } else if (typeof value !== 'object') {
+          minimalPayload[key] = value;
+        }
+      }
+      minimalPayload.Id = offId;
+      minimalPayload.IsActive = false;
+      await saveOffer(minimalPayload);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete offer');
+    } finally {
+      await refreshJobSpec();
+    }
+  };
+
+  const handleDiscardApplication = async (appId: number) => {
+    if (!window.confirm('Mark this application as discarded?')) return;
+    setError(null);
+    try {
+      const application = await getApplication(appId);
+      const minimalPayload: any = {};
+      for (const [key, value] of Object.entries(application || {})) {
+        if (value === null) {
+          minimalPayload[key] = null;
+        } else if (typeof value !== 'object') {
+          minimalPayload[key] = value;
+        }
+      }
+      minimalPayload.Id = appId;
+      const iso = new Date().toISOString();
+      minimalPayload.Discarded = iso;
+      minimalPayload.DiscardedDate = iso;
+      console.debug('updateApplication discard payload', minimalPayload);
+      await saveApplication(minimalPayload);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to discard application');
+    } finally {
+      await refreshJobSpec();
+    }
+  };
+
   const getModalTitle = (modal: string) => {
     var title: string = '';
 
@@ -260,7 +376,7 @@ export default function JobSpecView() {
       }
     }
     return title;
-  }
+  };
 
   return (
     <section className="page">
@@ -269,7 +385,7 @@ export default function JobSpecView() {
           <div>
             <h2 className="job-spec-title"><p>Loading job spec...</p></h2>
           </div>
-          <button className="action-button" onClick={() => navigate(-1)}>Back</button>
+          <button className="action-button" onClick={() => navigate('/')}>Back</button>
         </div>
       )}
       {error && (
@@ -277,19 +393,93 @@ export default function JobSpecView() {
           <div>
             <h2 className="job-spec-title"><p className="error">{error}</p></h2>
           </div>
-          <button className="action-button" onClick={() => navigate(-1)}>Back</button>
+          <button className="action-button" onClick={() => navigate('/')}>Back</button>
         </div>
       )}
 
       {!loading && !error && jobSpec && (
         <div className="job-spec-view">
           <div className="page-header-action">
-            <span className="job-spec-subtitle-link" 
-                  title='Edit Job Spec' 
-                  onClick={() => {setModalEditJobSpec(true);}}>
-              <FaEdit aria-hidden="true" />
-            </span>
-            <button className="action-button" onClick={() => navigate(-1)}>Back</button>
+            <div className="job-spec-actions">
+              <button type="button"
+                      className="job-spec-button"
+                      title="Edit Job Spec"
+                      onClick={() => {
+                        setModalEditJobSpec(true);
+                      }}
+                      >
+                <FaEdit aria-hidden="true" />
+              </button>
+              {!jobSpec.Applications || jobSpec.Applications.length == 0 ? (
+                <>
+                  <button type="button"
+                          className="job-spec-button"
+                          title="Create application for this job spec"
+                          onClick={() => {
+                            setModalOpenApplication(true);
+                          }}
+                          >
+                    <FaArrowCircleRight />
+                  </button>
+
+                </>
+              ) : jobSpec.Applications && 
+                  jobSpec.Applications[0] && 
+                  !jobSpec.Applications[0].Discarded && 
+                  (!jobSpec.Applications[0].Interviews || jobSpec.Applications[0].Interviews.length == 0) ? (
+                <>
+                  <button type="button"
+                          className="job-spec-button"
+                          title="Create interview for this application"
+                          onClick={() => {
+                            if (jobSpec.Applications && jobSpec.Applications[0]) {
+                              setApplicationId(jobSpec.Applications[0].Id);
+                              setModalOpenInterview(true);
+                            }
+                          }}>
+                    <FaRegCalendarPlus />
+                  </button>
+                  <button type="button"
+                          className="job-spec-button"
+                          title="Discard application"
+                          onClick={() => {
+                            if (jobSpec.Applications && jobSpec.Applications[0].Id) {
+                              handleDiscardApplication(jobSpec.Applications[0].Id);
+                            }
+                          }}>
+                    <GiCardDiscard />
+                  </button>
+                </>
+              ) : jobSpec.Applications && 
+                  jobSpec.Applications[0] && 
+                  !jobSpec.Applications[0].Discarded &&
+                  (!jobSpec.Applications[0].Offers || jobSpec.Applications[0].Offers.length == 0) ? (
+                <>
+                  <button type="button"
+                          className="job-spec-button"
+                          title="Create offer for this application"
+                          onClick={() => {
+                            if (jobSpec.Applications && jobSpec.Applications[0].Id) {
+                              setApplicationId(jobSpec.Applications[0].Id);
+                              setModalOpenOffer(true);
+                            }
+                          }}>
+                    <FaArrowCircleRight />
+                  </button>
+                </>
+              ) : ( null  )}
+
+              <button type="button"
+                      className="job-spec-button job-spec-button-delete"
+                      title="Soft delete this job spec"
+                      onClick={async () => {
+                        handleSoftDeleteJobSpec(Number(id));
+                      }}>
+                <FaTrashAlt />
+              </button>
+            </div>
+
+            <button className="action-button" onClick={() => navigate('/')}>Back</button>
           </div>
 
           <div className="page-header-row">
@@ -594,31 +784,71 @@ export default function JobSpecView() {
                 {jobSpec.Applications.map((application) => (
                   <div key={application.Id || Math.random()}>
                     {application.Id ? (
-                      <div className="application-row">
-                        <span className="job-spec-label-link" 
-                              title='Edit Application' 
-                              onClick={() => {setModalEditApplication(true);}}>
-                          <FaEdit aria-hidden="true" />
-                        </span>
-                        {application.Applied ? (
-                          <>
-                            <span className="job-spec-label">Applied on</span>
-                            <span className="job-spec-value">{formatDateOnly(application.Applied)}</span>
-                          </>
-                        ) : (null)}
-                        {application.Confirmed ? (
-                          <>
-                            <span className="job-spec-label">Confirmed on</span>
-                            <span className="job-spec-value">{formatDateOnly(application.Confirmed)}</span>
-                          </>
-                        ) : (null)}
-                        {application.Discarded ? (
-                          <>
-                            <span className="job-spec-label">Discarded on</span>
-                            <span className="job-spec-value">{formatDateOnly(application.Discarded)}</span>
-                          </>
-                        ) : (null)}
-                      </div>
+                      <>
+                        <div className="application-row">
+                          <div className="job-spec-actions">
+                            <button type="button"
+                                    className="job-spec-button"
+                                    title="Edit Application"
+                                    onClick={() => {setModalEditApplication(true);}}>
+                              <FaEdit aria-hidden="true" />
+                            </button>
+                            {!application.Discarded && (!application.Offers || application.Offers.length == 0) ? (
+                              <>
+                                <button type="button"
+                                        className="job-spec-button"
+                                        title="Create interview for this application"
+                                        onClick={() => {
+                                          if (jobSpec.Applications && jobSpec.Applications[0]) setApplicationId(jobSpec.Applications[0].Id);
+                                          setModalOpenInterview(true);
+                                        }}>
+                                  <FaRegCalendarPlus />
+                                </button>
+                                <button type="button"
+                                        className="stage-action-button"
+                                        title="Discard application"
+                                        onClick={() => {
+                                          if (jobSpec.Applications && jobSpec.Applications[0].Id) {
+                                            handleDiscardApplication(jobSpec.Applications[0].Id);
+                                          }
+                                        }}>
+                                  <GiCardDiscard />
+                                </button>
+                              </>
+                            ) : (null)}
+                            <button type="button"
+                                    className="job-spec-button job-spec-button-delete"
+                                    title="Soft delete this application"
+                                    onClick={() => {
+                                      if (jobSpec.Applications && jobSpec.Applications[0].Id) {
+                                        handleSoftDeleteApplication(jobSpec.Applications[0].Id);
+                                      }
+                                    }}>
+                              <FaTrashAlt />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="application-row">
+                          {application.Applied ? (
+                            <>
+                              <span className="job-spec-label">Applied on</span>
+                              <span className="job-spec-value">{formatDateOnly(application.Applied)}</span>
+                            </>
+                          ) : (null)}
+                          {application.Confirmed ? (
+                            <>
+                              <span className="job-spec-label">Confirmed on</span>
+                              <span className="job-spec-value">{formatDateOnly(application.Confirmed)}</span>
+                            </>
+                          ) : (null)}
+                          {application.Discarded ? (
+                            <>
+                              <span className="job-spec-label">Discarded on</span>
+                              <span className="job-spec-value">{formatDateOnly(application.Discarded)}</span>
+                            </>
+                          ) : (null)}
+                        </div>
+                      </>
                     ) : (null)}
                     {application.Letter || application.CV || application.Notes ? (
                       <div className={`${application.Discarded ? 'job-spec-decorated-discarded' : 'job-spec-decorated'}`}>
@@ -730,23 +960,36 @@ export default function JobSpecView() {
                   <div key={interview.Id || Math.random()} className="job-spec">
                     <div className="job-spec-meta-item">
                       {interview.Id ? (
-                        <div className="interview-row">
-                          <span className="job-spec-label-link" 
-                                title='Edit Interview' 
-                                onClick={() => {
-                                    setInterviewId(interview.Id);
-                                    setModalEditInterview(true);
-                                  }}>
-                            <FaEdit aria-hidden="true" />
-                          </span>
-                          {interview.Scheduled ? (
-                            <>
-                              <span className="job-spec-label">Scheduled for</span>
-                              <span className="job-spec-value">{formatDateTime(interview.Scheduled)}</span>
-                            </>
-                          ) : null}
-                        </div>
+                        <>
+                          <div className="interview-row">
+                            <div className="job-spec-actions">
+                              <button type="button"
+                                      className="stage-action-button"
+                                      title="Edit Interview"
+                                      onClick={() => {
+                                        setInterviewId(interview.Id);
+                                        setModalEditInterview(true);
+                                      }}>
+                                <FaEdit aria-hidden="true" />
+                              </button>
+                              <button type="button"
+                                      className="stage-action-button stage-action-button-delete"
+                                      title="Soft delete this interview"
+                                      onClick={() => {handleSoftDeleteInterview(interview.Id)}}>
+                                <FaTrashAlt />
+                              </button>
+                            </div>
+                          </div>
+                        </>
                       ) : (null)}
+                      <div className="interview-row">
+                        {interview.Scheduled ? (
+                          <>
+                            <span className="job-spec-label">Scheduled for</span>
+                            <span className="job-spec-value">{formatDateTime(interview.Scheduled)}</span>
+                          </>
+                        ) : null}
+                      </div>
                       {interview.ContactId && showIvContactDetails ? (
                         <div className="jov-spec-contact-card">
                           <div className="job-spec-contact">
@@ -920,8 +1163,8 @@ export default function JobSpecView() {
                   <div className="job-spec-section-clickable"
                       role="button"
                       tabIndex={0}
-                      onClick={() => {
-                        refreshJobSpec(true);
+                      onClick={async () => {
+                        await refreshJobSpec(true);
                         setShowInterviews(true);
                       }}>
                     <h4 className="section-heading"><FaRegArrowAltCircleRight /> Interviews</h4>
@@ -949,34 +1192,50 @@ export default function JobSpecView() {
                   <div key={offer.Id || Math.random()} className="job-spec">
                     <div className="job-spec-meta-item">
                       {offer.Id ? (
-                        <div className="offer-row">
-                          <span className="job-spec-label-link" 
-                                title='Edit Offer' 
-                                onClick={() => {
-                                    setOfferId(offer.Id);
-                                    setModalEditOffer(true);
-                                  }}>
-                            <FaEdit aria-hidden="true" />
-                          </span>
-                          {offer.Offered ? (
-                            <>
-                              <span className="job-spec-label">Offered Date</span>
-                              <span className="job-spec-value">{formatDateOnly(offer.Offered)}</span>
-                            </>
-                          ) : null}
-                        </div>
+                        <>
+                          <div className="offer-row">
+                            <div className="job-spec-actions">
+                              <button type="button"
+                                      className="job-spec-button"
+                                      title="Edit Offer"
+                                      onClick={() => {
+                                        setOfferId(offer.Id);
+                                        setModalEditOffer(true);
+                                      }}>
+                                <FaEdit aria-hidden="true" />
+                              </button>
+                              <button type="button"
+                                      className="job-spec-button job-spec-button-delete"
+                                      title="Soft delete this offer"
+                                      onClick={async () => {
+                                        handleSoftDeleteOffer(offer.Id);
+                                      }}>
+                                <FaTrashAlt />
+                              </button>
+                            </div>
+                          </div>
+                        </>
                       ) : (null)}
 
+                      <div className="offer-row">
+                        {offer.Offered ? (
+                          <>
+                            <span className="job-spec-label">Offered Date</span>
+                            <span className="job-spec-value">{formatDateOnly(offer.Offered)}</span>
+                          </>
+                        ) : null}
+                      </div>
+
                       {offer.Salary ? (
-                        <div className="job-spec-field-row">
+                        <div className="offer-row">
                           <span className="job-spec-label">Salary</span>
                           <span className="job-spec-value">{safeValue(offer.Salary)}</span>
                         </div>
                       ) : (null)}
 
                       {offer.Benefits && offer.Benefits.length > 0 ? (
-                        <div className="job-spec-benefits-area">
-                          <span className="job-spec-label">Benefits</span>
+                        <div className="offer-benefits-area">
+                          <span className="offer-label">Benefits</span>
                           <div className="job-spec-benefits-list">
                             {offer.Benefits.map((benefit: any, index) => (
                               <>
@@ -995,11 +1254,7 @@ export default function JobSpecView() {
                             ))}
                           </div>
                         </div>
-                      ) : (
-                        <div className="job-spec-benefits-area">
-                          <span className="job-spec-label">Benefits</span>
-                        </div>
-                      )}
+                      ) : ( null )}
 
                       {offer.Description  ? (
                         <div className="job-spec-decorated">
@@ -1008,7 +1263,9 @@ export default function JobSpecView() {
                               <div className="job-spec-section-clickable"
                                   role="button"
                                   tabIndex={0}
-                                  onClick={() => setShowOfDescription(false)}><h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Description</h4></div>
+                                  onClick={() => setShowOfDescription(false)}>
+                                <h4 className="job-spec-section"><FaRegArrowAltCircleDown /> Description</h4>
+                              </div>
                               <div className="job-spec-text">
                                 <ReactMarkdown
                                   remarkPlugins={[remarkGfm]}
@@ -1079,6 +1336,66 @@ export default function JobSpecView() {
         </div>
       )}
 
+      {modalOpenApplication && (
+        <ApplicationModal
+          applicationId={null}
+          jobSpecId={jobSpec?.Id}
+          title = "Create new Application"
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalOpenApplication(false);
+          }}
+          onSuccess={async () => {
+            await refreshJobSpec(true);
+            setModalOpenApplication(false);
+          }}
+        />
+      )}
+
+      {modalOpenInterview && (
+        <InterviewModal
+          interviewId={null}
+          applicationId={applicationId}
+          title = "Create new Interview"
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalOpenInterview(false);
+          }}
+          onSuccess={async () => {
+            await refreshJobSpec(true);
+            setModalOpenInterview(false);
+          }}
+        />
+      )}
+
+      {modalOpenOffer && (
+        <OfferModal
+          offerId={null}
+          applicationId={applicationId}
+          title = "Create new Offer"
+          onClose={() => {
+            if (isDirty()) {
+              if (!window.confirm('If you leave now you will lose any unsaved changes. Are you sure?')) 
+                return;
+            }
+            setIsDirty(false);
+            setModalOpenOffer(false);
+          }}
+          onSuccess={async () => {
+            await refreshJobSpec(true);
+            setModalOpenOffer(false);
+          }}
+        />
+      )}
+
       {modalEditJobSpec && (
         <JobSpecModal
           jobSpecId={jobSpec?.Id || null}
@@ -1092,7 +1409,7 @@ export default function JobSpecView() {
             setModalEditJobSpec(false);
           }}
           onSuccess={async () => {
-            await refreshJobSpec(true); // refresh portal list after modal close
+            await refreshJobSpec(true);
             setModalEditJobSpec(false);
           }}
         />
@@ -1112,7 +1429,7 @@ export default function JobSpecView() {
             setModalEditApplication(false);
           }} 
           onSuccess={async () => {
-            await refreshJobSpec(true); // refresh portal list after modal close
+            await refreshJobSpec(true);
             setModalEditApplication(false);
           }}
         />
@@ -1132,7 +1449,7 @@ export default function JobSpecView() {
             setModalEditInterview(false);
           }}
           onSuccess={async () => {
-            await refreshJobSpec(true); // refresh portal list after modal close
+            await refreshJobSpec(true);
             setModalEditInterview(false);
           }}
         />
@@ -1152,7 +1469,7 @@ export default function JobSpecView() {
             setModalEditOffer(false);
           }}
           onSuccess={async () => {
-            await refreshJobSpec(true); // refresh portal list after modal close
+            await refreshJobSpec(true);
             setModalEditOffer(false);
           }}
         />

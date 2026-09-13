@@ -317,7 +317,7 @@ export default function JobSpecCreate() {
           }
         }
       }
-      navigate('/');
+      navigate('/job-specs/view/' + String(savedJobSpec.Id));
     } 
     catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');

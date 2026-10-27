@@ -2,4 +2,5 @@
 .atl
 .env
 .deployed
+Backup/
 client-web/package-lock.json

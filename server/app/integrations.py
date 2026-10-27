@@ -6,7 +6,7 @@ from sqlmodel import Session
 from ollama import Client, Message
 
 from app.config import ollama_url_tag, ollama_api_key_tag, ollama_model_tag, ollama_sys_prompt_tag, ollama_knowledge_source_tag
-from app.models import appSetting
+from app.models.system import appSetting
 from app.schemas import ollamaModelBase, OllamaModelsResponse, genericResponse
 from app.dependencies import get_appSetting_or_404
 

@@ -6,7 +6,7 @@ from sqlmodel import Session
 
 from ..dependencies import get_tag_or_404, upsert_tag, soft_delete_tag
 from app.database import get_session
-from app.models import tag
+from app.models.system import tag
 from app.schemas import TagBase
 
 router = APIRouter()

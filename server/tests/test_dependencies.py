@@ -1,7 +1,7 @@
 from sqlmodel import Session, SQLModel, create_engine
 
 from app.dependencies import get_link_or_404
-from app.models import rolesLnkJobSpecTags
+from app.models.roles import rolesLnkJobSpecTags
 
 
 def testget_link_or_404_with_partial_primary_key_returns_matching_rows() -> None:

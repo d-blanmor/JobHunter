@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
 
 from app.database import get_session
-from app.models import rolesOffer, vwOfferBenefits, rolesLnkOfferBenefit, rolesLuBenefit
+from app.models.roles import rolesOffer, vwOfferBenefits, rolesLnkOfferBenefit, rolesLuBenefit
 from app.schemas import OfferBase
 from app.dependencies import get_entity_or_404, upsert_entity, soft_delete_entity, get_offers_by_job_spec, get_benefits_by_entity
 

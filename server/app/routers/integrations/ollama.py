@@ -6,7 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from sqlmodel import Session
 
 from app.database import get_session
-from app.models import appSetting
+from app.models.system import appSetting
 from app.schemas import OllamaJobspecRequest, OllamaModelsResponse, genericResponse
 from app.dependencies import get_appSetting_or_404
 from app.integrations import _get_ollama_models_or_404, _get_ollama_generate_or_404

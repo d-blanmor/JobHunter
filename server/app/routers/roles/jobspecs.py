@@ -5,7 +5,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
 
 from app.database import get_session
-from app.models import rolesJobSpec, rolesLnkJobSpecTags, tag, vwJobSpecBenefits, rolesLnkJobSpecBenefit, rolesLuBenefit
+from app.models.system import tag
+from app.models.roles import rolesJobSpec, rolesLnkJobSpecTags, vwJobSpecBenefits, rolesLnkJobSpecBenefit, rolesLuBenefit
 from app.schemas import JobSpecBase, TagBase, StandardLookupBase
 from app.dependencies import get_entity_or_404, upsert_entity, soft_delete_entity, get_tags_by_entity, get_benefits_by_entity
 

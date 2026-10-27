@@ -20,9 +20,11 @@ from app.dependencies import (
     get_interviews_by_job_spec, 
     get_offers_by_job_spec
 )
-from app.models import (
+from .models.system import (
     appSetting,
     tag,
+)
+from .models.roles import (
     rolesLuBenefit,
     rolesLuLocation,
     rolesLuRoleType,

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
 
 from app.database import get_session
-from app.models import rolesLuBenefit
+from app.models.roles import rolesLuBenefit
 from app.schemas import StandardLookupBase
 from app.dependencies import get_entity_or_404, upsert_entity, soft_delete_entity
 

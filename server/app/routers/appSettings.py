@@ -6,7 +6,7 @@ from sqlmodel import Session
 
 from ..dependencies import get_appSetting_or_404, upsert_appSetting, soft_delete_appSetting
 from app.database import get_session
-from app.models import appSetting
+from app.models.system import appSetting
 from app.schemas import appSettingBase
 
 router = APIRouter()

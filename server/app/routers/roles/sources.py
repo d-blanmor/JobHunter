@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
 
 from app.database import get_session
-from app.models import rolesSource
+from app.models.roles import rolesSource
 from app.schemas import SourceBase
 from app.dependencies import get_entity_or_404, upsert_entity, soft_delete_entity, get_main_sources, get_sources_by_parent
 

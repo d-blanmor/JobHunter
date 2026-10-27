@@ -295,7 +295,7 @@ def soft_delete_appSetting(session: Session, model: type[Any], appSettingKey: st
 #####################
 #  special entities
 from app.schemas import ContactBase, SourceBase
-from app.models import rolesContact, rolesSource
+from app.models.roles import rolesContact, rolesSource
 
 def get_contacts_by_source(session: Session, source_id: int, active_only: bool = True) -> list[ContactBase]:
     statement = select(rolesContact)
@@ -324,7 +324,7 @@ def get_sources_by_parent(session: Session, parent_id: int, active_only: bool = 
 #####################
 #  JobSpec functions
 from app.schemas import ApplicationBase, InterviewBase, OfferBase
-from app.models import rolesJobSpec, rolesApplication, rolesInterview, rolesOffer, vwJobSpecBenefits, vwOfferBenefits, rolesLuBenefit
+from app.models.roles import rolesJobSpec, rolesApplication, rolesInterview, rolesOffer, vwJobSpecBenefits, vwOfferBenefits, rolesLuBenefit
 
 def get_applications_by_job_spec(session: Session, job_spec_id: int) -> list[ApplicationBase]:
     statement = select(rolesApplication)
@@ -380,7 +380,7 @@ def get_benefits_by_entity(session: Session, model: type[Any], entity_id: int, a
 #####################
 #  Workflow logic
 from app.schemas import vwWorkflowBase
-from app.models import vwWorkflow
+from app.models.system import vwWorkflow
 
 def workflow_get_jobspecs(session: Session, Stage: str | None = None, IsActive: bool = True) -> list[vwWorkflowBase]:
     statement = select(vwWorkflow)

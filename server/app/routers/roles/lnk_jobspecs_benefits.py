@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session
 
 from app.database import get_session
-from app.models import rolesLnkJobSpecBenefit
+from app.models.roles import rolesLnkJobSpecBenefit
 from app.schemas import LnkJobSpecBenefitBase
 from app.dependencies import get_link_or_404, upsert_link, delete_link
 

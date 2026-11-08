@@ -6,7 +6,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 
 import app.models.system as mod_system
 import app.models.roles as mod_roles
-#import app.models.profile as mod_profiles
+import app.models.profile as mod_profiles
 
 if(conf_dbtype() == "sqlite"):
     DATABASE_URL = f"sqlite:///{conf_db()}"
